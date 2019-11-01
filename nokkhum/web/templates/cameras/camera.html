@@ -24,33 +24,26 @@
         <div class="black column">
           <img src="{{ camera.get_streaming_url() }}" width="100%">
         </div>
+        <div class="column">
+          <div class="ui divided huge list">
+            <div class="item">
+              <i class="folder icon"></i>
+              <div class="content">
+                <a href="{{ url_for('storages.list_storage_by_processor', processor_id=camera.get_processor().id) }}"></i> Storage</a>
+              </div>
+            </div>
+            <div class="item">
+              <i class="edit icon"></i>
+              <div class="content">
+                <a href="{{ url_for('cameras.edit', camera_id=camera.id, project_id=project.id) }}"></i> Edit</a>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </div>
-
-{#
-<h2>Detected Plate</h2>
-<table id="processtable" class="ui celled striped table">
-  <thead>
-    <tr>
-      <th>Number</th>
-      <th>Province</th>
-      <th>Date Time</th>
-      <th>Car Plate</th>
-  </tr></thead>
-  <tbody id="tabledata">
-  </tbody>
-</table>
-
-<div class="ui modal" id="picture"> 
-    <i class="close icon"></i>
-    <div class="image content">
-    <img id="pic" width="100%" height="50%">
-    </div>
-</div>
-<br>
-#}
 {% endblock %}
 
 

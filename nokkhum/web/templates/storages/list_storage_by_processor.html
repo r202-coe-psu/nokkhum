@@ -15,16 +15,16 @@
 
 {% block content %}
   <div>
-    <div class="ui relaxed divided list">
+    <div class="ui divided items">
       {% for d in date_dirs %}
-        <div class="item">
-          <i class="Large folder middle aligned icon"></i>
-            {# <img src="/images/wireframe/image.png"> #}
-          <div class="content">
-            <a class="header" href="{{ url_for('storages.list_records_by_date', processor_id=processor.id, date_dir=d.name) }}">{{ d.name }}</a>
-            {# <div class="description">Updated 10 mins ago</div> #}
-          </div>
+      <div class="item">
+        <div class="ui Large image">
+          <i class="huge folder middle aligned icon"></i>
         </div>
+        <div class="middle aligned content">
+          <a class="header" href="{{ url_for('storages.list_records_by_date', processor_id=processor.id, date_dir=d.name) }}">{{ d.name }}</a>
+        </div>
+      </div>
       {% endfor %}
     </div>
   </div>
