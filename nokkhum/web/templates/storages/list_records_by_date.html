@@ -1,0 +1,31 @@
+{% extends '/storages/index.html' %}
+{% import '/base/html-renderer.html' as renderer %}
+
+{% block dashboard_title %}
+  Storage Camera: {{camera.name}}
+{% endblock %}
+
+{% block breadcrumbs %}
+  {{ super() }}
+  <i class="right angle icon divider"></i>
+  <a class="section" href="{{ url_for('storages.list_records_by_date', processor_id=processor.id, date_dir=date_dir) }}">{{ date_dir }}</a>
+{% endblock %}
+
+{% block content %}
+  <div>
+    <div class="ui items">
+      {% for f in file_list %}
+        <div class="item">
+          <div class="ui tiny image">
+            <img src="{{ url_for('storages.download', processor_id=processor.id, date_dir=date_dir, filename='{}-thumbnail.png'.format(f.stem)) }}"> 
+          </div>
+          <div class="middle aligned content">
+            {% set name = f.name[f.name.find('-')+1: f.name.rfind('-')]  %}
+            <a class="header" href="{{ url_for('storages.view_video', processor_id=processor.id, date_dir=date_dir, filename=f.name) }}">{{ name }}</a>
+            {# <div class="description">Updated 10 mins ago</div> #}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+{% endblock %}

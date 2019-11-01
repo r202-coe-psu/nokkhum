@@ -1,0 +1,20 @@
+{
+  "name": "yana",
+  "version": "0.0.1",
+  "description": "Yana front-end",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "bootstrap": "^3.3.6",
+    "brython": "^3.7.4",
+    "fomantic-ui-css": "^2.7.5",
+    "jquery": "^2.2.3",
+    "mathjax": "^2.7.5",
+    "npm": "^6.12.0",
+    "pa": "^0.1.1"
+  },
+  "devDependencies": {}
+}

@@ -1,0 +1,26 @@
+flask
+flask-mongoengine
+flask-login
+flask-allows
+authlib
+bcrypt
+blinker
+requests
+flask_restplus
+flask_marshmallow
+flask_jwt_extended
+loginpass
+
+brython
+Flask-uWSGI-WebSocket
+asyncio-nats-client
+
+psutil
+asyncio-nats-client
+
+# for processor
+opencv-python
+pillow
+# sklearn
+
+

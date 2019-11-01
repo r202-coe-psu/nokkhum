@@ -1,0 +1,126 @@
+version: '3'
+services:
+    mongodb:
+        image: mongo
+        container_name: nokkhum-mongodb
+        volumes:
+            - ../deployment/nokkhum/mongodb/data/db:/data/db
+            - /etc/localtime:/etc/localtime:ro
+        # restart: always
+        ports:
+           - 27017:27017
+        networks:
+            - default
+
+    nats-server:
+        image: nats
+        container_name: nokkhum-nats-server
+        volumes:
+            - /etc/localtime:/etc/localtime:ro
+        # restart: always
+        ports:
+            - 4222:4222
+            - 8222:8222
+        networks:
+            - default
+
+    web:
+        build: .
+        image: nokkhum-image
+        container_name: nokkhum-web
+        volumes:
+            - .:/app
+            - ../deployment:/deployment
+            - /etc/localtime:/etc/localtime:ro
+        ports:
+            - 8080:8080
+        links:
+            - mongodb
+            - nats-server
+        depends_on:
+            - nats-server
+            - mongodb
+        networks:
+            - default
+        # restart: always
+        environment:
+            NOKKHUM_SETTINGS: /app/nokkhum-development.cfg
+            FLASK_ENV: development
+            DEBUG: 1
+        # command: uwsgi --lazy-apps --ini /app/scripts/nokkhum-uwsgi-web.ini
+        command: nokkhum-web -d -H 0.0.0.0 -P 8080
+
+    streaming:
+        build: .
+        image: nokkhum-image
+        container_name: nokkhum-streaming
+        volumes:
+            - .:/app
+            - ../deployment:/deployment
+            - /etc/localtime:/etc/localtime:ro
+        ports:
+            - 8081:8081
+        links:
+            - mongodb
+            - nats-server
+        depends_on:
+            - nats-server
+            - mongodb
+        networks:
+            - default
+        environment:
+            NOKKHUM_SETTINGS: /app/nokkhum-development.cfg
+            FLASK_ENV: development
+            DEBUG: 1
+        # restart: always
+        # command: uwsgi --lazy-apps --ini /app/scripts/nokkhum-uwsgi-streaming.ini
+        command: nokkhum-streaming -d -H 0.0.0.0 -P 8081
+
+    controller:
+        build: .
+        image: nokkhum-image
+        container_name: nokkhum-controller
+        volumes:
+            - .:/app
+            - ../deployment:/deployment
+            - /etc/localtime:/etc/localtime:ro
+        links:
+            - mongodb
+            - nats-server
+        depends_on:
+            - nats-server
+            - mongodb
+        networks:
+            - default
+        restart: always
+        environment:
+            NOKKHUM_SETTINGS: /app/nokkhum-development.cfg
+        # command: nokkhum-controller
+        command: nokkhum-controller
+
+    compute:
+        build: .
+        image: nokkhum-image
+        container_name: nokkhum-compute
+        volumes:
+            - .:/app
+            - ../lpr:/lpr
+            - ../deployment:/deployment
+            - /etc/localtime:/etc/localtime:ro
+        links:
+            - nats-server
+        depends_on:
+            - nats-server
+            - controller
+        networks:
+            - default
+        restart: always
+        environment:
+            NOKKHUM_SETTINGS: /app/nokkhum-development.cfg
+        # command: nokkhum-compute
+        command: nokkhum-compute
+
+
+networks:
+    default:
+      

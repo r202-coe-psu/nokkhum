@@ -1,0 +1,4 @@
+#!/bin/bash
+
+NOKKHUM_SETTINGS=$(pwd)/nokkhum.cfg nokkhum-initdb
+

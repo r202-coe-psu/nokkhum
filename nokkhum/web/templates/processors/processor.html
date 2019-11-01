@@ -1,0 +1,93 @@
+{% extends '/dashboard/index-admin.html' %}
+
+{% block dashboard_title %}
+Resource Usage
+{% endblock %}
+
+
+{% block breadcrumbs %}
+  {{ super() }}
+  <i class="right angle icon divider"></i>
+  <a class="section" href="{{ url_for('processor.view') }}">Resource Usage</a>
+{% endblock %}
+
+{% block content %}
+<script type="text/python" id="test1" src="{{ url_for('static', filename='brython/resource_usage.py') }}"></script>
+<br>
+<div class="ui grid row">
+  <form action="{{ url_for('processor.processor_search') }}" method="GET">
+    <div class="ui category search">
+      <div class="ui icon input">
+        <input id="search" type="search" name="search" placeholder="Search Project Name..." class="validate search-field prompt">
+        <i class="search icon"></i>
+      </div>
+    </div>
+  </form>
+</div>
+<div class="ui grid">
+  <div class=" doubling one column row">
+  {% if projects %}
+    {% for project in projects %}
+      {% if project.status=="active" %}
+        <div class="ui sixteen wide column cards">
+          <div class="card" style="width:100%">
+            <div class="content">
+              <div class="header">
+                {{project.name}}
+              </div>
+              <div class="meta">
+                <span><i class="video icon"></i>{{project.camera_is_active()}}</span>
+              </div>
+            </div>
+            {% if project.camera_is_active()==0 %}
+              <div class="content">
+                <div class="ui red message" style="width:13%">
+                    No Camera
+                </div>   
+              </div> 
+            {% endif %}
+            <div class="extra content ui grid">
+                <div class=" doubling row four column">
+                  {%for camera in project.cameras%}
+                    {% if camera.status=="active" %}
+                      <div class="column">
+                      <div class="ui cards">
+                      <div class="card four column" style="min-height:100px">
+                          <div class="content">
+                            <div class="header">
+                              {{camera.name}} 
+                            </div>
+                            <div class="description">
+                              <div id='state{{camera.id}}'></div>
+                              <div id='cpu{{camera.id}}'></div>
+                              <div id='memory{{camera.id}}'></div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <br>
+                      </div>
+                    {% endif %}
+                  {% endfor %}
+              </div>
+            </div>
+          </div> 
+        </div> 
+      {% endif %}
+    {% endfor %}
+  {% else %}  
+  <div class="ui grid row" style="margin:0">
+    <div class="column">
+    <!-- <a class="ui primary button" href="{{ url_for('projects.create') }}" ><i class="folder icon"></i>Create Project</a> -->
+    <div class="ui horizontal divider"></div>
+    <div class="ui info message red">
+      <div class="header">
+        No project or You are not any project owner
+      </div>
+    </div> 
+  </div></div>
+    
+  {% endif %}
+  </div>
+</div> 
+{% endblock %}

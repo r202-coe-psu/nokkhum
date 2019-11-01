@@ -1,0 +1,136 @@
+{% extends '/projects/project.html' %}
+{% import '/base/html-renderer.html' as renderer %}
+
+{% block dashboard_title %}
+  Add Contributor: {{project.name}}
+{% endblock %}
+
+{% block breadcrumbs %}
+  {{ super() }}
+  <i class="right angle icon divider"></i>
+  <a class="section" href="{{ url_for('projects.add_contributor', project_id=project.id) }}">Add Contributor</a>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col">
+        </br>
+        <h3 class="ui header">Your Project Contributor</h3>
+        <table class="ui celled table">
+            <thead>
+                <tr>
+                    <th>Email</th>
+                    <th>Firstname</th>
+                    <th>Lastname</th>
+                    <th>Organization</th>
+                    <th>Role</th>
+                    <th>Manage</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in project.users %}
+                <tr>
+                    <td data-label="Email">{{ user.email }}</td>
+                    <td data-label="Firstname">{{ user.first_name }}</td>
+                    <td data-label="Lastname">{{ user.last_name }}</td>
+                    <td data-label="Organization">{{ user.organization }}</td>
+                    <td data-label="Role">
+                        {% if user == project.owner %}
+                            <p>Owner</p>
+                        {% endif %}
+                        {% if user != project.owner %}
+                            {% if user in project.assistant %}
+                                <p>Assistant</p>
+                            {% else %}
+                                <p>Member</p>
+                            {% endif %}
+                        {% endif %}
+                    </td>
+                    <td data-label="Manage">
+                        {% if user != project.owner %}
+                            {% if user not in project.assistant %}
+                                <a class="ui green circular primary icon button" data-tooltip="Grant to project assistant" href="{{ url_for('projects.add_assistant',project_id=project.id, user_id=user.id) }}"><i class="sort amount up icon"></i></a>
+                            {% endif %}
+                        <!-- {% if current_user == project.owner or 'admin' in current_user.roles %} -->
+                            <a id="btn-modal-{{user.id}}" class="ui red circular primary icon button" data-tooltip="Delete"><i class="trash icon"></i></a>
+                            <div class="ui modal" id="delete-notification-{{user.id}}">
+                                <i class="close icon"></i>
+                                <div class="header">
+                                Delete
+                                </div>
+                                <div class="image content">
+                                <div class="description">
+                                    Are you sure you want to delete : "{{ user.first_name }}"
+                                </div>
+                                </div>
+                                <div class="actions">
+                                <div class="ui red cancel button"><i class="remove icon"></i>No</div>
+                                <a class="ui green ok button" href="{{ url_for('projects.delete_contributor',project_id=project.id, user_id=user.id) }}"><i class="checkmark icon"></i>Yes</a>
+                                </div>
+                            </div>
+                        <!-- {% endif %} -->
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<div>
+    </br>
+    <h3>Add Contributor</h3>
+</div>
+{% if current_user == project.owner or 'admin' in current_user.roles or current_user in project.assistant %}
+<form action="{{ url_for('projects.add_contributor', project_id=project.id) }}" method="GET">
+    <select class="ui search dropdown" id="add-user" name="add-user" placeholder="Email">
+        {% for user in users %}
+            {% if not 'admin' in user.roles %}
+                {% if not user in project.users %}
+                    <option value="{{ user.id }}">{{ user.email }}</option>
+                {% endif %}
+            {% endif %}
+        {% endfor %}
+    </select>
+    <input type="submit" class="ui primary button" value="Submit">
+    <a class="ui button" href="{{ url_for('projects.index') }}">Back</a>
+    
+</form>
+{% endif %}
+<!-- <form action="{{ url_for('projects.add_contributor', project_id=project.id) }}" method="GET">
+    <div class="ui form">
+        <div class="field">
+            <label>Add contributor</label>
+            <div class="ui selection dropdown">
+                <input name="add-user" type="hidden">
+                <i class="dropdown icon"></i>
+                <div class="default text">User</div>
+                <div class="menu">
+                    {% for user in users %}
+                        <div class="item" data-value="{{ user.id }}">{{ user.first_name }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</form> -->
+{% endblock %}
+
+{% block additional_js %}
+<script src="{{ url_for('static', filename='node_modules/fomantic-ui-css/components/form.min.js') }}"></script>
+  <script type="text/javascript">
+  $('#add-user')
+  .dropdown({
+    ignoreDiacritics: true,
+    sortSelect: true,
+    fullTextSearch:'exact'
+  });  
+  </script>
+  <script type="text/javascript">
+    {% for user in project.users %}
+          $('#btn-modal-{{user.id}}').click(function() {
+            $('#delete-notification-{{user.id}}').modal('show');
+          });
+    {% endfor %}
+    </script>
+{% endblock %}

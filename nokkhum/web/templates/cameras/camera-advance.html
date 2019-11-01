@@ -1,0 +1,93 @@
+{% extends '/projects/project.html' %}
+{% import '/base/html-renderer.html' as renderer %}
+
+{% block dashboard_title %}
+Camera: {{camera.name}}
+{% endblock %}
+
+{% block breadcrumbs %}
+{{ super() }}
+<i class="right angle icon divider"></i>
+<a class="section" href="{{ url_for('cameras.view', project_id=project.id, camera_id=camera.id) }}">{{camera.name}}</a>
+{% endblock %}
+
+{% block content %}
+<input id="streaming-url" type="hidden" value="{{ config.get('YANA_LPRSTREAMING_URL', 'localhost') }}">
+<script type="text/python" id="test1" src="{{ url_for('static', filename='brython/camera.py') }}"></script>
+
+<div class="ui grid" style="margin-top: 1em;">
+  <div class="twelve wide centered column">
+    <div class="ui segment column">
+      <div class="row">
+        <div class="ui stackable two column grid">
+          <div class="black column">
+            <img src="{{ camera.get_streaming_url() }}" style="overflow: hidden" width="100%">
+          </div>
+          <div class="black column">
+            <img src="{{url_for('static',filename='images/Sedan2.jpg')}}" style="object-fit: cover; overflow: hidden" width="100%" height="90%">
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="ui stackable two column grid">
+          <div class="black column">
+            <div class="ui stackable three column grid">
+              <div class="ui white massive compact message"
+                style="margin-left: auto; margin-right: auto; width: 100%; border-style:double ;  border-width: 10px;">
+                <div class="column" align="center">
+                  <b id="platelabel-number"></b>
+                </div>
+                <div class="column" align="center">
+                  <span id="platelabel-province"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="black column">
+            <div class="row get-id" id={{camera.id}}>
+              <div>
+                <br>
+                <span class="ui large text">Car Type : Sedan </span>
+              </div>
+              </br>
+              <span class="ui large text">Date Time : <span id="time"></span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<h2>Detected Plate</h2>
+<table id="processtable" class="ui celled striped table">
+  <thead>
+    <tr>
+      <th>Number</th>
+      <th>Province</th>
+      <th>Date Time</th>
+      <th>Car Plate</th>
+    </tr>
+  </thead>
+  <tbody id="tabledata">
+  </tbody>
+</table>
+
+<div class="ui modal" id="picture">
+  <i class="close icon"></i>
+  <div class="image content">
+    <img id="pic" width="100%" height="50%">
+  </div>
+</div>
+<br>
+{% endblock %}
+
+
+{% block additional_js %}
+<script src="{{ url_for('static', filename='node_modules/fomantic-ui-css/components/form.min.js') }}"></script>
+<script type="text/javascript">
+  function modal_picture(data) {
+    $('#picture').modal('show');
+    document.getElementById("pic").src = data;
+  }
+</script>
+{% endblock %}

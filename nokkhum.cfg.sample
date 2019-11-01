@@ -1,0 +1,18 @@
+MONGODB_DB = 'nokkumdb'
+MONGODB_HOST = 'nokkum-mongodb'
+SECRET_KEY = 'nokkum-secretkey' # change it when deploy web
+
+
+NOKKHUM_MESSAGE_NATS_HOST= 'nokkum-nats-server:4222'
+
+
+NOKKHUM_COMPUTE_INTERFACE = 'eth0'
+
+NOKKHUM_PROCESSOR_RECORDER_PATH = '/tmp'
+
+NOKKHUM_STREAMING_URL = 'http://localhost:8081'
+
+NOKKHUM_PROCESSOR_CMD = 'vide-recorder'
+
+DAIRY_TIME_TO_REMOVE = '13:25'
+DUE_DATE = 1

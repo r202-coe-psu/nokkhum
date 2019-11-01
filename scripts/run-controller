@@ -1,0 +1,3 @@
+#!/bin/sh
+
+NOKKHUM_SETTINGS=$(pwd)/nokkhum.cfg nokkhum-controller

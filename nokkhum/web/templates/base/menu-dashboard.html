@@ -1,0 +1,15 @@
+
+<div class="item">
+  <a href="{{ url_for('accounts.index') }}"><span class="white-text name">{{ current_user.first_name }} {{ current_user.last_name }}</span></a><br/>
+  <a href="{{ url_for('accounts.index') }}"><span class="white-text email">{{ current_user.email }}</span></a>
+</div>
+
+<a class="item" href="{{ url_for('dashboard.index') }}"><i class="icon dashboard"></i>Dashboard</a>
+  <!-- {# For admin menu#} -->
+  <a class="item" href="{{ url_for('processor.view')}}"><i class="icon cogs"></i>Resource Usage</a>
+  <!-- {# For non admin menu #} -->
+<a class="item" href="{{ url_for('projects.index') }}"><i class="icon folder"></i>Projects</a>
+<a class="item" href="{{ url_for('accounts.index') }}"><i class="icon user"></i>Account</a>
+<a class="item" href="{{ url_for('accounts.logout') }}"><i class="icon sign out"></i>Logout</a>
+
+

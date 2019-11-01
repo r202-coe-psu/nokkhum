@@ -1,0 +1,107 @@
+version: '3'
+services:
+    mongodb:
+        image: mongo
+        container_name: nokkhum-mongodb
+        volumes:
+            - ../deployment/nokkhum/mongodb/data/db:/data/db
+            - /etc/localtime:/etc/localtime:ro
+        restart: always
+        networks:
+            - default
+
+    nats-server:
+        image: nats
+        container_name: nokkhum-nats-server
+        volumes:
+            - /etc/localtime:/etc/localtime:ro
+        restart: always
+        networks:
+            - default
+
+    web:
+        build: .
+        image: nokkhum-image
+        container_name: nokkhum-web
+        volumes:
+            - ../deployment:/deployment
+            - /etc/localtime:/etc/localtime:ro
+        ports:
+            - 8080:9000
+        links:
+            - mongodb
+            - nats-server
+        depends_on:
+            - nats-server
+            - mongodb
+        networks:
+            - default
+        restart: always
+        environment:
+            YANA_SETTINGS: /app/nokkhum-production.cfg
+        command: uwsgi --lazy-apps --ini /app/scripts/nokkhum-uwsgi-web.ini
+
+    streaming:
+        build: .
+        image: nokkhum-image
+        container_name: nokkhum-streaming
+        volumes:
+            - ../deployment:/deployment
+            - /etc/localtime:/etc/localtime:ro
+        ports:
+            - 8081:9000
+        links:
+            - mongodb
+            - nats-server
+        depends_on:
+            - nats-server
+            - mongodb
+        networks:
+            - default
+        restart: always
+        command: uwsgi --lazy-apps --ini /app/scripts/nokkhum-uwsgi-streaming.ini
+
+    controller:
+        build: .
+        image: nokkhum-image
+        container_name: nokkhum-controller
+        volumes:
+            - ../deployment:/deployment
+            - /etc/localtime:/etc/localtime:ro
+        links:
+            - mongodb
+            - nats-server
+        depends_on:
+            - nats-server
+            - mongodb
+        networks:
+            - default
+        restart: always
+        environment:
+            YANA_SETTINGS: /app/nokkhum-production.cfg
+        command: nokkhum-controller
+
+    compute:
+        build: .
+        image: nokkhum-image
+        container_name: nokkhum-compute
+        volumes:
+            - ../lpr:/lpr
+            - ../deployment:/deployment
+            - /etc/localtime:/etc/localtime:ro
+        links:
+            - nats-server
+        depends_on:
+            - nats-server
+            - controller
+        networks:
+            - default
+        restart: always
+        environment:
+            YANA_SETTINGS: /app/nokkhum-production.cfg
+        command: nokkhum-compute
+
+
+networks:
+    default:
+      

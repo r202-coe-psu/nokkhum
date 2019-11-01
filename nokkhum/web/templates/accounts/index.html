@@ -1,0 +1,31 @@
+{% extends '/base/default-dashboard.html' %}
+
+{% block dashboard_title %}
+Profile
+{% endblock %}
+
+{% block breadcrumbs %}
+<a href="{{ url_for('accounts.index') }}" class="section">Accounts</a>
+{% endblock %}
+
+
+{% block content %}
+<div class="ui container">
+  <div class="ui segment">
+    <h2 class="ui header">Profile <a class="btn-floating btn-large waves-effect waves-light" href="{{ url_for('accounts.edit_profile') }}" title='Edit profile.'><i class="edit icon"></i></a>
+    </h2>
+    <div class="ui grid two column">
+      <div class="column">
+        {{ current_user.first_name }}
+      </div>
+      <div class="column">
+        {{ current_user.last_name }}
+      </div>
+      <div class="column">
+        Organization: {{ current_user.organization }}
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

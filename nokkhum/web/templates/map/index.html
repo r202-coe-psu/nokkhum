@@ -1,0 +1,107 @@
+{% extends '/base/base-map.html' %}
+{% block body %}
+    <div id="mapbrython" class="map"><div id="popup"></div></div>
+
+  <script type="text/javascript">
+    function get_feature_points(points, name, image_path)
+    {
+	var iconFeature = new ol.Feature({
+	    geometry: new ol.geom.Point(ol.proj.fromLonLat(points)),
+		name: name,
+		image_path: image_path
+	});
+	var iconStyle = new ol.style.Style({
+  	    image: new ol.style.Icon({
+		anchor: [0.5, 25],
+    		anchorXUnits: 'fraction',
+    		anchorYUnits: 'pixels',
+		src: '/static/images/marker2.png'
+  	    })
+	});
+    	iconFeature.setStyle(iconStyle);
+	return iconFeature;
+    }
+    function get_content(feature){
+	var content = (`Camera: ${feature.get("name")} </br> <img src="${feature.get("image_path")}" height="150" width="250">`); 
+	return content;
+    }
+    function get_map(name, iconFeature)
+    {
+	// iconFeature = get_feature_points({{lon_lat}});
+	var vectorSource = new ol.source.Vector({
+  	    features: iconFeature
+	});
+
+	var vectorLayer = new ol.layer.Vector({
+  	    source: vectorSource
+	});
+      	var map = new ol.Map({
+            target: name,
+            layers: [
+        	new ol.layer.Tile(
+		    {source: new ol.source.OSM()
+          	}),
+		vectorLayer],
+            view: new ol.View({
+		    center: ol.proj.fromLonLat({{center}}),
+		zoom: {{ zoom }}
+            })
+      	});
+	var element = document.getElementById('popup');	
+	var popup = new ol.Overlay({
+  	    element: element,
+  	    positioning: 'bottom-center',
+  	    stopEvent: false,
+  	    offset: [0, -20]
+	});
+	map.addOverlay(popup);
+
+	map.on('click', function(evt) {
+		
+	var feature = map.forEachFeatureAtPixel(evt.pixel,
+	    function(feature) {
+	      return feature;
+	    });
+	 if (feature) {
+	    var coordinates = feature.getGeometry().getCoordinates();
+	    popup.setPosition(coordinates);
+	    $(element).popover({
+	      placement: 'top',
+	      html: true,
+	      content: get_content(feature)
+	    });
+	    $(element).attr("data-content",get_content(feature));	 
+	    $(element).popover('show');
+	  } else {
+	    $(element).popover('destroy');
+	  }
+	});
+	map.on('pointermove', function(e) {
+	if (e.dragging) {
+	    $(element).popover('destroy');
+	    return;
+	  }
+	  var pixel = map.getEventPixel(e.originalEvent);
+	  var hit = map.hasFeatureAtPixel(pixel);
+	  document.getElementById(map.getTarget()).style.cursor = hit ? 'pointer' : '';
+
+	});
+	return map;
+    }
+
+  </script>
+<script type="text/python">
+from browser import alert, window
+from javascript import JSON
+get_feature_points = window.get_feature_points
+get_map = window.get_map
+icon_feature = list()
+lon_lat = {{lon_lat |safe}}
+for coord in lon_lat:
+    vector=get_feature_points((coord.get('locations')[0], coord.get('locations')[1]), coord.get('name'), coord.get('image_path'))
+    icon_feature.append(vector)
+
+bmap = get_map('mapbrython', icon_feature)
+
+</script>
+{% endblock %}

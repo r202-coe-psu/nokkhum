@@ -1,0 +1,26 @@
+{% extends "/base/default-page.html" %}
+{% import '/base/html-renderer.html' as renderer %}
+
+{% block content %}
+<div class="ui container">
+  <div class="ui segment">
+    <h1>Register</h1>
+    <form method="POST" class="ui form">
+      {{ form.csrf_token }}
+      {{ renderer.render_field(form.username) }}
+      {{ renderer.render_field(form.email) }}
+      {{ renderer.render_field(form.organization) }}
+      <div class="two fields">
+        {{ renderer.render_field(form.password) }}
+        {{ renderer.render_field(form.password_conf) }}
+      </div>
+      <div class="two fields">
+        {{ renderer.render_field(form.first_name) }}
+        {{ renderer.render_field(form.last_name) }}
+      </div>
+      {{ renderer.render_checkbox(form.agree_term) }}
+      <button class="ui button primary" type="submit">Register</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

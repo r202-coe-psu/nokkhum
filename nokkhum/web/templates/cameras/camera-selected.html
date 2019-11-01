@@ -1,0 +1,57 @@
+{% extends '/projects/project.html' %}
+{% import '/base/html-renderer.html' as renderer %}
+
+{% block dashboard_title %}
+Grid View
+{% endblock %}
+
+{% block breadcrumbs %}
+{{ super() }}
+<i class="right angle icon divider"></i>
+<div class="section active">Grid View</div>
+{% endblock %}
+
+{% block content %}
+
+<input id="streaming-url" type="hidden" value="{{ config.get('YANA_LPRSTREAMING_URL', 'localhost') }}">
+
+<script type="text/python" src="{{ url_for('static', filename='brython/camera_selected.py') }}"></script>
+<div class="ui divider"></div>
+
+<div class="ui grid lp-viewer" id="{{project.id}}">
+  <div class="fourteen wide centered column">
+      <div class="ui stackable celled two column grid">
+        {% for camera in camera_list %}
+        <div class="black column">
+          <div class="row">
+            <div class="column" align="middle">
+             <div class="ui container" style="height:220px;">
+                <img src="{{ camera.get_streaming_url() }}" width="80%" height="200px" style=" object-fit: cover;">
+              </div>
+            </div>
+          </div>
+          
+          <div class="ui container">
+            <div class="row">
+              Camera: {{camera.name}}
+            </div>
+            <div class="row">
+              License Plate:
+              <span id="platelabel-number-{{camera.id}}"></span>
+              <span id="platelabel-province-{{camera.id}}"></span>
+            </div>
+            <div class="row">Date Time: <span id="time-{{camera.id}}"></span></div>
+          </div>
+        </div>
+        {% endfor %}
+
+        {% for i in range(0,4-(camera_list|length)) %}
+        <div class="black column" align="middle" style="margin:0px;">
+          <i class="video  massive icon" style="margin:15%"></i>
+        </div>
+        {% endfor %}
+        
+      </div>
+    </div>
+</div>
+{% endblock %}
