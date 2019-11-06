@@ -130,7 +130,7 @@ class ProcessorManager:
                         self.thread_pool[key].running = False
 
                     while self.output[key].qsize() > 0:
-                        result += (self.output[key].pop() + '\n')
+                        result += '{}\n'.format(self.output[key].get())
 
                 if len(result) == 0:
                     result = 'Process exist with Unknown Message'
