@@ -13,9 +13,6 @@ Grid View
 
 {% block content %}
 
-<input id="streaming-url" type="hidden" value="{{ config.get('YANA_LPRSTREAMING_URL', 'localhost') }}">
-
-<script type="text/python" src="{{ url_for('static', filename='brython/camera_selected.py') }}"></script>
 <div class="ui divider"></div>
 
 <div class="ui grid lp-viewer" id="{{project.id}}">
@@ -35,12 +32,6 @@ Grid View
             <div class="row">
               Camera: {{camera.name}}
             </div>
-            <div class="row">
-              License Plate:
-              <span id="platelabel-number-{{camera.id}}"></span>
-              <span id="platelabel-province-{{camera.id}}"></span>
-            </div>
-            <div class="row">Date Time: <span id="time-{{camera.id}}"></span></div>
           </div>
         </div>
         {% endfor %}
