@@ -11,7 +11,7 @@
     "bootstrap": "^3.3.6",
     "brython": "^3.7.4",
     "fomantic-ui-css": "^2.7.5",
-    "jquery": "^2.2.3",
+    "jquery": "^3.4.1",
     "mathjax": "^2.7.5",
     "npm": "^6.12.0",
     "pa": "^0.1.1"
