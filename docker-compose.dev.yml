@@ -104,7 +104,6 @@ services:
         container_name: nokkhum-compute
         volumes:
             - .:/app
-            - ../lpr:/lpr
             - ../deployment:/deployment
             - /etc/localtime:/etc/localtime:ro
         links:

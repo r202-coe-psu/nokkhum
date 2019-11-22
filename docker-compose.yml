@@ -86,7 +86,6 @@ services:
         image: nokkhum-image
         container_name: nokkhum-compute
         volumes:
-            - ../lpr:/lpr
             - ../deployment:/deployment
             - /etc/localtime:/etc/localtime:ro
         links:
