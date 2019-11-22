@@ -15,14 +15,28 @@
   <div>
     <div class="ui divided items">
       {% for f in file_list %}
+        {%- if f.name.startswith('_') %}
+          {% set image_style = ' disabled' %}
+        {% else %}
+          {% set image_style = '' %}
+        {%- endif %}
         <div class="item">
-          <div class="ui tiny image">
-            <img src="{{ url_for('storages.download', processor_id=processor.id, date_dir=date_dir, filename='{}-thumbnail.png'.format(f.stem)) }}"> 
+          <div class="ui tiny image{{ image_style }}">
+            {%- if not f.name.startswith('_') %}
+              <img src="{{ url_for('storages.download', processor_id=processor.id, date_dir=date_dir, filename='{}-thumbnail.png'.format(f.stem)) }}">
+            {% else %}
+              <img src="{{ url_for('storages.download', processor_id=processor.id, date_dir=date_dir, filename='{}-thumbnail.png'.format(f.stem[1:])) }} ">
+            {%- endif %}
           </div>
           <div class="middle aligned content">
             {% set name = f.name[f.name.find('-')+1: f.name.rfind('-')]  %}
-            <a class="header" href="{{ url_for('storages.view_video', processor_id=processor.id, date_dir=date_dir, filename=f.name) }}">{{ name }}</a>
-            {# <div class="description">Updated 10 mins ago</div> #}
+            {%- if not f.name.startswith('_') %}
+              <a class="header" href="{{ url_for('storages.view_video', processor_id=processor.id, date_dir=date_dir, filename=f.name) }}">{{ name }}</a>
+              {# <div class="description">Updated 10 mins ago</div> #}
+            {% else %}
+              <div class="header">{{ name }}</div>
+              <div class="description">Processing</div>
+            {%- endif %}
           </div>
         </div>
       {% endfor %}

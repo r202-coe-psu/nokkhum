@@ -5,7 +5,9 @@ from flask import (Blueprint,
                    request,
                    send_file,
                    make_response,
-                   current_app)
+                   current_app,
+                   abort
+                   )
 
 from flask_login import login_required, current_user
 import pathlib
@@ -52,7 +54,7 @@ def list_records_by_date(processor_id, date_dir):
     root = get_storage_path()
     processor_path = root / processor_id / date_dir
     file_list = [p for p in processor_path.iterdir()\
-            if p.suffix != '.png' and '_' != p.name[0]]
+            if p.suffix != '.png']
     file_list.sort(reverse=True)
 
     # get processor by id, require processing vision
@@ -81,6 +83,9 @@ def view_video(processor_id, date_dir, filename):
 @module.route('/processors/<processor_id>/<date_dir>/<filename>')
 @login_required
 def download(processor_id, date_dir, filename):
+
+    if filename.startswith('_'):
+        abort(404)
 
     root = get_storage_path()
     media_path = root / processor_id / date_dir / filename
