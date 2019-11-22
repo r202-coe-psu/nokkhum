@@ -29,8 +29,4 @@ WORKDIR /app
 RUN python3 setup.py develop
 RUN npm install --prefix nokkhum/web/static
 
-ENV NOKKHUM_SETTINGS=/app/yana-production.cfg
-
-
-
-
+ENV NOKKHUM_SETTINGS=/app/nokkhum-production.cfg
