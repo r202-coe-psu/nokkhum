@@ -1,9 +1,9 @@
 MONGODB_DB = 'nokkumdb'
-MONGODB_HOST = 'nokkum-mongodb'
-SECRET_KEY = 'nokkum-secretkey' # change it when deploy web
+MONGODB_HOST = 'nokkhum-mongodb'
+SECRET_KEY = 'nokkhum-secretkey' # change it when deploy web
 
 
-NOKKHUM_MESSAGE_NATS_HOST= 'nokkum-nats-server:4222'
+NOKKHUM_MESSAGE_NATS_HOST= 'nokkhum-nats-server:4222'
 
 
 NOKKHUM_COMPUTE_INTERFACE = 'eth0'
