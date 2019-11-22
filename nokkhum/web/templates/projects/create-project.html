@@ -21,6 +21,7 @@
         <div class="field">
           {{ renderer.render_field(form.name) }}
         </div>
+        {#
         <div class="field">
           <div class="ui checkbox" onclick="showLineNotifyToken()" >
             <div class="ui large green label">
@@ -29,6 +30,7 @@
             </div>
           </div>
         </div>
+
         <div id="line_notify_token" style="display:none">
           {{ renderer.render_field(form.line_notify_token) }}
           <div class="field">
@@ -48,6 +50,7 @@
             }
           }
         </script>
+        #}
         <button class="ui submit primary button" type="submit">Confirm</button>
         <a class="ui button" href="{{ url_for('projects.index') }}">Back</a>
       </div>
