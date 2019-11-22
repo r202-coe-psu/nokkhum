@@ -38,7 +38,7 @@ services:
             - default
         restart: always
         environment:
-            YANA_SETTINGS: /app/nokkhum-production.cfg
+            NOKKHUM_SETTINGS: /app/nokkhum-production.cfg
         command: uwsgi --lazy-apps --ini /app/scripts/nokkhum-uwsgi-web.ini
 
     streaming:
@@ -78,7 +78,7 @@ services:
             - default
         restart: always
         environment:
-            YANA_SETTINGS: /app/nokkhum-production.cfg
+            NOKKHUM_SETTINGS: /app/nokkhum-production.cfg
         command: nokkhum-controller
 
     compute:
@@ -97,7 +97,7 @@ services:
             - default
         restart: always
         environment:
-            YANA_SETTINGS: /app/nokkhum-production.cfg
+            NOKKHUM_SETTINGS: /app/nokkhum-production.cfg
         command: nokkhum-compute
 
 
