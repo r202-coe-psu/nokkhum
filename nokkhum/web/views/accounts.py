@@ -18,51 +18,9 @@ def login():
     if current_user.is_authenticated:
         return redirect(url_for('dashboard.index'))
 
-    form = forms.accounts.LoginForm()
-    if not form.validate_on_submit():
-        print(form.errors)
-        return render_template('/accounts/login.html',
-                               form=form)
+    return render_template('/accounts/login.html')
 
-    print(form.data)
-    user = models.User.objects(
-            email=form.email.data).first()
-    if not user:
-        return render_template('/accounts/login.html',
-                               form=form,
-                               not_user_error=True)
-
-    if not user.check_password(form.password.data):
-        return render_template('/accounts/login.html',
-                               form=form,
-                               invalid_pass_error=True)
-
-    login_user(user, remember=True)
-
-    return redirect(url_for('dashboard.index'))
-
-
-@module.route('/register', methods=('GET', 'POST'))
-def register():
-    form = forms.accounts.RegisterForm()
-    if models.User.objects(email=form.email.data).first():
-        return render_template('/accounts/register.html', form=form)
-
-    if not form.validate_on_submit():
-        return render_template('/accounts/register.html', form=form)
-
-    pass_hash = generate_password_hash(form.password.data, "sha256")
-    user = models.User(email=form.email.data,
-                       password=pass_hash,
-                       organization=form.organization.data,
-                       first_name=form.first_name.data,
-                       last_name=form.last_name.data,
-                       created_date=datetime.datetime.now(),
-                       updated_date=datetime.datetime.now())
-    user.save()
-    return render_template('/accounts/register_success.html', form=form)
-
-
+    
 @module.route('/logout')
 @login_required
 def logout():
