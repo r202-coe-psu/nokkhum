@@ -51,7 +51,6 @@ class ComputeNodeServer:
             respons = self.processor_controller.start_processor(
                     data['processor_id'],
                     data['attributes'])
-            logger.debug('start processor: {}'.format( data['processor_id']))
         elif action == 'stop':
             respons = self.processor_controller.stop_processor(
                     data['processor_id'])
