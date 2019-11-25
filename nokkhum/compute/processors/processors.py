@@ -43,7 +43,6 @@ class Processor:
         args = self.args
 
         logger.debug(f'Start processor: {args}')
-        logger.debug(f'Attributes: {data}')
 
         self.process = subprocess.Popen(args, shell=False,
                                         stdin=subprocess.PIPE,
@@ -52,6 +51,8 @@ class Processor:
         data = attributes
         data['action'] = 'start'
         self.write(data)
+        
+        logger.debug(f'Attributes: {data}')
 
     def stop(self):
         data = dict(action='stop')
