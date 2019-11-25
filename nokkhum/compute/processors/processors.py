@@ -41,7 +41,10 @@ class Processor:
         #         attributes['video_url']
         #         ]
         args = self.args
-        logger.debug('args {args}')
+
+        logger.debug(f'Start processor: {args}')
+        logger.debug(f'Attributes: {data}')
+
         self.process = subprocess.Popen(args, shell=False,
                                         stdin=subprocess.PIPE,
                                         stdout=subprocess.PIPE,
@@ -49,8 +52,6 @@ class Processor:
         data = attributes
         data['action'] = 'start'
         self.write(data)
-        logger.debug('Start processor: {}'.format(str(args)))
-        logger.debug('Attributes: {}'.format(str(data)))
 
     def stop(self):
         data = dict(action='stop')
