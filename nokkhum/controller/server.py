@@ -154,7 +154,7 @@ class ControllerServer:
                 result = await self.nc.request(
                         topic,
                         json.dumps(command).encode(),
-                        timeout=60)
+                        timeout=120)
             except Exception as e:
                 logger.exception(e)
                 continue
