@@ -56,7 +56,7 @@ class Processor:
         data = dict(action='stop')
         self.write(data)
         try:
-            self.process.wait(timeout=1)
+            self.process.wait(timeout=60)
         except Exception as e:
             logger.exception(e)
 

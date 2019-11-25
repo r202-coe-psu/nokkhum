@@ -153,7 +153,7 @@ class ComputeNodeServer:
                 response = await self.nc.request(
                         'nokkhum.compute.report',
                         json.dumps(data).encode(),
-                        timeout=5
+                        timeout=10
                         )
                 self.is_register = True
                 data = json.loads(response.data.decode())
