@@ -21,15 +21,15 @@ class ProcessorController:
         '''
         logger.debug('List Processors')
 
-        respons = {'success': False}
+        response = {'success': False}
         processor_list = list()
         for process_name in self.processor_manager.pool:
             processor_list.append(process_name)
 
-        respons['success'] = True
-        respons['result'] = processor_list
+        response['success'] = True
+        response['result'] = processor_list
 
-        return respons
+        return response
 
     def get_processor_attributes(self, processor_id):
         '''
@@ -37,43 +37,43 @@ class ProcessorController:
         '''
         logger.debug('Get Processors Attributes')
 
-        respons = {'success': False}
+        response = {'success': False}
         try:
             processor_process = self.processor_manager.get(processor_id)
             if processor_process is None:
                 logger.debug('processor id: %s is not available' %
                              (processor_id))
-                respons['comment'] = 'processor id: %s is not available' % (
+                response['comment'] = 'processor id: %s is not available' % (
                     processor_id)
-                return respons
+                return response
 
-            respons['success'] = True
-            respons['result'] = processor_process.get_attributes()
+            response['success'] = True
+            response['result'] = processor_process.get_attributes()
 
         except Exception as e:
             logger.exception(e)
-            respons['comment'] = 'Get Processor Attribute Error'
+            response['comment'] = 'Get Processor Attribute Error'
 
-        return respons
+        return response
 
     def start_processor(self, processor_id, attributes):
         '''
         start to add processor
         '''
-        respons = {'success': False,
-                   'action': 'start',
-                   'processor_id': processor_id}
+        response = {'success': False,
+                    'action': 'start',
+                    'processor_id': processor_id}
         try:
             is_available = self.processor_manager.get(processor_id)
 
             if is_available is not None:
-                respons['comment'] = (
+                response['comment'] = (
                         'processor id: {} cannot start ' +
                         'because is available').format(processor_id)
                 logger.debug(
                     'processor id: {} can not start, it is available'.format(
                         processor_id))
-                return respons
+                return response
 
             logger.debug('Begin to start processor')
             logger.debug('processor_id: %s' % processor_id)
@@ -87,44 +87,53 @@ class ProcessorController:
                 processor_id)
             self.processor_manager.add(processor_id, processor_process)
 
-            respons['success'] = True
+            response['success'] = True
 
             logger.debug('Processor id: %s started' % (processor_id))
         except Exception as e:
             logger.exception(e)
-            respons['comment'] = 'Add Processor Error'
+            response['comment'] = 'Add Processor Error'
             logger.debug('Processor name: %s started error' % (processor_id))
 
-        return respons
+        return response
 
     def stop_processor(self, processor_id):
         '''
         stop processing and remove from processor pool
         '''
 
-        respons = {'success': False,
-                   'action': 'stop',
-                   'processor_id': processor_id}
+        response = {'success': False,
+                    'action': 'stop',
+                    'processor_id': processor_id}
 #        logger.debug('pool: %s'%processor_manager.pool)
         try:
             processor_process = self.processor_manager.get(processor_id)
             if processor_process is None:
                 logger.debug('processor id: %s is not available' %
                              (processor_id))
-                respons['comment'] = 'processor id: %s is not available' % (
+                response['comment'] = 'processor id: %s is not available' % (
                     processor_id)
-                return respons
+                return response
 #            logger.debug('try to stop: %s'%processor_process)
             processor_process.stop()
 
-            respons['success'] = True
+            comment = ''
+            for line in processor_process.process.stdout:
+                comment += line.decode('utf-8')
+            for line in processor_process.process.stderr:
+                comment += line.decode('utf-8')
+            if len(comment) > 0:
+                logger.debug(f'comment: \n{comment}')
+                response['comment'] = comment
+
+            response['success'] = True
             self.processor_manager.delete(processor_id)
             logger.debug('Processor name: %s deleted' % (processor_id))
         except Exception as e:
             logger.exception(e)
-            respons['comment'] = 'Delete Processor Error'
+            response['comment'] = 'Delete Processor Error'
 
-        return respons
+        return response
 
     def stop_all(self):
 
