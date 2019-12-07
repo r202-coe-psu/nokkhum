@@ -14,7 +14,7 @@ class ResultController:
         self.path = pathlib.Path(self.settings['NOKKHUM_PROCESSOR_RECORDER_PATH'])
 
     def expired_video_records(self):
-        # logger.debug('check expired')
+        logger.debug('start remove expired records')
 
         processors = models.Processor.objects()
         for processor in processors:
@@ -27,10 +27,10 @@ class ResultController:
             expired_date = datetime.datetime.combine(expired_date,
                                                      datetime.time(0, 0, 0))
 
-            files_path = self.path / str(processor_id)
+            files_path = self.path / str(processor.id)
             if not files_path.exists() and not files_path.is_dir():
                 return
-            logger.debug('start remove file')
+            logger.debug(f'start remove file {file_path}')
             for dir_file in files_path.iterdir():
                 year = int(dir_file.name[0:4])
                 month = int(dir_file.name[4:6])

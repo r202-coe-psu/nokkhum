@@ -63,17 +63,18 @@ class ControllerServer:
 
     async def process_expired_controller(self):
         while self.running:
+            logger.debug('start process expired data')
             time_check = self.settings['DAIRY_TIME_TO_REMOVE']
             hour, minute = time_check.split(':')
             date = datetime.date.today()
             time = datetime.time(int(hour), int(minute), 0)
             time_set = datetime.datetime.combine(date, time)
             time_to_check = time_set - datetime.datetime.now()
-            # logger.debug('before')
-            # logger.debug(f'{time_to_check.seconds}')
+
+            # logger.debug(f'time to sleep {time_to_check.seconds}')
             await asyncio.sleep(time_to_check.seconds)
-            logger.debug('start check data expired')
             self.command_controller.expired_processor_commands()
+
             await asyncio.sleep(1)
             self.result_controller.expired_video_records()
 
