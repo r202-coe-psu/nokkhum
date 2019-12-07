@@ -37,9 +37,6 @@ class ResultController:
                 day = int(dir_file.name[6:8])
                 # logger.debug(f'{dir_file.name}')
 
-                logger.debug(f'{datetime.datetime(year, month, day)}')
-
-                logger.debug(f'{expired_date}')
                 if datetime.datetime(year, month, day) > expired_date:
                     # logger.debug('not expired')
                     continue
