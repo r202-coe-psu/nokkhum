@@ -1,7 +1,7 @@
 from .users import User
 from .oauth2 import OAuth2Token
 from .projects import Project
-from .cameras import Camera
+from .cameras import Camera, CameraBrand, CameraModel
 from .compute_nodes import (MachineSpecification,
                             CPUUsage,
                             MemoryUsage,
@@ -29,7 +29,9 @@ __all__ = [User,
            Processor,
            ProcessorReport,
            ProcessorCommand,
-           FailRunningProcessor
+           FailRunningProcessor,
+           CameraBrand,
+           CameraModel
            ]
 
 

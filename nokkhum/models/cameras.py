@@ -2,6 +2,12 @@ import mongoengine as me
 from flask import current_app
 
 
+class CameraModel(me.EmbeddedDocument):
+    name = me.StringField(required=True)
+    format_parameter = me.ListField(me.StringField)
+    rtsp_url = me.StringField(required=True)
+
+
 class Camera(me.Document):
     meta = {'collection': 'cameras'}
 
@@ -25,3 +31,11 @@ class Camera(me.Document):
     def get_project(self):
         from . import projects
         return projects.Project.objects(cameras__contains=self).first()
+
+
+class CameraBrand(me.Document):
+    meta = {'collection' : 'camera_brands'}
+
+    name = me.StringField(required=True)
+    camera_models = me.ListField(me.EmbeddedDocumentField(CameraModel))
+

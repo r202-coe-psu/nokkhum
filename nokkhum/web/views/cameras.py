@@ -185,3 +185,41 @@ def stop_lpr_process(camera_id):
     response = Response()
     response.status_code = 200
     return response
+
+
+# @module.route('/init_camera', methods=['GET', 'POST'])
+# @login_required
+# def init_camera():
+#     project_id = request.args.get('project_id')
+#     project = models.Project.objects.get(id=project_id)
+#     form = forms.cameras.InitCameraForm()
+#     if 'admin' in current_user.roles or current_user == project.owner or current_user in project.assistant:
+#         if not form.validate_on_submit():
+#             return render_template('/cameras/init-camera.html',
+#                                    form=form,
+#                                    project=project)
+
+#         format_parameter_list = []
+#         if '<username>' in form.rtsp_url.data:
+#             format_parameter_list.append('username')
+#         if '<password>' in form.rtsp_url.data:
+#             format_parameter_list.append('password')
+#         if '<ip_address>' in form.rtsp_url.data:
+#             format_parameter_list.append('ip_address')
+#         if '<port>' in form.rtsp_url.data:
+#             format_parameter_list.append('port')
+
+#         carmera_model = models.CameraModel(name=form.model_name.data,
+#                                            format_parameter=format_parameter_list,
+#                                            rtsp_url=form.rtsp_url.data)
+#         camera_brand = models.CameraBrand(name=form.brand_name.data,
+#                                           camera_models=carmera_model)
+#         camera_brand.save()
+
+        
+#     else:
+#         if not form.validate_on_submit():
+#             return render_template('/cameras/init-camera.html',
+#                                    form=form,
+#                                    project=project)
+#     return redirect(url_for('cameras.add'))

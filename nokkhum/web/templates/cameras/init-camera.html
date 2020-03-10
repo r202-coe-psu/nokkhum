@@ -2,13 +2,13 @@
 {% import '/base/html-renderer.html' as renderer %}
 
 {% block dashboard_title %}
-  Add Camera
+  Init Camera
 {% endblock %}
 
 {% block breadcrumbs %}
   {{ super() }}
   <i class="right angle icon divider"></i>
-  <a class="section" href="{{ url_for('cameras.add', project_id=project.id) }}">Add Camera</a>
+  <a class="section" href="{{ url_for('cameras.init_camera', project_id=project.id) }}">Init Camera</a>
 {% endblock %}
 
 {% block content %}
@@ -75,7 +75,7 @@
           {{ renderer.render_field(form.uri) }}
         </div>
         <div>
-          <a class="ui secondary button" href="#"><i class="plus icon"></i>New camera model</a>
+          <a class="ui secondary button" href="{{ url_for('cameras.init_camera', project_id=project.id) }}"><i class="plus icon"></i>New camera model</a>
         </div>
       </div>
     </div>
