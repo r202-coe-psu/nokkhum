@@ -17,10 +17,10 @@ class CameraForm(FlaskForm):
     storage_period = fields.IntegerField('Storage Period (day)', default=30,
                                          validators=[validators.NumberRange(min=0)])
 
-    username = fields.StringField('Username')
-    password = fields.PasswordField('Password')
-    ip_address = fields.StringField('IP Address', validators=[validators.InputRequired()])
-    port = fields.StringField('Port', validators=[validators.InputRequired()])
+    # username = fields.StringField('Username')
+    # password = fields.PasswordField('Password')
+    # ip_address = fields.StringField('IP Address', validators=[validators.InputRequired()])
+    # port = fields.StringField('Port', validators=[validators.InputRequired()])
 
 
 class InitCameraForm(FlaskForm):
