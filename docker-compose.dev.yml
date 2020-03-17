@@ -5,7 +5,7 @@ services:
         container_name: nokkhum-mongodb
         volumes:
             - ../deployment/nokkhum/mongodb/data/db:/data/db
-            - /etc/localtime:/etc/localtime:ro
+#            - /etc/localtime:/etc/localtime:ro
         # restart: always
         ports:
            - 27017:27017
@@ -15,8 +15,8 @@ services:
     nats-server:
         image: nats
         container_name: nokkhum-nats-server
-        volumes:
-            - /etc/localtime:/etc/localtime:ro
+#        volumes:
+#            - /etc/localtime:/etc/localtime:ro
         # restart: always
         ports:
             - 4222:4222
@@ -31,7 +31,7 @@ services:
         volumes:
             - .:/app
             - ../deployment:/deployment
-            - /etc/localtime:/etc/localtime:ro
+ #           - /etc/localtime:/etc/localtime:ro
         ports:
             - 8080:8080
         links:
@@ -57,7 +57,7 @@ services:
         volumes:
             - .:/app
             - ../deployment:/deployment
-            - /etc/localtime:/etc/localtime:ro
+#            - /etc/localtime:/etc/localtime:ro
         ports:
             - 8081:8081
         links:
@@ -83,7 +83,7 @@ services:
         volumes:
             - .:/app
             - ../deployment:/deployment
-            - /etc/localtime:/etc/localtime:ro
+ #           - /etc/localtime:/etc/localtime:ro
         links:
             - mongodb
             - nats-server
@@ -105,7 +105,7 @@ services:
         volumes:
             - .:/app
             - ../deployment:/deployment
-            - /etc/localtime:/etc/localtime:ro
+ #           - /etc/localtime:/etc/localtime:ro
         links:
             - nats-server
         depends_on:
