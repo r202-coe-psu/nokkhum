@@ -1,6 +1,6 @@
 FROM debian:sid
-RUN echo 'deb http://mirrors.psu.ac.th/debian/ sid main contrib non-free' > /etc/apt/sources.list
-#RUN echo 'deb http://mirror.kku.ac.th/debian/ sid main contrib non-free' >> /etc/apt/sources.list
+RUN echo 'deb http://mirror.psu.ac.th/debian/ sid main contrib non-free' > /etc/apt/sources.list
+RUN echo 'deb http://mirror.kku.ac.th/debian/ sid main contrib non-free' >> /etc/apt/sources.list
 RUN echo 'deb http://www.deb-multimedia.org sid main non-free' >> /etc/apt/sources.list
 
 RUN apt update -oAcquire::AllowInsecureRepositories=true && apt install -y --allow-unauthenticated deb-multimedia-keyring && apt update && apt upgrade -y
