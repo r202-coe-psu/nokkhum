@@ -17,9 +17,11 @@ NOKKHUM_MESSAGE_NATS_HOST = 'localhost:4222'
 # steaming config
 NOKKHUM_STREAMING_URL = 'http://localhost:8081'
 
-# ilprsteaming config
-NOKKHUM_LPRSTREAMING_URL = 'ws://localhost:8082'
+# websocket config
+# NOKKHUM_WS_URL = 'ws://localhost:8082'
 
+# system login
+NOKKHUM_LOGGIN_SYSTEMS = ['ENGPSU']
 
 # 0.00-24.00 format
 

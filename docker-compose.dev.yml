@@ -8,7 +8,7 @@ services:
             - /etc/localtime:/etc/localtime:ro
         # restart: always
         ports:
-           - 27017:27017
+            - 27017:27017
         networks:
             - default
 

@@ -40,8 +40,10 @@ class VideoRecorder(threading.Thread):
 
     def get_encoder(self, extension):
         if extension == 'mp4':
-            return cv2.VideoWriter_fourcc(*'x264')
-            # return cv2.VideoWriter_fourcc(*'MP4V')
+            return cv2.VideoWriter_fourcc(*'X264') # small file high cpu
+            # return cv2.VideoWriter_fourcc(*'mp4v') # big file low cpu
+        elif extension == 'mkv':
+            return cv2.VideoWriter_fourcc(*'X264')
 
         return cv2.VideoWriter_fourcc(*'MJPG')
 
@@ -68,7 +70,7 @@ class VideoRecorder(threading.Thread):
                                  self.size,
                                  True)
         if not writer.isOpened():
-            logger.debug('got error log')
+            logger.debug(f'cannot open video writer encoder: {self.encoder} size: {self.size} fps: {self.fps}')
        
         self.filename = filename
         logger.debug(f'New video recorder {filename}')

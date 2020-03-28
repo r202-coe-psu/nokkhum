@@ -1,42 +1,25 @@
 import pathlib
 import argparse
 import sys
-import queue
 import json
 import threading
 import time
+from .utils import ImageQueue
 
-from . import recorders
-from . import videos
+from . import captures
+from .processors import recorders
+from .processors import acquisitors
+from .processors import dispatchers
 
 import logging
 logger = logging.getLogger(__name__)
-
-class ImageQueue:
-    def __init__(self, maxsize=50):
-        self.queue = queue.Queue(maxsize=maxsize)
-
-    def put(self, data):
-        if self.queue.full():
-            self.queue.get()
-            logger.debug('Drop image')
-            time.sleep(0.1)
-
-        self.queue.put(data)
-
-    def get(self):
-        return self.queue.get()
-
-    def stop(self):
-        self.queue.put(None)
-        self.queue.task_done()
 
 
 class ProcessorServer:
     def __init__(self, settings):
         self.settings = settings
-        self.image_queue = ImageQueue()
         self.running = False
+        self.image_queues = []
 
     def get_options(self):
         parser = argparse.ArgumentParser(description='Nokkhum Recorder')
@@ -95,25 +78,54 @@ class ProcessorServer:
         self.setup(options)
 
         command = self.get_input()
+        while command.get('action') != 'start':
+            command = self.get_input()
+        
+        recorder_queue = ImageQueue()
+        self.image_queues.append(recorder_queue)
 
-        capture = videos.VideoCapture(command['video_uri'], queues=[self.image_queue])
-        capture.start()
+        dispatcher_queue = ImageQueue()
+        self.image_queues.append(dispatcher_queue)
 
+        # capture output queue default 2 queue
+        capture_output_queues = [recorder_queue, dispatcher_queue]
+
+        # if 'motion' in command and command['motion']:
+        #     motion_queue = ImageQueue()
+        #     self.image_queues.append(motion_queue)
+
+        #     capture_output_queue = [motion_queue, dispatcher_queue]
+
+        capture = captures.VideoCapture(
+                command['video_uri'],
+                options.processor_id
+                )
+
+        acquisitor = acquisitors.ImageAcquisitor(
+                capture=capture,
+                queues=capture_output_queues
+                )
+        acquisitor.start()
+
+        dispatcher = dispatchers.ImageDispatcher(dispatcher_queue)
+        dispatcher.start()
+                
         recorder = recorders.VideoRecorder(
-                queue=self.image_queue,
+                queue=recorder_queue,
                 directory=options.directory,
                 processor_id=options.processor_id,
-                fps=command.get('fps'),
+                fps=command.get('fps', capture.get_fps()),
                 size=tuple(command.get('size', capture.get_size()))
                 )
         recorder.start()
+
 
         command_thread = threading.Thread(
                 target=self.command_action,
                 daemon=True)
         command_thread.start()
 
-        processors = [capture, recorder]
+        processors = [acquisitor, recorder]
 
         while self.running:
 
@@ -124,11 +136,15 @@ class ProcessorServer:
                     break
 
         capture.stop()
-        self.image_queue.stop()
-        recorder.stop()
+        for q in self.image_queues:
+            q.stop()
 
-        capture.join()
+        recorder.stop()
+        dispatcher.stop()
+
+        acquisitor.join()
         recorder.join()
-        # command_thread.join()
+        dispatcher.join()
+        command_thread.join()
   
         logger.debug('End server') 
