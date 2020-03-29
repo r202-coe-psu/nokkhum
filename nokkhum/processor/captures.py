@@ -1,6 +1,8 @@
 import cv2
 import datetime
 import copy
+from .utils import Image
+
 import logging
 logger = logging.getLogger(__name__)
 
@@ -13,7 +15,8 @@ class VideoCapture:
         self.reconnect()
 
     def __del__(self):
-        self.capture.release()
+        if self.capture:
+            self.capture.release()
 
     def create_capture(self):
         uri = self.identifier
@@ -43,10 +46,10 @@ class VideoCapture:
         return (640, 480)
 
     def status(self):
-        if self.video_capture is None:
+        if self.capture is None:
             return False
 
-        return self.video_capture.isOpened()
+        return self.capture.isOpened()
 
     def reconnect(self):
         if self.capture:
@@ -67,5 +70,9 @@ class VideoCapture:
         if not ret:
             raise Exception('cloud not get frame')
 
-        return frame
+        return Image(frame)
+
+    def stop(self):
+        self.capture.release()
+        self.capture = None
 

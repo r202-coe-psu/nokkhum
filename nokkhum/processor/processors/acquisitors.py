@@ -8,6 +8,7 @@ logger = logging.getLogger(__name__)
 class ImageAcquisitor(threading.Thread):
     def __init__(self, capture, queues):
         super().__init__()
+        self.name = 'ImageAcquisitor'
         self.running = False
         self.daemon = True
         self.name = 'ImageAcquisition {}'.format(capture.id)
@@ -30,9 +31,10 @@ class ImageAcquisitor(threading.Thread):
         self.running = False
 
     def run(self):
+        logger.debug("Start ImageAcquisitor")
         self.running = True
 
-        while(self.running):
+        while self.running:
             try:
                 image = self.capture.get_frame()
             except Exception as e:
@@ -42,3 +44,5 @@ class ImageAcquisitor(threading.Thread):
 
             for q in self.queues:
                 q.put(image)
+
+        logger.debug("End ImageAcquisitor")

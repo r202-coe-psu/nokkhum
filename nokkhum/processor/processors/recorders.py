@@ -20,6 +20,7 @@ class VideoRecorder(threading.Thread):
                  minutes=10
                  ):
         super().__init__()
+        self.name = 'VideoRecorder'
         self.running = False
         self.daemon=True
         self.directory = directory
@@ -80,14 +81,29 @@ class VideoRecorder(threading.Thread):
         thumbnail_name = name = '{}/{}-thumbnail.png'.format(
                 self.filename.parent,
                 self.filename.stem[1:])
-        cv2.imwrite(thumbnail_name, image)
+        cv2.imwrite(thumbnail_name, image.data)
 
     def stop(self):
         self.running = False
 
+    def prepair_image(self, image): 
+        width, height = image.size()
+        if not width == self.size[0] or not height == self.size[1]:
+            img = cv2.resize(image.data, self.size, interpolation = cv2.INTER_AREA)
+
+        return img
+
+    def postprocess_video(self):
+        self.filename.rename('{}/{}'.format(
+            self.filename.parent,
+            self.filename.name[1:]))
+
     def run(self):
         self.running = True
         writer = None
+
+        logger.debug('Start Video Recorder')
+
         image = self.queue.get()
         if image is None:
             self.running = False
@@ -111,32 +127,89 @@ class VideoRecorder(threading.Thread):
             # key = cv2.waitKey(10)
             # if key == ord('q'):
             #     break
-
-            height, width, _ = image.shape
-            if not width == self.size[0] or not height == self.size[1]:
-                image = cv2.resize(image, self.size, interpolation = cv2.INTER_AREA)
-
-
+        
+       
             # check get new record
             current_date = datetime.datetime.now()
             if (current_date - begin_date).seconds >= self.duration:
                 writer.release()
-                self.filename.rename('{}/{}'.format(
-                    self.filename.parent,
-                    self.filename.name[1:]))
+                self.postprocess_video()
 
                 writer = self.get_new_recoder()
                 begin_date = current_date
                 self.create_thumbnail(image)
 
-            writer.write(image)
+            img = self.prepair_image(image)
+            writer.write(img)
 
         if writer:
             writer.release()
+            self.postprocess_video()
 
-            self.filename.rename('{}/{}'.format(
-                self.filename.parent,
-                self.filename.name[1:]))
 
-        logger.debug('End recorder')
- 
+        logger.debug('End Video Recorder')
+
+
+class MotionVideoRecorder(VideoRecorder):
+    def __init__(**kw_args):
+        super().__init__(**kw_args)
+        self.name = 'MotionVideoRecorder'
+        self.wait_motion_time = kw_args.get('wait_motion_time', 1)
+
+    def run(self):
+        self.running = True
+        writer = None
+
+        logger.debug('Start Motion Video Recorder')
+
+        while self.running:
+            image = None
+            try:
+                image = self.queue.get(timeout=1)
+                if image is None:
+                    self.running = False
+                    continue
+            except Exception as e:
+                logger.exeception(e)
+
+            if image is None and (current_date - begin_date).seconds >= self.wait_motion_time:
+                if writer:
+                    writer.release()
+                    self.postprocess_video()
+                    writer = None
+                    
+                continue
+
+            cv2.imshow('test', image)
+            key = cv2.waitKey(10)
+            if key == ord('q'):
+                break
+
+            current_date = datetime.datetime.now()
+
+            if not writer:
+                begin_date = datetime.datetime.now()
+                writer = self.get_new_recoder()
+
+            # check get new record
+            elif (current_date - begin_date).seconds >= self.duration:
+                writer.release()
+                self.postprocess_video()
+
+                writer = self.get_new_recoder()
+                begin_date = current_date
+                self.create_thumbnail(image)
+
+            
+            img = self.prepair_image(image)
+            writer.write(img)
+            last_write_date = datetime.datetime.now()
+
+        if writer:
+            writer.release()
+            self.postprocess_video()
+
+
+        logger.debug('End Video Recorder')
+
+

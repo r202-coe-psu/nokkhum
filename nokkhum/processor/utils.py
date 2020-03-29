@@ -1,8 +1,20 @@
 import queue
 import threading
+import datetime
 
 import logging
 logger = logging.getLogger(__name__)
+
+
+class Image:
+    def __init__(self, data):
+        self.data = data
+        self.captured_date = datetime.datetime.now()
+
+    def size(self):
+        height, width, _ = self.data.shape
+        return (width, height)
+
 
 class ImageQueue(queue.Queue):
     def __init__(self, maxsize=50):

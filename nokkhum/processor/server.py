@@ -125,26 +125,34 @@ class ProcessorServer:
                 daemon=True)
         command_thread.start()
 
-        processors = [acquisitor, recorder]
+        processors = [acquisitor, recorder, dispatcher]
 
         while self.running:
+            try:
+                time.sleep(1)
+            except Exception as e:
+                logger.exception(e)
+                self.running = False
+                break
 
-            time.sleep(1)
             for p in processors:
                 if p.running == False:
                     self.running = False
                     break
+ 
 
-        capture.stop()
+        command_thread.join()
+        for p in processors:
+            if p.is_alive():
+                p.stop()
+
         for q in self.image_queues:
             q.stop()
+        
+        for p in processors:
+            p.join()
 
-        recorder.stop()
-        dispatcher.stop()
+        capture.stop()
 
-        acquisitor.join()
-        recorder.join()
-        dispatcher.join()
-        command_thread.join()
   
         logger.debug('End server') 
