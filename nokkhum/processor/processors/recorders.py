@@ -37,7 +37,7 @@ class VideoRecorder(threading.Thread):
         else:
             self.duration = 120
 
-        self.filename = ''
+        self.filename_format = '_{}-{}.{}'
 
     def get_encoder(self, extension):
         if extension == 'mp4':
@@ -57,7 +57,7 @@ class VideoRecorder(threading.Thread):
         if not path.exists():
             path.mkdir(parents=True)
 
-        filename = path / '_{}-{}.{}'.format(
+        filename = path / self.filename_format.format(
                 self.processor_id,
                 now.strftime('%Y%m%d-%H%M%S-%f'),
                 self.extension)
@@ -151,16 +151,21 @@ class VideoRecorder(threading.Thread):
 
 
 class MotionVideoRecorder(VideoRecorder):
-    def __init__(**kw_args):
+    def __init__(self, **kw_args):
         super().__init__(**kw_args)
         self.name = 'MotionVideoRecorder'
         self.wait_motion_time = kw_args.get('wait_motion_time', 1)
+
+        self.filename_format = '_{}-{}-motion.{}'
+
+        # self.duration = 120
 
     def run(self):
         self.running = True
         writer = None
 
         logger.debug('Start Motion Video Recorder')
+        last_write_date = datetime.datetime.now()
 
         while self.running:
             image = None
@@ -170,26 +175,29 @@ class MotionVideoRecorder(VideoRecorder):
                     self.running = False
                     continue
             except Exception as e:
-                logger.exeception(e)
+                # logger.exception(e)
+                pass
 
-            if image is None and (current_date - begin_date).seconds >= self.wait_motion_time:
-                if writer:
-                    writer.release()
-                    self.postprocess_video()
-                    writer = None
+            current_date = datetime.datetime.now()
+            if image is None:
+                print('xxx: ', current_date - last_write_date)
+                if (current_date - last_write_date).seconds >= self.wait_motion_time:
+                    if writer:
+                        writer.release()
+                        self.postprocess_video()
+                        writer = None
                     
                 continue
 
-            cv2.imshow('test', image)
+            cv2.imshow('test', image.data)
             key = cv2.waitKey(10)
             if key == ord('q'):
                 break
 
-            current_date = datetime.datetime.now()
-
             if not writer:
                 begin_date = datetime.datetime.now()
                 writer = self.get_new_recoder()
+                self.create_thumbnail(image)
 
             # check get new record
             elif (current_date - begin_date).seconds >= self.duration:

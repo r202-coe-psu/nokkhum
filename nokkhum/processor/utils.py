@@ -17,7 +17,7 @@ class Image:
 
 
 class ImageQueue(queue.Queue):
-    def __init__(self, maxsize=50):
+    def __init__(self, maxsize=100):
         super().__init__(maxsize=maxsize)
 
     def size(self):

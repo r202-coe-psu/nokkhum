@@ -1,4 +1,5 @@
 import threading
+import datetime
 import time
 
 import cv2
@@ -7,7 +8,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class MotionDetector:
+class OpenCVMotionDetector:
     def __init__(self, frame=None, threshold=100):
         self.default_threshold_value = threshold
 
@@ -45,29 +46,71 @@ class MotionDetector:
 
 class MotionDetector(threading.Thread):
     def __init__(self,
-                 uri,
                  input_queue,
                  output_queues=[]):
         super().__init__()
-        self.uri = uri
+        self.name = "Motion Dectector"
         self.running = False
-        self.queues = queues
+        self.input_queue = input_queue
+        self.output_queues = output_queues
         self.daemon = True
+
+        self.detector = OpenCVMotionDetector()
+        self.tmp_queue = []
+        self.duration = 3
+        self.wait_motion_time = 1
 
     def stop(self):
         self.running = False
+
+
+    def put_output_queues(self):
+        for img in self.tmp_queue:
+            for q in self.output_queues:
+                q.put(img)
+
+        self.tmp_queue.clear()
+
 
     def run(self):
         self.running = True
         logger.debug('Start Motion Detector')
 
+        counter = self.duration
+        last_motion_date = datetime.datetime.now()
+
         while self.running:
-            img = input_queue.get()
-            if img is None:
+            image = self.input_queue.get()
+            if image is None:
                 self.running = False
                 break
-            
-            for q in self.queues:
-                q.put(img)
+
+            self.tmp_queue.append(image)
+            if counter > 0:
+                counter -= 1
+            else:
+                counter = self.duration
+
+            current_date = datetime.datetime.now()
+            if not self.detector.has_motion(image.data):
+                # print('last motion', (current_date - last_motion_date).seconds)
+                
+                # no motion but last motion less than wait_motion_time
+                if (current_date - last_motion_date).seconds < self.wait_motion_time:
+                    self.put_output_queues()
+                    continue
+
+                # remove image from queue when no motion and last motion more than wait_motion_time
+                for img in self.tmp_queue[:]:
+                    if (current_date - img.captured_date).seconds > self.wait_motion_time:
+                        self.tmp_queue.remove(img)
+                        logger.debug(f'drop image')
+                    else:
+                        break
+
+                continue
+
+            last_motion_date = datetime.datetime.now()
+            self.put_output_queues()
 
         logger.debug('End Motion Detector')

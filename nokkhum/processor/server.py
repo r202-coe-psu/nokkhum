@@ -10,6 +10,7 @@ from . import captures
 from .processors import recorders
 from .processors import acquisitors
 from .processors import dispatchers
+from .processors import detectors
 
 import logging
 logger = logging.getLogger(__name__)
@@ -90,11 +91,17 @@ class ProcessorServer:
         # capture output queue default 2 queue
         capture_output_queues = [recorder_queue, dispatcher_queue]
 
-        # if 'motion' in command and command['motion']:
-        #     motion_queue = ImageQueue()
-        #     self.image_queues.append(motion_queue)
+        if 'motion' in command and command['motion']:
+            motion_queue = ImageQueue()
+            self.image_queues.append(motion_queue)
 
-        #     capture_output_queue = [motion_queue, dispatcher_queue]
+            capture_output_queues = [motion_queue, dispatcher_queue]
+
+            motion_detector = detectors.MotionDetector(
+                    input_queue=motion_queue,
+                    output_queues=[recorder_queue]
+                    )
+            motion_detector.start()
 
         capture = captures.VideoCapture(
                 command['video_uri'],
@@ -109,14 +116,24 @@ class ProcessorServer:
 
         dispatcher = dispatchers.ImageDispatcher(dispatcher_queue)
         dispatcher.start()
-                
-        recorder = recorders.VideoRecorder(
-                queue=recorder_queue,
-                directory=options.directory,
-                processor_id=options.processor_id,
-                fps=command.get('fps', capture.get_fps()),
-                size=tuple(command.get('size', capture.get_size()))
-                )
+
+        if 'motion' in command and command['motion']:
+            recorder = recorders.MotionVideoRecorder(
+                    queue=recorder_queue,
+                    directory=options.directory,
+                    processor_id=options.processor_id,
+                    fps=command.get('fps', capture.get_fps()),
+                    size=tuple(command.get('size', capture.get_size()))
+                    )
+
+        else:    
+            recorder = recorders.VideoRecorder(
+                    queue=recorder_queue,
+                    directory=options.directory,
+                    processor_id=options.processor_id,
+                    fps=command.get('fps', capture.get_fps()),
+                    size=tuple(command.get('size', capture.get_size()))
+                    )
         recorder.start()
 
 
@@ -130,6 +147,10 @@ class ProcessorServer:
         while self.running:
             try:
                 time.sleep(1)
+            except KeyboardInterrupt as e:
+                logger.exception(e)
+                self.running = False
+                break
             except Exception as e:
                 logger.exception(e)
                 self.running = False
@@ -140,8 +161,6 @@ class ProcessorServer:
                     self.running = False
                     break
  
-
-        command_thread.join()
         for p in processors:
             if p.is_alive():
                 p.stop()
@@ -153,6 +172,6 @@ class ProcessorServer:
             p.join()
 
         capture.stop()
-
+        command_thread.join(timeout=1)
   
         logger.debug('End server') 
