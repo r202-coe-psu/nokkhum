@@ -9,36 +9,41 @@ logger = logging.getLogger(__name__)
 
 
 class OpenCVMotionDetector:
-    def __init__(self, frame=None, threshold=100):
+    def __init__(self, frame=None, threshold=50):
         self.default_threshold_value = threshold
 
         self.avg_frame = None
         if frame:
-            self.avg_frame = self.get_gray_and_blur(frame).astype("float")
-
+            self.update_pattern_frame(frame)
 
     def get_gray_and_blur(self, frame):
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         blur = cv2.GaussianBlur(gray, (21, 21), 0)
         return blur
 
+    def update_pattern_frame(self, frame): 
+        self.avg_frame = self.get_gray_and_blur(frame).astype("float")
+        self.frame_scale_abs = cv2.convertScaleAbs(self.avg_frame)
+
 
     def has_motion(self, frame):
         if self.avg_frame is None:
-            self.avg_frame = self.get_gray_and_blur(frame).astype("float")
+            self.update_pattern_frame(frame)
             return False
 
         blur = self.get_gray_and_blur(frame)
         cv2.accumulateWeighted(blur, self.avg_frame, 0.5)
-        frame_delta = cv2.absdiff(blur, cv2.convertScaleAbs(self.avg_frame))
+        frame_delta = cv2.absdiff(blur, self.frame_scale_abs)
         thresh = cv2.threshold(frame_delta,
                                5,
                                255,
                                cv2.THRESH_BINARY)[1]
 
+        # print('motion', cv2.countNonZero(thresh))
         if cv2.countNonZero(thresh) < self.default_threshold_value:
             return False
-        
+       
+        self.update_pattern_frame(frame)
         return True
 
 

@@ -180,7 +180,7 @@ class MotionVideoRecorder(VideoRecorder):
 
             current_date = datetime.datetime.now()
             if image is None:
-                print('xxx: ', current_date - last_write_date)
+                # print('xxx: ', current_date - last_write_date)
                 if (current_date - last_write_date).seconds >= self.wait_motion_time:
                     if writer:
                         writer.release()
