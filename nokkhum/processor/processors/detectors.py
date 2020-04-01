@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 class OpenCVMotionDetector:
-    def __init__(self, frame=None, threshold=50):
+    def __init__(self, frame=None, threshold=200):
         self.default_threshold_value = threshold
 
         self.avg_frame = None
@@ -35,11 +35,11 @@ class OpenCVMotionDetector:
         cv2.accumulateWeighted(blur, self.avg_frame, 0.5)
         frame_delta = cv2.absdiff(blur, self.frame_scale_abs)
         thresh = cv2.threshold(frame_delta,
-                               5,
+                               15,
                                255,
                                cv2.THRESH_BINARY)[1]
 
-        # print('motion', cv2.countNonZero(thresh))
+        print('motion', cv2.countNonZero(thresh))
         if cv2.countNonZero(thresh) < self.default_threshold_value:
             return False
        
@@ -109,7 +109,7 @@ class MotionDetector(threading.Thread):
                 for img in self.tmp_queue[:]:
                     if (current_date - img.captured_date).seconds > self.wait_motion_time:
                         self.tmp_queue.remove(img)
-                        logger.debug(f'drop image')
+                        # logger.debug(f'nomotion, drop image')
                     else:
                         break
 

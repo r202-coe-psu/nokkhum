@@ -90,6 +90,8 @@ class VideoRecorder(threading.Thread):
         width, height = image.size()
         if not width == self.size[0] or not height == self.size[1]:
             img = cv2.resize(image.data, self.size, interpolation = cv2.INTER_AREA)
+        else:
+            img = image.data
 
         return img
 
@@ -154,7 +156,7 @@ class MotionVideoRecorder(VideoRecorder):
     def __init__(self, **kw_args):
         super().__init__(**kw_args)
         self.name = 'MotionVideoRecorder'
-        self.wait_motion_time = kw_args.get('wait_motion_time', 1)
+        self.wait_motion_time = kw_args.get('wait_motion_time', 2)
 
         self.filename_format = '_{}-{}-motion.{}'
 
@@ -189,11 +191,6 @@ class MotionVideoRecorder(VideoRecorder):
                     
                 continue
 
-            cv2.imshow('test', image.data)
-            key = cv2.waitKey(10)
-            if key == ord('q'):
-                break
-
             if not writer:
                 begin_date = datetime.datetime.now()
                 writer = self.get_new_recoder()
@@ -212,6 +209,12 @@ class MotionVideoRecorder(VideoRecorder):
             img = self.prepair_image(image)
             writer.write(img)
             last_write_date = datetime.datetime.now()
+
+            cv2.imshow('test', img)
+            key = cv2.waitKey(10)
+            if key == ord('q'):
+                break
+
 
         if writer:
             writer.release()

@@ -7,11 +7,13 @@ import logging
 logger = logging.getLogger(__name__)
 
 class VideoCapture:
-    def __init__(self, video_uri, camera_id='cam'):
+    def __init__(self,
+                 video_uri,
+                 camera_id='cam',
+                 ):
         self.identifier = video_uri
         self.id = camera_id
         self.capture = None
-
         self.reconnect()
 
     def __del__(self):
@@ -25,8 +27,8 @@ class VideoCapture:
             capture = cv2.VideoCapture(uri, cv2.CAP_GSTREAMER)
         else:
             capture = cv2.VideoCapture(uri)
-        # capture = cv2.VideoCapture(self.uri)
 
+        # capture = cv2.VideoCapture(self.uri)
         if not capture.isOpened():
             logger.debug(f'cloud not open uri: {self.uri}')
             return False
@@ -43,6 +45,7 @@ class VideoCapture:
         if self.capture:
             return (self.capture.get(cv2.CAP_PROP_FRAME_WIDTH),
                     self.capture.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
         return (640, 480)
 
     def status(self):

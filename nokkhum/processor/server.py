@@ -105,12 +105,14 @@ class ProcessorServer:
 
         capture = captures.VideoCapture(
                 command['video_uri'],
-                options.processor_id
+                options.processor_id,
                 )
 
         acquisitor = acquisitors.ImageAcquisitor(
                 capture=capture,
-                queues=capture_output_queues
+                queues=capture_output_queues,
+                fps=command.get('fps', None),
+                size=tuple(command.get('size', None)),
                 )
         acquisitor.start()
 
