@@ -9,12 +9,36 @@ logger = logging.getLogger(__name__)
 
 
 class OpenCVMotionDetector:
-    def __init__(self, frame=None, threshold=200):
-        self.default_threshold_value = threshold
+    def __init__(self, frame=None, sensitivity=0.998):
+        self.sensitivity = sensitivity
+        self.default_threshold_value = sensitivity
 
         self.avg_frame = None
         if frame:
-            self.update_pattern_frame(frame)
+            self.initial(frame)
+
+        self.processing_size = (800, 600)
+
+    def initial(self, frame):
+        frame = self.resize_image(frame)
+        height, width, _ = frame.shape
+        self.default_threshold_value = width * height * (1 - self.sensitivity)
+        self.update_pattern_frame(frame)
+
+    def resize_image(self, frame): 
+
+        processing_size = self.processing_size
+        height, width, _ = frame.shape
+        if width > self.processing_size[0]:
+            factor = width / self.processing_size[0]
+            processing_size = (int(width / factor), int(height/factor))
+
+            
+        img = frame
+        if width > processing_size[0] or height > processing_size[1]:
+            img = cv2.resize(frame, processing_size, interpolation = cv2.INTER_AREA) 
+
+        return img
 
     def get_gray_and_blur(self, frame):
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -25,21 +49,25 @@ class OpenCVMotionDetector:
         self.avg_frame = self.get_gray_and_blur(frame).astype("float")
         self.frame_scale_abs = cv2.convertScaleAbs(self.avg_frame)
 
-
     def has_motion(self, frame):
         if self.avg_frame is None:
-            self.update_pattern_frame(frame)
+            self.initial(frame)
             return False
+
+        frame = self.resize_image(frame)
 
         blur = self.get_gray_and_blur(frame)
         cv2.accumulateWeighted(blur, self.avg_frame, 0.5)
         frame_delta = cv2.absdiff(blur, self.frame_scale_abs)
         thresh = cv2.threshold(frame_delta,
-                               15,
+                               5,
                                255,
                                cv2.THRESH_BINARY)[1]
 
-        print('motion', cv2.countNonZero(thresh))
+        print('motion',
+              cv2.countNonZero(thresh),
+              self.default_threshold_value,
+              frame.shape)
         if cv2.countNonZero(thresh) < self.default_threshold_value:
             return False
        
