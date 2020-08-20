@@ -1,101 +1,65 @@
 {% extends '/base/default-dashboard.html' %}
 
-
-{% block breadcrumbs %}
-<a href="{{ url_for('dashboard.index') }}" class="section">Dashboard</a>
-{% endblock %}
-
 {% block content %}
-<div class="row">
-  <div class="col s12">
-    <h3>Hello {{ current_user.first_name }} {{ current_user.last_name }}</h3>
-  </div>
+{% if not projects %}
+<div class="ui segment center aligned">
+  <p>No any project. Do you want to <a id="create-project-a" href="#">add new project?</a></p>
 </div>
-  
-<div class="ui grid">
-  <div class="doubling two column row">
-    <div class="four wide column">
-      {% if projects %}
-        <table class="ui celled table">
-          <thead>
-            <tr>
-              <th>
-                  <a href="{{ url_for('projects.index') }}">View Projects</a>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for project in projects -%}
-              {% if project.status=="active" %}
-                <tr>
-                  <td data-label="Project">
-                    <div class="ui accordion ">
-                      <div class="title">
-                        <i class="dropdown icon"></i>
-                        <a href="{{ url_for('projects.view', project_id=project.id) }}">{{ project.name }}</a>
-                        <span style="float:right"><i class="video icon"></i>{{project.camera_is_active()}}</span>
-                      </div>
-                      <div class="content" style="padding-left:10px">
-                          {% for camera in project.cameras -%}
-                            {% if camera.status=="active" %}
-                              <a href="{{ url_for('cameras.view', project_id=project.id, camera_id=camera.id) }}"><p><i class="angle right icon"></i>{{camera.name}}</p></a>
-                            {% endif %}
-                          {% endfor %}
-                      </div>
-                    </div>
-                  </td>
-                </tr>
-              {% endif %}
-            {%- endfor %}
-          </tbody>
-        </table>
-      {% else %}  
-        <a class="ui primary button" href="{{ url_for('projects.create') }}" ><i class="folder icon"></i>Create Project</a>
-        <div class="ui horizontal divider"></div>
-        <div class="ui info message">
+{% else %}
+<div class="ui stackable four column grid">
+  {% for project in projects %}
+  <div class="column">
+    <div class="ui centered cards">
+      <div class="card">
+        <div class="content">
+          <!-- <img class="right floated mini ui image" src="/images/avatar/large/elliot.jpg"> -->
           <div class="header">
-            No Project
+            {{ project.name | upper }}
           </div>
-        </div> 
-      {% endif %}
-    </div>
-    <div class="twelve wide column">
+          <div class="meta">
+          </div>
+          <div class="ui divider"></div>
+          <div class="description ">
+            <div class="ui two column centered grid">
+              <div class="column">Camera Name</div>
+              <div class="column">Status</div>
+              {% if not project.cameras %}
+              <div class="column" style="padding-top: 0;">No camera</div>
+              <div class="column" style="padding-top: 0;">-</div>
+              {% else %}
+              {% for camera in project.cameras[:5] %}
+              <div class="column" style="padding-top: 0;">{{ camera.name }}</div>
+              <div class="column" style="padding-top: 0;">{{ camera.status }}</div>
+              {% endfor %}
+              {% endif %}
+            </div>
 
-      {#
-        <table id="processtable" class="ui centered celled table">
-          <thead>
-            <tr>
-              <th>Project Name</th>
-              <th>Camera Name</th>
-              <th>Number</th>
-              <th>Province</th>
-              <th>Date Time</th>
-              <th>Detected Plate</th>
-            </tr>
-          </thead>
-          <tbody id="tabledata">
-          </tbody>
-        </table>
-      #}
+          </div>
+        </div>
+        <div class="extra content">
+          <div class="ui two buttons">
+            <div class="ui basic blue button">See more...</div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
+
+  {% endfor %}
 </div>
-<div class="ui modal" id="picture"> 
-  <i class="close icon"></i>
-  <div class="image content">
-    <img id="pic" width="100%" height="50%">
-  </div>
-</div>
+{% endif %}
 {% endblock %}
-
 
 {% block additional_js %}
-<script src="{{ url_for('static', filename='node_modules/fomantic-ui-css/components/form.min.js') }}"></script>
-<script type="text/javascript">
-  $('.ui.accordion').accordion('refresh');
-  function modal_picture(data) {
-        $('#picture').modal('show');
-        document.getElementById("pic").src = data ;
-      }
+{{ super() }}
+<script>
+  $(function () {
+    $("#create-project-a").click(function () {
+      $(".ui.modal.create").modal('show');
+    });
+    $(".ui.modal.create").modal({
+      closable: true
+    });
+  });
 </script>
 {% endblock %}

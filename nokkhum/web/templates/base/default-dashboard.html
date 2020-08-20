@@ -100,13 +100,13 @@
 
 {% block body %}
 {# begin slide menu #}
-<div class="ui vertical inverted sidebar large menu left">
+<div class="ui vertical inverted sidebar large menu left" style="background-color: #236495;">
   {% include "/base/menu-dashboard.html" with context %}
 </div>
 {# end slide menu #}
 
 {# begin top bar mobile #}
-<div class="ui fixed inverted main menu">
+<div class="ui fixed inverted main menu" style="background-color: #236495;">
   <div class="ui container">
     <a class="launch icon item">
       <i class="content icon"></i>
@@ -144,14 +144,14 @@
 
     {# begin default left side toc #}
     <div class="toc">
-      <div class="ui vertical inverted large menu">
+      <div class="ui vertical inverted large menu" style="background-color: #236495;">
         {% include "/base/menu-dashboard.html" with context %}
       </div>
     </div>
     {# end default left side toc #}
 
     {# begin main article #}
-    <div class="article">
+    <div class="article" style="background-color: #FAFAFA;">
       <header>
         <div class="ui vertical dividing segment">
           <div class="introduction">
@@ -162,9 +162,12 @@
                     {{ self.dashboard_title() }}
                   </h1>
                 </div>
-                <div class="right floated column right aligned">
-                  <a class="ui button primary">Create Project</a>
+                {% if 'dashboard' in request.path or 'projects' in request.path%}
+                <div class="right floated column right aligned" style="color: #236495;">
+                  <a id="create-project-btn" class="ui button primary">Add New Project<i class=" add icon"
+                      style="margin-left: 1rem;"></i></a>
                 </div>
+                {% endif %}
               </div>
             </div>
           </div>
@@ -172,13 +175,7 @@
       </header>
 
       <main class="main-content">
-        {%- if self.dashboard_title().lower() != 'dashboard' %}
-        <div class="ui segment">
-          <div class="ui big breadcrumb">
-            {% block breadcrumbs %}{% endblock %}
-          </div>
-        </div>
-        {% endif -%}
+
         {% block content %}{% endblock %}
       </main>
 
@@ -190,11 +187,42 @@
     {# end main article #}
 
   </div>
-  {#
-<footer class="ui vertical footer segment">
-{% include "/base/footer.html" %}
-</footer>
-#}
+</div>
+<div class="ui create tiny modal">
+  <div class="ui middle aligned grid">
+    <div class="column">
+      <h2 class="header">
+        <div class="content" style="margin-top: 1rem; margin-left: 1rem;">
+          Add new project
+        </div>
+      </h2>
+      <form class="ui large form" method="POST" action="{{ url_for('projects.create') }}">
+        <div class="ui segment">
+          <div class="required field">
+            <label>Project Name</label>
+            <input type="text" placeholder="Project Name" name="name">
+          </div>
+          <div class="right actions">
+            <div class="ui deny button">Cancel</div>
+            <button type="submit" class="ui green button">OK</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>
 
 {% endblock body %}
+
+{% block additional_js %}
+<script>
+  $(function () {
+    $("#create-project-btn").click(function () {
+      $(".ui.modal.create").modal('show');
+    });
+    $(".ui.modal.create").modal({
+      closable: true
+    });
+  });
+</script>
+{% endblock %}

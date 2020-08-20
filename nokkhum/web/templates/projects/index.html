@@ -1,90 +1,90 @@
-{% extends '/dashboard/index-admin.html' %}
+{% extends '/base/default-dashboard.html' %}
 
 {% block dashboard_title %}
-  Projects
-{% endblock %}
-
-
-{% block breadcrumbs %}
-  {{ super() }}
-  <i class="right angle icon divider"></i>
-  <a class="section" href="{{ url_for('projects.index') }}">Projects</a>
+Projects
 {% endblock %}
 
 {% block content %}
 
 </br>
-  <a class="ui primary button" href="{{ url_for('projects.create') }}" ><i class="folder icon"></i>Create Project</a>
+<a class="ui primary button" href="{{ url_for('projects.create') }}"><i class="folder icon"></i>Create Project</a>
 
 
-  <div class="row">
-    <div class="column">
+<div class="row">
+  <div class="column">
     </br>
-      <h3 class="ui header">Your Project</h3>
-      {% if projects  %}
-      <table class="ui celled table">
-        <thead>
-          <tr>
-            <th>Project Name</th>
-            <th>Created Date</th>
-            <th>View Project</th>
-            <th>Manage</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for project in projects -%}
-            {% if project.status=="active" %}
-              <tr>
-                <td data-label="Name"><a href="{{ url_for('projects.view', project_id=project.id) }}" data-tooltip="View Project" style="color:black">{{ project.name}}</a></td>
-                <td data-label="Date">{{ project.created_date.strftime('%d/%m/%Y %H:%M') }}</td>
-                <td data-label="View">
-                  <div>
-                      <a class="ui primary button" href="{{ url_for('projects.view', project_id=project.id) }}" data-tooltip="View Project"><i class="eye icon"></i>View</a>
-                    {% if current_user == project.owner or 'admin' in current_user.roles or current_user in project.assistant %}
-                      <a class="ui primary button green" href="{{ url_for('projects.add_contributor_page', project_id=project.id)}}" data-tooltip="Add contributor"><i class="user icon"></i>Add contributor</a>
-                    {% endif %}
-                  </div>
-                </td>
-                <td data-label="Delete">
-                  {% if current_user == project.owner or 'admin' in current_user.roles %}
-                    <a class="ui circular primary icon button" href="{{url_for('projects.edit',project_id=project.id)}}" data-tooltip="Edit"><i class="edit icon"></i></a>
-                    <a id="btn-modal-{{project.id}}" class="ui red circular primary icon button" data-tooltip="Delete"><i class="trash icon"></i></a>
-                    <div class="ui modal" id="delete-notification-{{project.id}}">
-                        <i class="close icon"></i>
-                        <div class="header">
-                          Delete Project
-                        </div>
-                        <div class="image content">
-                          <div class="description">
-                              Are you sure you want to delete project: "{{ project.name }}"
-                              {% for came in project.cameras %}
-                                {% if came.status=='active' %}
-                                  <div><i class="camera icon"></i>{{came.name}}</div>
-                                {% endif %}
-                              {% endfor %}
-                          </div>
-                        </div>
-                        <div class="actions">
-                          <div class="ui red  cancel  button"><i class="remove icon"></i>No</div>
-                          <a class="ui green ok button" href="{{ url_for('projects.delete',project_id=project.id) }}"><i class="checkmark icon"></i>Yes</a>
-                        </div>
-                      </div>
-                    {% endif %}
-                  </td>
-              </tr>
+    <h3 class="ui header">Your Project</h3>
+    {% if projects  %}
+    <table class="ui celled table">
+      <thead>
+        <tr>
+          <th>Project Name</th>
+          <th>Created Date</th>
+          <th>View Project</th>
+          <th>Manage</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for project in projects -%}
+        {% if project.status=="active" %}
+        <tr>
+          <td data-label="Name"><a href="{{ url_for('projects.view', project_id=project.id) }}"
+              data-tooltip="View Project" style="color:black">{{ project.name}}</a></td>
+          <td data-label="Date">{{ project.created_date.strftime('%d/%m/%Y %H:%M') }}</td>
+          <td data-label="View">
+            <div>
+              <a class="ui primary button" href="{{ url_for('projects.view', project_id=project.id) }}"
+                data-tooltip="View Project"><i class="eye icon"></i>View</a>
+              {% if current_user == project.owner or 'admin' in current_user.roles or current_user in project.assistant %}
+              <a class="ui primary button green"
+                href="{{ url_for('projects.add_contributor_page', project_id=project.id)}}"
+                data-tooltip="Add contributor"><i class="user icon"></i>Add contributor</a>
+              {% endif %}
+            </div>
+          </td>
+          <td data-label="Delete">
+            {% if current_user == project.owner or 'admin' in current_user.roles %}
+            <a class="ui circular primary icon button" href="{{url_for('projects.edit',project_id=project.id)}}"
+              data-tooltip="Edit"><i class="edit icon"></i></a>
+            <a id="btn-modal-{{project.id}}" class="ui red circular primary icon button" data-tooltip="Delete"><i
+                class="trash icon"></i></a>
+            <div class="ui modal" id="delete-notification-{{project.id}}">
+              <i class="close icon"></i>
+              <div class="header">
+                Delete Project
+              </div>
+              <div class="image content">
+                <div class="description">
+                  Are you sure you want to delete project: "{{ project.name }}"
+                  {% for came in project.cameras %}
+                  {% if came.status=='active' %}
+                  <div><i class="camera icon"></i>{{came.name}}</div>
+                  {% endif %}
+                  {% endfor %}
+                </div>
+              </div>
+              <div class="actions">
+                <div class="ui red  cancel  button"><i class="remove icon"></i>No</div>
+                <a class="ui green ok button" href="{{ url_for('projects.delete',project_id=project.id) }}"><i
+                    class="checkmark icon"></i>Yes</a>
+              </div>
+            </div>
             {% endif %}
-          {%- endfor %}
-        </tbody>
-      </table>
+          </td>
+        </tr>
+        {% endif %}
+        {%- endfor %}
+      </tbody>
+    </table>
     {% else %}
-      <div class="ui info message">
-        <div class="header">
-          No Project
-        </div>
+    <div class="ui info message">
+      <div class="header">
+        No Project
       </div>
-    {% endif %}
     </div>
+    {% endif %}
   </div>
+</div>
 
 <div class="row">
   <div class="col s12">
@@ -96,9 +96,9 @@
   </div>
 </div>
 <style>
-.ui.button {
-  margin-bottom: 5px;
-}
+  .ui.button {
+    margin-bottom: 5px;
+  }
 </style>
 {% endblock %}
 
@@ -107,12 +107,23 @@
 
 <script src="{{ url_for('static', filename='node_modules/fomantic-ui-css/components/form.min.js') }}"></script>
 <script type="text/javascript">
-{% for project in projects %}
-  {% if project.status=="active" %}
-      $('#btn-modal-{{project.id}}').click(function() {
-        $('#delete-notification-{{project.id}}').modal('show');
-      });
+  {% for project in projects %}
+  {% if project.status == "active" %}
+  $('#btn-modal-{{project.id}}').click(function () {
+    $('#delete-notification-{{project.id}}').modal('show');
+  });
   {% endif %}
-{% endfor %}
+  {% endfor %}
+
+
+  $(function () {
+    $("#create-project-btn").click(function () {
+      $(".ui.modal.create").modal('show');
+    });
+    $(".ui.modal.create").modal({
+      closable: true
+    });
+  });
+
 </script>
 {% endblock %}
