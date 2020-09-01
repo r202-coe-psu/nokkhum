@@ -2,30 +2,32 @@
 {% import '/base/html-renderer.html' as renderer %}
 
 {% block dashboard_title %}
-  Project: {{project.name}}
+Project: {{project.name}}
 {% endblock %}
 
 {% block breadcrumbs %}
-  {{ super() }}
-  <i class="right angle icon divider"></i>
-  <a class="section" href="{{ url_for('projects.view',project_id=project.id) }}">{{project.name}}</a>
+{{ super() }}
+<i class="right angle icon divider"></i>
+<a class="section" href="{{ url_for('projects.view',project_id=project.id) }}">{{project.name}}</a>
 {% endblock %}
 
 {% block content %}
 <input id="project-id" type="hidden" value="{{project.id}}">
 <script type="text/python" src="{{ url_for('static', filename='brython/processor.py') }}"></script>
 <div>
-  
+
   <div class="field">
     {% if 'admin' in current_user.roles or current_user == project.owner or current_user in project.assistant%}
-      <a class="ui primary button" href="{{ url_for('cameras.add', project_id=project.id) }}"><i class="plus icon"></i>Add Camera</a>
+    <a class="ui primary button" href="{{ url_for('cameras.add', project_id=project.id) }}"><i class="plus icon"></i>Add
+      Camera</a>
     {% endif %}
-    <a class="ui secondary button" href="{{ url_for('maps.view', project_id=project.id)}}" target="_blank"><i class="world icon"></i>Map</a>
-  </div> 
+    <a class="ui secondary button" href="{{ url_for('maps.view', project_id=project.id)}}" target="_blank"><i
+        class="world icon"></i>Map</a>
+  </div>
 
   <div class="row">
     <div class="column">
-    </br>
+      </br>
       <h3 class="ui header">Your Camera</h3>
       {% if project.cameras %}
       <table class="ui celled table">
@@ -41,16 +43,22 @@
         </thead>
         <tbody>
           {% for camera in project.cameras -%}
-            {% if camera.status=="active" %}
-              <tr>
-                <td data-label="Select" width="50px"><input type="checkbox" id="select-{{camera.id}}" onclick="select_camera('{{ camera.id }}')"></td>
-                <td data-label="Name"><a href="{{ url_for('cameras.view', project_id=project.id, camera_id=camera.id) }}" style=" color:black">{{ camera.name }}</a></td>
-                <td data-label="Camera">
-                  <a class="ui circular primary icon button" href="{{ url_for('cameras.view', project_id=project.id, camera_id=camera.id) }}"><i class="eye icon"></i></a>
-                  <a class="ui circular primary icon button" href="{{ url_for('storages.list_storage_by_processor', processor_id=camera.get_processor().id) }}"><i class="folder icon"></i></a>
-                </td>
-                <td data-label="Processor" class="processor-state" id="state-{{camera.id}}">
-                  {#% for processor in processors %}
+          {% if camera.status=="active" %}
+          <tr>
+            <td data-label="Select" width="50px"><input type="checkbox" id="select-{{camera.id}}"
+                onclick="select_camera('{{ camera.id }}')"></td>
+            <td data-label="Name"><a href="{{ url_for('cameras.view', project_id=project.id, camera_id=camera.id) }}"
+                style=" color:black">{{ camera.name }}</a></td>
+            <td data-label="Camera">
+              <a class="ui circular primary icon button"
+                href="{{ url_for('cameras.view', project_id=project.id, camera_id=camera.id) }}"><i
+                  class="eye icon"></i></a>
+              <a class="ui circular primary icon button"
+                href="{{ url_for('storages.list_storage_by_processor', processor_id=camera.get_processor().id) }}"><i
+                  class="folder icon"></i></a>
+            </td>
+            <td data-label="Processor" class="processor-state" id="state-{{camera.id}}">
+              {#% for processor in processors %}
                     {% if processor.camera == camera %}
                       {% if processor.camera_is_running() %}
                         yes
@@ -59,104 +67,123 @@
                       {% endif %}
                     {% endif %}
                   {% endfor %#}
-                </td>
-                <td >
-                  <button class="ui circular primary icon button startlpr" id="{{camera.id}}/{{project.id}}"><i id="{{camera.id}}/{{project.id}}" class="play icon"></i></button>
-                  <button class="ui circular primary icon button stoplpr" id="{{camera.id}}/{{project.id}}"><i id="{{camera.id}}/{{project.id}}" class="stop icon"></i></button>
-                </td>
-                <td>
-                  {% if 'admin' in current_user.roles or current_user == project.owner or current_user in project.assistant %}
-                    <a class="ui circular primary icon button" href="{{ url_for('cameras.edit', project_id=project.id, camera_id=camera.id) }}"><i class="edit icon"></i></a>
-                  {% endif %}
-                  {% if 'admin' in current_user.roles or current_user == project.owner %}  
-                    <button id="btn-modal-{{camera.id}}" class="ui red circular primary icon button"><i class="trash icon"></i></button>
-                  {% endif %}
-                  <div class="ui modal" id="delete-notification-{{camera.id}}">
-                      <i class="close icon"></i>
-                      <div class="header">
-                        Delete Camera
-                      </div>
-                      <div class="image content">
-                        <div class="description">
-                            Are you sure you want to delete camera: "{{ camera.name }}"
-                        </div>
-                      </div>
-                      <div class="actions">
-                        <div class="ui red  cancel  button"><i class="remove icon"></i>No</div>
-                        <a class="ui green ok button" href="{{ url_for('cameras.delete', project_id=project.id, camera_id=camera.id) }}"><i class="checkmark icon"></i>Yes</a>
-                      </div>
-                    </div>
-                </td>
-              </tr>
-            {% endif %}
+            </td>
+            <td>
+              <button class="ui circular primary icon button startlpr" id="{{camera.id}}/{{project.id}}"><i
+                  id="{{camera.id}}/{{project.id}}" class="play icon"></i></button>
+              <button class="ui circular primary icon button stoplpr" id="{{camera.id}}/{{project.id}}"><i
+                  id="{{camera.id}}/{{project.id}}" class="stop icon"></i></button>
+            </td>
+            <td>
+              {% if 'admin' in current_user.roles or current_user == project.owner or current_user in project.assistant %}
+              <a class="ui circular primary icon button"
+                href="{{ url_for('cameras.edit', project_id=project.id, camera_id=camera.id) }}"><i
+                  class="edit icon"></i></a>
+              {% endif %}
+              {% if 'admin' in current_user.roles or current_user == project.owner %}
+              <button id="btn-modal-{{camera.id}}" class="ui red circular primary icon button"><i
+                  class="trash icon"></i></button>
+              {% endif %}
+              <div class="ui modal" id="delete-notification-{{camera.id}}">
+                <i class="close icon"></i>
+                <div class="header">
+                  Delete Camera
+                </div>
+                <div class="image content">
+                  <div class="description">
+                    Are you sure you want to delete camera: "{{ camera.name }}"
+                  </div>
+                </div>
+                <div class="actions">
+                  <div class="ui red  cancel  button"><i class="remove icon"></i>No</div>
+                  <a class="ui green ok button"
+                    href="{{ url_for('cameras.delete', project_id=project.id, camera_id=camera.id) }}"><i
+                      class="checkmark icon"></i>Yes</a>
+                </div>
+              </div>
+            </td>
+          </tr>
+          {% endif %}
           {%- endfor %}
         </tbody>
       </table>
-    {% else %}
+      {% else %}
       <div class="ui info message">
         <div class="header">
           No Camera
         </div>
       </div>
-    {% endif %}
-  <button id="send" onclick="send_camera()" class="ui primary button" href="{{ url_for('cameras.grid_view',project_id=project.id) }}"  data-tooltip="Please Select Camera"><i class="eye icon"></i> View Selected<p>(<span id="limit">0</span>/4)</p></button>
-  
-</div>
-<script type="text/python" src="{{ url_for('static', filename='brython/controller.py') }}"></script>
-{% endblock %}
+      {% endif %}
+      <button id="send" onclick="send_camera()" class="ui primary button"
+        href="{{ url_for('cameras.grid_view',project_id=project.id) }}" data-tooltip="Please Select Camera"><i
+          class="eye icon"></i> View Selected<p>(<span id="limit">0</span>/4)</p></button>
 
-{% block additional_js %}
-<script src="{{ url_for('static', filename='node_modules/fomantic-ui-css/components/form.min.js') }}"></script>
-<script type="text/javascript">
-  {% for camera in project.cameras %}
-    {% if camera.status=="active" %}
-      $('#btn-modal-{{camera.id}}').click(function() {
+    </div>
+    <script type="text/python">
+      from processors import status
+      status_url = "{{ url_for('processor.get_state', project_id=project.id) }}"
+      processor_status = status.ProcessorStatus(status_url, icon_size="big")
+      processor_status.start()
+    </script>
+
+    {% endblock %}
+
+    {% block additional_js %}
+    <script type="text/javascript">
+      brython(1);
+    </script>
+    <script type="text/javascript" src="{{ url_for('static', filename='brython/processors.brython.js') }}"></script>
+    <script src="{{ url_for('static', filename='node_modules/fomantic-ui-css/components/form.min.js') }}"></script>
+    <script type="text/javascript">
+      {% for camera in project.cameras %}
+      {% if camera.status == "active" %}
+      $('#btn-modal-{{camera.id}}').click(function () {
         $('#delete-notification-{{camera.id}}').modal('show');
       });
-    {% endif %}
-  {% endfor %}
-</script>
-<script type="text/javascript">
-  var selected=[]
-  document.getElementById("send").disabled = true;
-  function select_camera(camera_id) {
-    var checkBox = document.getElementById("select-"+camera_id);
-    var camera = document.querySelectorAll('input[type="checkbox"]');
-    if (checkBox.checked == true){
-      if(selected.length<4)
-        selected.push(camera_id);
-      }
-    else if (checkBox.checked == false){
-      selected=selected.filter(function(value, index, arr){
-          return value != camera_id;
-      });
-    }
-    if (selected.length==0){
+      {% endif %}
+      {% endfor %}
+    </script>
+    <script type="text/javascript">
+      var selected = []
       document.getElementById("send").disabled = true;
-    }
-    else if (selected.length>=4){
-      for(var index=0;index<camera.length;index++){
-        camera[index].disabled=true;
+      function select_camera(camera_id) {
+        var checkBox = document.getElementById("select-" + camera_id);
+        var camera = document.querySelectorAll('input[type="checkbox"]');
+        if (checkBox.checked == true) {
+          if (selected.length < 4)
+            selected.push(camera_id);
+        }
+        else if (checkBox.checked == false) {
+          selected = selected.filter(function (value, index, arr) {
+            return value != camera_id;
+          });
+        }
+        if (selected.length == 0) {
+          document.getElementById("send").disabled = true;
+        }
+        else if (selected.length >= 4) {
+          for (var index = 0; index < camera.length; index++) {
+            camera[index].disabled = true;
+          }
+          for (var camera in selected) {
+            document.getElementById("select-" + (selected[camera])).disabled = false;
+          }
+        }
+        else {
+          for (var index = 0; index < camera.length; index++) {
+            camera[index].disabled = false;
+          }
+          camera.disabled = false;
+          document.getElementById("send").disabled = false;
+        }
+        count_limit()
       }
-      for(var camera in selected ){
-        document.getElementById("select-"+(selected[camera])).disabled = false;
+      function send_camera() {
+        console.log('array: ' + selected)
+        window.location.replace("{{ url_for('cameras.grid_view', project_id=project.id) }}" + "&cameras=" + selected);
       }
-    }
-    else{
-      for(var index=0;index<camera.length;index++){
-        camera[index].disabled=false;
+      function count_limit() {
+        document.getElementById("limit").innerHTML = selected.length;
       }
-      camera.disabled = false;
-      document.getElementById("send").disabled = false;
-    }
-    count_limit()
-  }
-  function send_camera(){
-    console.log('array: '+ selected)
-    window.location.replace("{{ url_for('cameras.grid_view', project_id=project.id) }}" + "&cameras=" + selected);
-  }
-  function count_limit() {
-  document.getElementById("limit").innerHTML = selected.length;
-}
-</script>
-{% endblock %}
+    </script>
+    {% endblock %}

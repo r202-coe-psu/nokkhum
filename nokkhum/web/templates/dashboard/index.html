@@ -29,7 +29,8 @@
               {% else %}
               {% for camera in project.cameras[:5] %}
               <div class="column" style="padding-top: 0;">{{ camera.name }}</div>
-              <div class="column" style="padding-top: 0;">{{ camera.status }}</div>
+              <div class="column" style="padding-top: 0;" class="processor-state" id="state-{{camera.id}}"><i
+                  class="circle icon"></i></div>
               {% endfor %}
               {% endif %}
             </div>
@@ -38,7 +39,7 @@
         </div>
         <div class="extra content">
           <div class="ui two buttons">
-            <div class="ui basic blue button">See more...</div>
+            <a class="ui basic blue button" href="{{ url_for('projects.view', project_id=project.id) }}">See more...</a>
           </div>
         </div>
       </div>
@@ -48,10 +49,21 @@
   {% endfor %}
 </div>
 {% endif %}
+
+
+<script type="text/python">
+  from processors import status
+  status_url = "{{ url_for('processor.get_state_all_projects') }}"
+  processor_status = status.ProcessorStatus(status_url, icon_size="large")
+  processor_status.start()
+</script>
+
 {% endblock %}
 
 {% block additional_js %}
 {{ super() }}
+
+<script type="text/javascript" src="{{ url_for('static', filename='brython/processors.brython.js') }}"></script>
 <script>
   $(function () {
     $("#create-project-a").click(function () {

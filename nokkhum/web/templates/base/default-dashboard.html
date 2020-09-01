@@ -163,9 +163,17 @@
                   </h1>
                 </div>
                 {% if 'dashboard' in request.path or 'projects' in request.path%}
-                <div class="right floated column right aligned" style="color: #236495;">
-                  <a id="create-project-btn" class="ui button primary">Add New Project<i class=" add icon"
-                      style="margin-left: 1rem;"></i></a>
+                <div class="ui grid right aligned" style="color: #236495; padding-right: 2rem; padding-top: 1rem;">
+                  <form class="ui form" style="padding-right: 0;" method="GET">
+                    <div class="ui small left icon input">
+                      <input type="text" id="project_search" name="project_search" placeholder="Search ...">
+                      <i class="search icon"></i>
+                    </div>
+                  </form>
+                  <div><a id="create-project-btn" class="ui button primary">Add New Project<i class=" add icon"
+                        style="margin-left: 1rem;"></i></a></div>
+
+
                 </div>
                 {% endif %}
               </div>
@@ -215,6 +223,7 @@
 {% endblock body %}
 
 {% block additional_js %}
+
 <script>
   $(function () {
     $("#create-project-btn").click(function () {
@@ -224,5 +233,6 @@
       closable: true
     });
   });
+
 </script>
 {% endblock %}

@@ -17,7 +17,10 @@ module = Blueprint("projects", __name__, url_prefix="/projects")
 @login_required
 def index():
     my_projects = list()
-    projects = models.Project.objects().order_by("-id")
+    project_search = request.args.get("project_search", "")
+    projects = models.Project.objects(
+        status="active", name__icontains=project_search
+    ).order_by("-id")
     for project in projects:
         if (
             (project.is_member(current_user._get_current_object()) is True)
@@ -37,9 +40,12 @@ def create():
     project_name = request.form.get("name")
     print(project_name)
     if project_name:
-        project = models.Project(name=project_name)
-        # form.populate_obj(project)
-        project.owner = current_user._get_current_object()
+        project = models.Project.objects(name=project_name).first()
+        if project:
+            return redirect(request.referrer)
+        project = models.Project(
+            name=project_name, owner=current_user._get_current_object()
+        )
         project.users.append(current_user._get_current_object())
         # now = datetime.datetime.now()
         # if project.created_date is None:

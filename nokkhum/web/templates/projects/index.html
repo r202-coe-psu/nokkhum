@@ -1,19 +1,12 @@
 {% extends '/base/default-dashboard.html' %}
 
 {% block dashboard_title %}
-Projects
+My Projects
 {% endblock %}
 
 {% block content %}
-
-</br>
-<a class="ui primary button" href="{{ url_for('projects.create') }}"><i class="folder icon"></i>Create Project</a>
-
-
 <div class="row">
   <div class="column">
-    </br>
-    <h3 class="ui header">Your Project</h3>
     {% if projects  %}
     <table class="ui celled table">
       <thead>
