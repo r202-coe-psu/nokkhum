@@ -47,8 +47,6 @@ def create():
             name=project_name, owner=current_user._get_current_object()
         )
         project.users.append(current_user._get_current_object())
-        # now = datetime.datetime.now()
-        # if project.created_date is None:
         project.created_date = datetime.datetime.now()
         project.updated_date = datetime.datetime.now()
         project.save()

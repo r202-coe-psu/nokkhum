@@ -15,35 +15,37 @@ module = Blueprint("cameras", __name__, url_prefix="/cameras")
 def add():
     project_id = request.args.get("project_id")
     form = forms.cameras.CameraForm()
+    form.frame_size.choices = [
+        ("640*360", "640 x 360"),
+        ("854*480", "854 x 480"),
+        ("1280*720", "1280 x 720"),
+        ("1920*1080", "1920 x 1080"),
+    ]
     project = models.Project.objects.get(id=project_id)
-    if (
+    if not (
         "admin" in current_user.roles
         or current_user == project.owner
         or current_user in project.assistant
     ):
-        if not form.validate_on_submit():
-            return render_template(
-                "/cameras/add-camera.html", form=form, project=project
-            )
-        camera = models.Camera(
-            name=form.name.data,
-            frame_rate=form.frame_rate.data,
-            width=form.width.data,
-            height=form.height.data,
-            location=[form.longitude.data, form.latitude.data],
-            uri=form.uri.data,
-            project=project,
-        )
-        camera.save()
-        processor = models.Processor(
-            camera=camera, project=project, storage_period=form.storage_period.data
-        )
-        processor.save()
-    else:
-        if not form.validate_on_submit():
-            return render_template(
-                "/cameras/add-camera.html", form=form, project=project
-            )
+        return redirect(url_for("projects.view", project_id=project_id))
+    if not form.validate_on_submit():
+        return render_template("/cameras/add-camera.html", form=form, project=project)
+    width, height = form.frame_size.data.split("*")
+    camera = models.Camera(
+        name=form.name.data,
+        frame_rate=form.frame_rate.data,
+        width=width,
+        height=height,
+        location=[form.longitude.data, form.latitude.data],
+        uri=form.uri.data,
+        project=project,
+    )
+    camera.save()
+    processor = models.Processor(
+        camera=camera, project=project, storage_period=form.storage_period.data
+    )
+    processor.save()
+
     return redirect(url_for("projects.view", project_id=project.id))
 
 
@@ -82,32 +84,34 @@ def edit():
     camera = models.Camera.objects.get(id=camera_id)
     processor = models.Processor.objects.get(camera=camera, project=project)
     form = forms.cameras.CameraForm(obj=camera)
-    if (
+    form.frame_size.choices = [
+        ("640*360", "640 x 360"),
+        ("854*480", "854 x 480"),
+        ("1280*720", "1280 x 720"),
+        ("1920*1080", "1920 x 1080"),
+    ]
+    if not (
         "admin" in current_user.roles
         or current_user == project.owner
         or current_user in project.assistant
     ):
-        if not form.validate_on_submit():
-            form.longitude.data = camera.location[0]
-            form.latitude.data = camera.location[1]
-            form.storage_period.data = processor.storage_period
-            return render_template(
-                "/cameras/edit-camera.html", form=form, camera=camera, project=project
-            )
-        processor.storage_period = form.storage_period.data
-        processor.save()
-        camera.location = [form.longitude.data, form.latitude.data]
-        form.populate_obj(camera)
-        camera.save()
-    else:
-        if not form.validate_on_submit():
-            form.longitude.data = camera.location[0]
-            form.latitude.data = camera.location[1]
-            form.storage_period.data = processor.storage_period
-            return render_template(
-                "/cameras/edit-camera.html", form=form, camera=camera, project=project
-            )
-
+        return redirect(url_for("projects.view", project_id=project_id))
+    if not form.validate_on_submit():
+        form.frame_size.data = f"{camera.width}*{camera.height}"
+        form.longitude.data = camera.location[0]
+        form.latitude.data = camera.location[1]
+        form.storage_period.data = processor.storage_period
+        return render_template(
+            "/cameras/add-camera.html", form=form, camera=camera, project=project
+        )
+    width, height = form.frame_size.data.split("*")
+    processor.storage_period = form.storage_period.data
+    processor.save()
+    camera.location = [form.longitude.data, form.latitude.data]
+    form.populate_obj(camera)
+    camera.width = width
+    camera.height = height
+    camera.save()
     return redirect(url_for("projects.view", project_id=project.id))
 
 

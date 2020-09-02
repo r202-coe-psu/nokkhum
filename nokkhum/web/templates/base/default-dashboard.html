@@ -156,13 +156,13 @@
         <div class="ui vertical dividing segment">
           <div class="introduction">
             <div class="ui grid">
-              <div class="four column row">
+              <div class="three column row">
                 <div class="left floated column">
                   <h1 class="ui header">
                     {{ self.dashboard_title() }}
                   </h1>
                 </div>
-                {% if 'dashboard' in request.path or 'projects' in request.path%}
+                {% if 'dashboard' in request.path or '/projects/' == request.path%}
                 <div class="ui grid right aligned" style="color: #236495; padding-right: 2rem; padding-top: 1rem;">
                   <form class="ui form" style="padding-right: 0;" method="GET">
                     <div class="ui small left icon input">
