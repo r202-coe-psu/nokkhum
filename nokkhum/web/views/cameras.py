@@ -5,7 +5,7 @@ import json
 from nokkhum import models
 
 from .. import forms
-
+from .storages import get_storage_path
 
 module = Blueprint("cameras", __name__, url_prefix="/cameras")
 
@@ -56,6 +56,7 @@ def view():
     camera_id = request.args.get("camera_id")
     project = models.Project.objects.get(id=project_id)
     camera = models.Camera.objects.get(id=camera_id)
+    root = get_storage_path()
     if camera is None:
         return render_template("/projects/project.html")
     return render_template("/cameras/camera.html", camera=camera, project=project)

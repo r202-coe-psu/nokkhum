@@ -3,9 +3,10 @@ import javascript
 
 
 class ProcessorStatus:
-    def __init__(self, url, icon_size="large"):
+    def __init__(self, url, icon_size="large", type="circle"):
         self.icon_size = icon_size
         self.get_state_url = url
+        self.type = type
 
     def disable_button(self, docs, cam_id):
         for doc in docs:
@@ -58,9 +59,15 @@ class ProcessorStatus:
                 self.enable_button(document.select(".startlpr"), data_id)
 
             i.class_name = f"ui {color} circle icon {self.icon_size}"
+            label = html.DIV(
+                data["state"].capitalize(), Class=f"ui {color} large label"
+            )
             try:
                 document[f"state-{data['camera_id']}"].text = ""
-                document[f"state-{data['camera_id']}"] <= i + s
+                if self.type == "text":
+                    document[f"state-{data['camera_id']}"] <= label
+                elif self.type == "circle":
+                    document[f"state-{data['camera_id']}"] <= i + s
             except Exception:
                 continue
 
@@ -71,7 +78,8 @@ class ProcessorStatus:
 
     def get_all_camera_state(self):
         ajax.get(
-            f"{self.get_state_url}", oncomplete=self.on_ajax_complete,
+            f"{self.get_state_url}",
+            oncomplete=self.on_ajax_complete,
         )
 
     def start(self):
