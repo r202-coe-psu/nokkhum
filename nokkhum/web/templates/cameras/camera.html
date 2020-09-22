@@ -2,34 +2,50 @@
 {% import '/base/html-renderer.html' as renderer %}
 
 {% block dashboard_title %}
-  Camera: {{camera.name}}
+<h2><a href="{{ url_for('projects.view', project_id=camera.project.id) }}">{{ camera.project.name | title }}</a>>
+  Camera: {{camera.name}}</h2>
 {% endblock %}
-
-{% block breadcrumbs %}
-  {{ super() }}
-  <i class="right angle icon divider"></i>
-  <a class="section" href="{{ url_for('cameras.view', project_id=project.id, camera_id=camera.id) }}">{{camera.name}}</a>
-{% endblock %}
-
 {% block content %}
-  <input id="streaming-url" type="hidden" value="{{ config.get('NOKKHUM_LPRSTREAMING_URL', 'localhost') }}">
-{#
-<script type="text/python" id="test1" src="{{ url_for('static', filename='brython/camera.py') }}"></script>
-#}
+<div class="ui horizontal segments" style="margin-top: 2rem;">
+  <div class="ui segment">
+    <p><img src="{{ camera.get_streaming_url() }}" width="100%"></p>
+  </div>
+  <div class="ui segment">
+    <div class="ui basic segments">
+      <div class="ui segment">
+        <i class="big folder icon"></i> 20200921
+      </div>
+      <div class="ui segment">
+        <p>Middle</p>
+      </div>
+      <div class="ui segment">
+        <p>Middle</p>
+      </div>
+      <div class="ui segment">
+        <p>Middle</p>
+      </div>
+      <div class="ui segment">
+        <p>Bottom</p>
+      </div>
+    </div>
+  </div>
+</div>
 
+<!-- <input id="streaming-url" type="hidden" value="{{ config.get('NOKKHUM_LPRSTREAMING_URL', 'localhost') }}">
 <div class="ui grid" style="margin-top: 1em;">
   <div class="twelve wide centered column">
     <div class="ui segment column">
       <div class="ui stackable two column grid">
         <div class="black column">
-          <img src="{{ camera.get_streaming_url() }}" width="100%">
+           <img src="{{ camera.get_streaming_url() }}" width="100%">
         </div>
         <div class="column">
           <div class="ui divided huge list">
             <div class="item">
               <i class="folder icon"></i>
               <div class="content">
-                <a href="{{ url_for('storages.list_storage_by_processor', processor_id=camera.get_processor().id) }}"></i> Storage</a>
+                <a href="{{ url_for('storages.list_storage_by_processor', processor_id=camera.get_processor().id) }}"></i>
+                  Storage</a>
               </div>
             </div>
             <div class="item">
@@ -43,18 +59,5 @@
       </div>
     </div>
   </div>
-</div>
-{% endblock %}
-
-
-{% block additional_js %}
-{#
-<script src="{{ url_for('static', filename='node_modules/fomantic-ui-css/components/form.min.js') }}"></script>
-<script type="text/javascript">
-  function modal_picture(data) {
-    $('#picture').modal('show');
-    document.getElementById("pic").src = data ;
-  }
-</script>
-#}
+</div> -->
 {% endblock %}

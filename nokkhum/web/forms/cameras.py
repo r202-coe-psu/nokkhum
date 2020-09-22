@@ -10,10 +10,10 @@ class CameraForm(FlaskForm):
     # width = fields.FloatField()
     # height = fields.FloatField()
     latitude = fields.FloatField(
-        "Latitude", default=0, validators=[validators.NumberRange(min=-180, max=180)]
+        "Latitude", validators=[validators.NumberRange(min=-180, max=180)]
     )
     longitude = fields.FloatField(
-        "Longitude", default=0, validators=[validators.NumberRange(min=-180, max=180)]
+        "Longitude", validators=[validators.NumberRange(min=-180, max=180)]
     )
     uri = fields.StringField("URI")
 
@@ -35,4 +35,3 @@ class InitCameraForm(FlaskForm):
         "Camera Model", validators=[validators.InputRequired()]
     )
     rtsp_url = fields.StringField("RTSP URL", validators=[validators.InputRequired()])
-

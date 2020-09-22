@@ -38,10 +38,10 @@ Add new camera
                   <label>Locations</label>
                   <div class="two fields">
                     <div class="field">
-                      <input type="text" name="latitude" placeholder="Latitude">
+                      {{form.latitude(placeholder="Latitude")}}
                     </div>
                     <div class="field">
-                      <input type="text" name="longitude" placeholder="Longitude">
+                      {{form.longitude(placeholder="Longitude")}}
                     </div>
                   </div>
                 </div>
@@ -98,6 +98,22 @@ Add new camera
             {
               type: "empty",
               prompt: "Please enter frame rate"
+            }
+          ]
+        },
+        latitude: {
+          rules: [
+            {
+              type: "empty",
+              prompt: "Please enter Latitude"
+            }
+          ]
+        },
+        longitude: {
+          rules: [
+            {
+              type: "empty",
+              prompt: "Please enter Longitude"
             }
           ]
         },
