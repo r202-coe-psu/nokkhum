@@ -56,10 +56,22 @@ def view():
     camera_id = request.args.get("camera_id")
     project = models.Project.objects.get(id=project_id)
     camera = models.Camera.objects.get(id=camera_id)
+    processor = camera.get_processor()
     root = get_storage_path()
+    processor_path = root / str(processor.id)
+    date_dirs = [p for p in processor_path.iterdir() if p.is_dir()]
+    print(date_dirs[-1])
+
+    # processor_path = root / str(processor.id) / date_dirs[-1].name
+
     if camera is None:
         return render_template("/projects/project.html")
-    return render_template("/cameras/camera.html", camera=camera, project=project)
+    return render_template(
+        "/cameras/camera.html",
+        camera=camera,
+        project=project,
+        date_dir=date_dirs[-1],
+    )
 
 
 @module.route("/view_advance", methods=["GET"])
