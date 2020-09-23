@@ -13,7 +13,9 @@
   <div class="ui segment">
     <div class="ui basic segments">
       <div class="ui segment">
-        <i class="big folder icon"></i> {{ date_dir.name }}
+        <i class="big folder icon"></i> {{ date_dir.name }} <a
+          href="{{ url_for('storages.list_records_by_date', processor_id=camera.get_processor().id, date_dir=date_dir.name) }}">See
+          all</a>
       </div>
       <div class="ui segment">
         <p>Middle</p>
