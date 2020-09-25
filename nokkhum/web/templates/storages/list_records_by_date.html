@@ -36,7 +36,6 @@ Storage Camera: {{camera.name}}
       {%- if not f.name.startswith('_') %}
       <a class="header"
         href="{{ url_for('storages.view_video', processor_id=processor.id, date_dir=date_dir, filename=f.name) }}">{{ name }}</a>
-      {# <div class="description">Updated 10 mins ago</div> #}
       {% else %}
       <div class="header">{{ name }}</div>
       <div class="description">Recording</div>

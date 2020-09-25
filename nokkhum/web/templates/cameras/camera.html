@@ -3,12 +3,16 @@
 
 {% block dashboard_title %}
 <h2><a href="{{ url_for('projects.view', project_id=camera.project.id) }}">{{ camera.project.name | title }}</a>>
-  Camera: {{camera.name}}</h2>
+  Camera: {{camera.name}} <a href="{{ url_for('cameras.edit', camera_id=camera.id, project_id=project.id) }}"><i
+      class="edit icon"></i></a>
+</h2>
+
+
 {% endblock %}
 {% block content %}
 <div class="ui horizontal segments" style="margin-top: 2rem;">
   <div class="ui segment">
-    <p><img src="{{ camera.get_streaming_url() }}" width="100%"></p>
+    <p><img id="monitor" src="{{ camera.get_streaming_url() }}" width="100%"></p>
   </div>
   <div class="ui segment">
     <div class="ui basic segments">
@@ -17,18 +21,30 @@
           href="{{ url_for('storages.list_records_by_date', processor_id=camera.get_processor().id, date_dir=date_dir.name) }}">See
           all</a>
       </div>
+      {% for f in files_list %}
+      {%- if f.name.startswith('_') %}
+      {% set image_style = ' disabled' %}
+      {% else %}
+      {% set image_style = '' %}
+      {%- endif %}
       <div class="ui segment">
-        <p>Middle</p>
+        <div class="ui small image{{ image_style }}">
+          {%- if not f.name.startswith('_') %}
+          <img
+            src="{{ url_for('storages.download', processor_id=processor.id, date_dir=date_dir.name, filename='{}-thumbnail.png'.format(f.stem)) }}">
+          {% else %}
+          <img
+            src="{{ url_for('storages.download', processor_id=processor.id, date_dir=date_dir.name, filename='{}-thumbnail.png'.format(f.stem[1:])) }} ">
+          {%- endif %}
+        </div>
+        {% set name = f.name[f.name.find('-')+1: f.name.rfind('-')]  %}
+        {%- if not f.name.startswith('_') %}
+        <a class="header" href="#" onclick="switchMonitor({{ loop.index }}-1)">{{ name }}</a>
+        {% else %}
+        <a class="ui red label" href="#" onclick="switchMonitor()">Live Streaming</a>
+        {%- endif %}
       </div>
-      <div class="ui segment">
-        <p>Middle</p>
-      </div>
-      <div class="ui segment">
-        <p>Middle</p>
-      </div>
-      <div class="ui segment">
-        <p>Bottom</p>
-      </div>
+      {% endfor %}
     </div>
   </div>
 </div>
@@ -62,4 +78,12 @@
     </div>
   </div>
 </div> -->
+{% endblock %}
+{% block additional_js %}
+<script>
+  function switchMonitor(idx = -1) {
+    console.log('dd', idx)
+  }
+</script>
+
 {% endblock %}
