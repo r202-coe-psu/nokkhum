@@ -11,8 +11,8 @@
 {% endblock %}
 {% block content %}
 <div class="ui horizontal segments" style="margin-top: 2rem;">
-  <div class="ui segment">
-    <p><img id="monitor" src="{{ camera.get_streaming_url() }}" width="100%"></p>
+  <div id="monitor" class="ui segment">
+    <p><img src="{{ camera.get_streaming_url() }}" width="100%"></p>
   </div>
   <div class="ui segment">
     <div class="ui basic segments">
@@ -39,9 +39,10 @@
         </div>
         {% set name = f.name[f.name.find('-')+1: f.name.rfind('-')]  %}
         {%- if not f.name.startswith('_') %}
-        <a class="header" href="#" onclick="switchMonitor({{ loop.index }}-1)">{{ name }}</a>
+        {% set path_url = url_for('storages.download', processor_id=processor.id, date_dir=date_dir.name, filename=f.name) %}
+        <a class="header" href="#" onclick="switchMonitor('{{path_url}}')">{{ name }}</a>
         {% else %}
-        <a class="ui red label" href="#" onclick="switchMonitor()">Live Streaming</a>
+        <a class="ui red label" href="#" onclick="switchMonitor('live_stream')">Live Streaming</a>
         {%- endif %}
       </div>
       {% endfor %}
@@ -81,8 +82,13 @@
 {% endblock %}
 {% block additional_js %}
 <script>
-  function switchMonitor(idx = -1) {
-    console.log('dd', idx)
+  function switchMonitor(url) {
+    if (url == "live_stream") {
+      document.getElementById("monitor").innerHTML = '<p><img src="{{ camera.get_streaming_url() }}" width="100%"></p>';
+    }
+    else {
+      document.getElementById("monitor").innerHTML = '<p><video width="100%" controls> <source src="' + url + '" type="video/mp4"> </video></p>';
+    }
   }
 </script>
 

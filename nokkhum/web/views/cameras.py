@@ -60,23 +60,29 @@ def view():
         return render_template("/projects/project.html")
     processor = camera.get_processor()
     date_dirs = get_dir_by_processor(str(processor.id))
-
-    files_list = get_file_by_dir_date(str(processor.id), date_dirs[-1].name)
-    files_list.sort(reverse=True)
-    files_list = files_list[:5]
+    print(date_dirs)
+    files_list = []
     videos_path = []
-    for file in files_list:
-        videos_path.append(
-            get_video_path(str(processor.id), date_dirs[-1].name, file.name)
-        )
-    print(videos_path)
+    date_dir = ""
+    if date_dirs:
+        files_list = get_file_by_dir_date(str(processor.id), date_dirs[0].name)
+        files_list.sort(reverse=True)
+        files_list = files_list[:5]
+
+        for file in files_list:
+            videos_path.append(
+                get_video_path(str(processor.id), date_dirs[0].name, file.name)
+            )
+        date_dir = date_dirs[0]
+    # print(videos_path)
     return render_template(
         "/cameras/camera.html",
         camera=camera,
         processor=processor,
         project=project,
-        date_dir=date_dirs[-1],
+        date_dir=date_dir,
         files_list=files_list,
+        videos_path=videos_path,
     )
 
 

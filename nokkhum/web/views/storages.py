@@ -32,6 +32,8 @@ def get_storage_path():
 def get_dir_by_processor(processor_id):
     root = get_storage_path()
     processor_path = root / processor_id
+    if not processor_path.is_dir():
+        processor_path.mkdir(parents=True)
     date_dirs = [p for p in processor_path.iterdir() if p.is_dir()]
     return date_dirs
 
