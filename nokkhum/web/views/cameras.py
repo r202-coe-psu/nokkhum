@@ -54,7 +54,7 @@ def add():
 def view():
     project_id = request.args.get("project_id")
     camera_id = request.args.get("camera_id")
-    project = models.Project.objects.get(id=project_id)
+    project = models.Project.objects(id=project_id).first()
     camera = models.Camera.objects(id=camera_id).first()
     if camera is None:
         return render_template("/projects/project.html")

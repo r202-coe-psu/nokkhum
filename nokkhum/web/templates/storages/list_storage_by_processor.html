@@ -2,30 +2,27 @@
 {% import '/base/html-renderer.html' as renderer %}
 
 {% block dashboard_title %}
-  Storage Camera: {{camera.name}}
+<h2><a href="{{ url_for('projects.view', project_id=camera.project.id) }}">{{ camera.project.name | title }}</a>>
+  <a href="{{ url_for('cameras.view', camera_id=camera.id, project_id=camera.project.id) }}">{{camera.name}}</a> >
+  Storage
+</h2>
 {% endblock %}
-
-{#
-{% block breadcrumbs %}
-  {{ super() }}
-  <i class="right angle icon divider"></i>
-  <a class="section" href="{{ url_for('projects.view',project_id=project.id) }}">{{project.name}}</a> 
-{% endblock %}
-#}
 
 {% block content %}
-  <div>
-    <div class="ui divided items">
-      {% for d in date_dirs %}
-      <div class="item">
-        <div class="ui Large image">
-          <i class="huge folder middle aligned icon"></i>
-        </div>
-        <div class="middle aligned content">
-          <a class="header" href="{{ url_for('storages.list_records_by_date', processor_id=processor.id, date_dir=d.name) }}">{{ d.name }}</a>
-        </div>
-      </div>
-      {% endfor %}
-    </div>
+<div class="ui segment">
+  <div class="ui stackable five column centered grid">
+    {% if date_dirs | length == 0%}
+    <p style="padding-top: 1rem; padding-bottom: 1rem;"><span class="ui medium grey text">Don't have any directory in
+        this
+        processor.</span></p>
+
+    {% endif %}
+    {% for d in date_dirs %}
+    <div class="column"><a
+        href="{{ url_for('storages.list_records_by_date', processor_id=processor.id, date_dir=d.name) }}"><i
+          class="massive grey folder icon"></i><span class="ui large grey text">{{ d.name }}</span></a></div>
+    {% endfor %}
   </div>
+</div>
+
 {% endblock %}
