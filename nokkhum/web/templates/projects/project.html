@@ -31,7 +31,6 @@ Project: {{project.name}}
       <table class="ui celled table">
         <thead>
           <tr>
-            <th>Select</th>
             <th>Camera Name</th>
             <th>View Camera</th>
             <th>Processor State</th>
@@ -43,8 +42,6 @@ Project: {{project.name}}
           {% for camera in project.cameras -%}
           {% if camera.status=="active" %}
           <tr>
-            <td data-label="Select" width="50px"><input type="checkbox" id="select-{{camera.id}}"
-                onclick="select_camera('{{ camera.id }}')"></td>
             <td data-label="Name"><a href="{{ url_for('cameras.view', project_id=project.id, camera_id=camera.id) }}"
                 style=" color:black">{{ camera.name }}</a></td>
             <td data-label="Camera">
@@ -102,9 +99,7 @@ Project: {{project.name}}
         </div>
       </div>
       {% endif %}
-      <button id="send" onclick="send_camera()" class="ui primary button"
-        href="{{ url_for('cameras.grid_view',project_id=project.id) }}" data-tooltip="Please Select Camera"><i
-          class="eye icon"></i> View Selected<p>(<span id="limit">0</span>/4)</p></button>
+
 
     </div>
     <script type="text/python">
@@ -131,47 +126,5 @@ Project: {{project.name}}
       {% endif %}
       {% endfor %}
     </script>
-    <script type="text/javascript">
-      var selected = []
-      document.getElementById("send").disabled = true;
-      function select_camera(camera_id) {
-        var checkBox = document.getElementById("select-" + camera_id);
-        var camera = document.querySelectorAll('input[type="checkbox"]');
-        if (checkBox.checked == true) {
-          if (selected.length < 4)
-            selected.push(camera_id);
-        }
-        else if (checkBox.checked == false) {
-          selected = selected.filter(function (value, index, arr) {
-            return value != camera_id;
-          });
-        }
-        if (selected.length == 0) {
-          document.getElementById("send").disabled = true;
-        }
-        else if (selected.length >= 4) {
-          for (var index = 0; index < camera.length; index++) {
-            camera[index].disabled = true;
-          }
-          for (var camera in selected) {
-            document.getElementById("select-" + (selected[camera])).disabled = false;
-          }
-        }
-        else {
-          for (var index = 0; index < camera.length; index++) {
-            camera[index].disabled = false;
-          }
-          camera.disabled = false;
-          document.getElementById("send").disabled = false;
-        }
-        count_limit()
-      }
-      function send_camera() {
-        console.log('array: ' + selected)
-        window.location.replace("{{ url_for('cameras.grid_view', project_id=project.id) }}" + "&cameras=" + selected);
-      }
-      function count_limit() {
-        document.getElementById("limit").innerHTML = selected.length;
-      }
-    </script>
+
     {% endblock %}

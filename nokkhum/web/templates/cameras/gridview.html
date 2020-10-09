@@ -1,0 +1,37 @@
+{% extends '/base/default-dashboard.html' %}
+
+{% import '/base/html-renderer.html' as renderer %}
+{% block additional_head %}
+
+{% endblock %}
+{% block dashboard_title %}
+Grid View
+{% endblock %}
+
+{% block content %}
+<div class="ui grid container" style="width: 100%; padding-top: 0;">
+    <div class="two wide column" style="padding-right: 0rem;">
+        <div class="ui segment">
+            <p></p>
+        </div>
+    </div>
+    <div class="fourteen wide column" style="padding-left: 1rem;">
+        <div class="ui segment" style="height: 60rem;">
+            <div class="ui grid">
+                <div class="eight wide column"
+                    style="border-width: thin; border-style: solid; border-color: white; height: 30rem; background: #DCDCDC; padding: 0;">
+                    1</div>
+                <div class="eight wide column"
+                    style="border-width: thin; border-style: solid; border-color: white; height: 30rem; background: #DCDCDC; padding: 0;">
+                    2</div>
+                <div class="eight wide column"
+                    style="border-width: thin; border-style: solid; border-color: white; height: 30rem; background: #DCDCDC; padding: 0;">
+                    3</div>
+                <div class="eight wide column"
+                    style="border-width: thin; border-style: solid; border-color: white; height: 30rem; background: #DCDCDC; padding: 0;">
+                    4</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

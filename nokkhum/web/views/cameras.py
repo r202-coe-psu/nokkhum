@@ -156,16 +156,14 @@ def delete():
 @module.route("/grid-view", methods=["GET"])
 @login_required
 def grid_view():
-    project_id = request.args.get("project_id")
-    camera_list = []
-    project = models.Project.objects.get(id=project_id)
-    camera_id_list = request.args.get("cameras").split(",")
-    for camera_id in camera_id_list:
-        camera = models.Camera.objects.get(id=camera_id)
-        camera_list.append(camera)
-    return render_template(
-        "/cameras/camera-selected.html", project=project, camera_list=camera_list
-    )
+    # project_id = request.args.get("project_id")
+    # camera_list = []
+    # project = models.Project.objects.get(id=project_id)
+    # camera_id_list = request.args.get("cameras").split(",")
+    # for camera_id in camera_id_list:
+    #     camera = models.Camera.objects.get(id=camera_id)
+    #     camera_list.append(camera)
+    return render_template("/cameras/gridview.html")
 
 
 @module.route("/<camera_id>/startlpr", methods=["POST"])
