@@ -158,12 +158,10 @@ def delete():
 def grid_view():
     # project_id = request.args.get("project_id")
     # camera_list = []
-    # project = models.Project.objects.get(id=project_id)
-    # camera_id_list = request.args.get("cameras").split(",")
-    # for camera_id in camera_id_list:
-    #     camera = models.Camera.objects.get(id=camera_id)
-    #     camera_list.append(camera)
-    return render_template("/cameras/gridview.html")
+    user = models.User.objects.get(id=current_user._get_current_object().id)
+    projects = models.Project.objects(status="active", users__contains=user)
+
+    return render_template("/cameras/gridview.html", projects=projects)
 
 
 @module.route("/<camera_id>/startlpr", methods=["POST"])
