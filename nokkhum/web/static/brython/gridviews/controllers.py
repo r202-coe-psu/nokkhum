@@ -24,18 +24,22 @@ class GridViewController:
         """
         # retrieve data stored in drag_start (the draggable element's id)
         src = ev.dataTransfer.getData("text")
-        _, url = src.split("-")
-        elt = document[ev.target.id]
+        camera = document[src]
+        camera_id, url = src.split("-")
+        display = document[ev.target.id]
+
         img = html.IMG(src=url, width="100%")
-        elt <= img
+        display.clear()
+        display <= img
         # # set the new coordinates of the dragged object
-        # elt.style.left = "{}px".format(ev.x - m0[0])
-        # elt.style.top = "{}px".format(ev.y - m0[1])
+        # display.style.left = "{}px".format(ev.x - m0[0])
+        # display.style.top = "{}px".format(ev.y - m0[1])
         # # don't drag the object any more
-        elt.draggable = False
+        display.draggable = False
+
         # # remove the callback function
-        elt.unbind("mouseover")
-        elt.style.cursor = "auto"
+        display.unbind("mouseover")
+        display.style.cursor = "auto"
         ev.preventDefault()
 
     def start(self):
