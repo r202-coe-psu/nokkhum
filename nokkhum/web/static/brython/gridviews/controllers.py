@@ -33,10 +33,10 @@ class GridViewController:
         display = document[ev.target.id]
         try:
             document[f"img-{src}"].unbind("dragstart")
-            span = html.SPAN("Drag camera to here.", Class="ui large text")
-            document[f"img-{src}"].parent <= html.P(
-                span, style={"padding-top": "10rem"}
-            )
+            # span = html.SPAN("Drag camera to here.", Class="ui large text")
+            # document[f"img-{src}"].parent <= html.P(
+            #     span, style={"padding-top": "10rem"}
+            # )
             del document[f"img-{src}"]
 
         except Exception as e:
