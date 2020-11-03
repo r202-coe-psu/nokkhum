@@ -33,10 +33,6 @@ class GridViewController:
         display = document[ev.target.id]
         try:
             document[f"img-{src}"].unbind("dragstart")
-            # span = html.SPAN("Drag camera to here.", Class="ui large text")
-            # document[f"img-{src}"].parent <= html.P(
-            #     span, style={"padding-top": "10rem"}
-            # )
             del document[f"img-{src}"]
 
         except Exception as e:
@@ -44,15 +40,8 @@ class GridViewController:
         img = html.IMG(id=f"img-{src}", src=url, width="100%")
         display.clear()
         display <= img
-        # # set the new coordinates of the dragged object
-        # display.style.left = "{}px".format(ev.x - m0[0])
-        # display.style.top = "{}px".format(ev.y - m0[1])
-        # # don't drag the object any more
         img.draggable = True
         img.bind("dragstart", self.dragstart_img)
-        # # remove the callback function
-        # display.unbind("mouseover")
-        # display.style.cursor = "auto"
         ev.preventDefault()
 
     def start(self):
