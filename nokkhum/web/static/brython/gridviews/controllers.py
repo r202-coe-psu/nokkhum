@@ -37,7 +37,7 @@ class GridViewController:
 
         except Exception as e:
             pass
-        img = html.IMG(id=f"img-{src}", src=url, width="100%")
+        img = html.IMG(id=f"img-{src}", src=url, width="100%", height="100%")
         display.clear()
         display <= img
         img.draggable = True

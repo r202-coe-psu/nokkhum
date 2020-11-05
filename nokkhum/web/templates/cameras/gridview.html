@@ -1,15 +1,36 @@
-{% extends '/base/default-dashboard.html' %}
+{% extends "/base/base-layout.html" %}
 
 {% import '/base/html-renderer.html' as renderer %}
 {% block additional_head %}
 <script type="text/javascript" src="{{ url_for('static', filename='brython/gridviews.brython.js') }}"></script>
 {% endblock %}
-{% block dashboard_title %}
-Grid View
-<input type="text">
-{% endblock %}
+{% block body %}
 
-{% block content %}
+
+<div class="ui form" style="padding-top: 1rem;">
+    <form method="GET" name="grids-selector">
+
+        <div class="eight fields" style="padding-left: 2rem;">
+            <a class="ui button" href="{{ url_for('dashboard.index') }}">
+                <i class="left chevron icon"></i>
+                Dashboard
+            </a>
+            <div class="field">
+                <select name="grid" id="grid" onclick="this.form.submit()">
+                    {% for num in num_grids %}
+                    {% if num == request.args.get('grid', 4) | int %}
+                    <option selected="selected">{{num}} Grids</option>
+                    {% else%}
+                    <option value="{{num}}">{{num}} Grids</option>
+                    {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+
+        </div>
+
+    </form>
+</div>
 <div class="ui stackable grid container" style="width: 100%; padding-top: 0;">
     <div class="two wide column" style="padding-right: 0rem;">
         <div class="ui segment">
@@ -53,7 +74,18 @@ Grid View
     <div class="fourteen wide column" style="padding-left: 1rem;">
         <div class="ui segment" style="height: 60rem;">
             <div class="ui grid">
+                {% set grid=request.args.get("grid", 4) | int%}
+                {% if grid == 10 %}
+                {% include "/base/grids/ten_grids.html" %}
+                {% elif grid == 13 %}
+                {% include "/base/grids/thirteen_grids.html" %}
+                {% elif grid == 16 %}
+                {% include "/base/grids/sixteen_grids.html" %}
+                {% elif grid == 32 %}
                 {% include "/base/grids/thirty-two_grids.html" %}
+                {% else %}
+                {% include "/base/grids/four_grids.html" %}
+                {% endif %}
             </div>
         </div>
     </div>
@@ -71,6 +103,8 @@ gridview.start()
     $('.item')
         .popup()
         ;
-
+    // $('.select.dropdown')
+    //     .dropdown()
+    //     ;
 </script>
 {% endblock %}
