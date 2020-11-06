@@ -25,6 +25,9 @@ class GridViewController:
         ev.dataTransfer.dropEffect = "move"
         ev.preventDefault()
 
+    def clear_display(self, ev):
+        print("clear")
+
     def drop(self, ev):
         """Function attached to the destination zone.
         Describes what happens when the object is dropped, ie when the mouse is
@@ -32,21 +35,30 @@ class GridViewController:
         """
         # retrieve data stored in drag_start (the draggable element's id)
         src = ev.dataTransfer.getData("text")
-        print(src)
         camera = document[src]
         camera_id, url = src.split("-")
         display = document[ev.target.id]
         try:
             document[f"img-{src}"].unbind("dragstart")
-            del document[f"img-{src}"]
+            document[f"img-{src}"].parent.clear()
 
         except Exception as e:
             pass
-        img = html.IMG(id=f"img-{src}", src=url, height="100%")
+        img = html.IMG(
+            id=f"img-{src}",
+            src=url,
+            height="100%",
+        )
+        btn = html.A(
+            "Clear",
+            Class="ui button",
+        )
         display.clear()
         display <= img
+        display <= btn
         img.draggable = True
         img.bind("dragstart", self.dragstart_img)
+        btn.bind("click", self.clear_display)
         ev.preventDefault()
 
     def save_grid(self, ev):
@@ -77,7 +89,7 @@ class GridViewController:
             if not img_html:
                 continue
             print(img_html)
-            document[id].clear()
+            # document[id].clear()
             document[id].innerHTML = img_html
             for child in document[id].children:
                 child.bind("dragstart", self.dragstart_img)
