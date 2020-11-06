@@ -7,32 +7,37 @@
 {% block body %}
 
 
-<div class="ui form" style="padding-top: 1rem;">
-    <form method="GET" name="grids-selector">
-
-        <div class="eight fields" style="padding-left: 2rem;">
-            <a class="ui button" href="{{ url_for('dashboard.index') }}">
-                <i class="left chevron icon"></i>
-                Dashboard
-            </a>
-            <div class="field">
-                <select name="grid" id="grid" onclick="this.form.submit()">
-                    {% for num in num_grids %}
-                    {% if num == request.args.get('grid', 4) | int %}
-                    <option selected="selected">{{num}} Grids</option>
-                    {% else%}
-                    <option value="{{num}}">{{num}} Grids</option>
-                    {% endif %}
-                    {% endfor %}
-                </select>
-            </div>
-
-        </div>
-
-    </form>
+<div style="padding-top: 1rem; padding-left: 1rem;">
+    <a class="ui button" href="{{ url_for('dashboard.index') }}">
+        <i class="left chevron icon"></i>
+        Dashboard
+    </a>
 </div>
 <div class="ui stackable grid container" style="width: 100%; padding-top: 0;">
     <div class="two wide column" style="padding-right: 0rem;">
+        <div class="ui form" style="padding-top: 1rem;">
+            <form method="GET" name="grids-selector">
+                <div class="fields">
+                    <div class="twelve wide field">
+                        <select name="grid" id="grid" onclick="this.form.submit()">
+                            {% for num in num_grids %}
+                            {% if num == request.args.get('grid', 4) | int %}
+                            <option selected="selected">{{num}} Grids</option>
+                            {% else%}
+                            <option value="{{num}}">{{num}} Grids</option>
+                            {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <a id="save-grid" class="ui right green button">
+                        Save
+                    </a>
+                </div>
+
+
+
+            </form>
+        </div>
         <div class="ui segment">
             <div class="ui list">
                 {% if not projects %}
@@ -93,7 +98,7 @@
 <script type="text/python">
 from gridviews import controllers
 
-gridview = controllers.GridViewController()
+gridview = controllers.GridViewController({{request.args.get('grid', 4) | int}}, save_gird_url= "{{ url_for('gridviews.save')}}",  get_grid_url= "{{ url_for('gridviews.get_grid')}}")
 gridview.start()
 </script>
 {% endblock %}

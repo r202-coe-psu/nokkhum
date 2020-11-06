@@ -153,20 +153,6 @@ def delete():
     return redirect(url_for("projects.view", project_id=project.id))
 
 
-@module.route("/grid-view", methods=["GET"])
-@login_required
-def grid_view():
-    # project_id = request.args.get("project_id")
-    # camera_list = []
-    num_grids = [4, 10, 13, 16, 32]
-    user = models.User.objects.get(id=current_user._get_current_object().id)
-    projects = models.Project.objects(status="active", users__contains=user)
-
-    return render_template(
-        "/cameras/gridview.html", projects=projects, num_grids=num_grids
-    )
-
-
 @module.route("/<camera_id>/startlpr", methods=["POST"])
 @login_required
 def start_lpr_process(camera_id):
