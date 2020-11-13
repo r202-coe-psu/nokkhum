@@ -23,4 +23,7 @@ opencv-python
 pillow
 # sklearn
 
+# brython
+watchdog
+brython
 

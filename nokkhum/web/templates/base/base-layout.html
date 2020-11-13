@@ -1,26 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0"/>
-    <title>{% block title  %}{{ config.get('APP_TITLE') }}{% endblock %}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='node_modules/fomantic-ui-css/semantic.min.css') }}">
-    <script src="{{ url_for('static', filename='node_modules/jquery/dist/jquery.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='node_modules/brython/brython.js') }}"></script>
-    <script src="{{ url_for('static', filename='node_modules/brython/brython_stdlib.js') }}"></script>
-    <script src="{{ url_for('static', filename='node_modules/fomantic-ui-css/semantic.min.js') }}"></script>
-    <style type="text/css">
-      body {
-        background-color: #DADADA;
-      }
-    </style>
-    
-    {% block default_head %}{% endblock %}
-    {% block additional_head %}{% endblock %}
-  </head>
 
-  <body onload="brython()">
-    {% block body %}{% endblock %}
-  </body>
-	{% block additional_js %}{% endblock %}
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0" />
+  <title>{% block title  %}{{ config.get('APP_TITLE') }}{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='node_modules/fomantic-ui-css/semantic.min.css') }}">
+  <script src="{{ url_for('static', filename='node_modules/jquery/dist/jquery.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='node_modules/brython/brython.js') }}"></script>
+  <script src="{{ url_for('static', filename='node_modules/brython/brython_stdlib.js') }}"></script>
+  <script src="{{ url_for('static', filename='node_modules/fomantic-ui-css/semantic.min.js') }}"></script>
+  <style type="text/css">
+    body {
+      background-color: #f3f9fb;
+    }
+  </style>
+
+  {% block default_head %}{% endblock %}
+  {% block additional_head %}{% endblock %}
+</head>
+
+<body onload="brython()">
+  {% block body %}{% endblock %}
+</body>
+{% block additional_js %}{% endblock %}
+
 </html>

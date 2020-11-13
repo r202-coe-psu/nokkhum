@@ -2,162 +2,154 @@
 {% import '/base/html-renderer.html' as renderer %}
 
 {% block dashboard_title %}
-  Add Camera
-{% endblock %}
-
-{% block breadcrumbs %}
-  {{ super() }}
-  <i class="right angle icon divider"></i>
-  <a class="section" href="{{ url_for('cameras.add', project_id=project.id) }}">Add Camera</a>
+Add new camera
 {% endblock %}
 
 {% block content %}
-<div>
-  </br>
-  <form class="ui big form" method="POST">
-    {{ form.csrf_token }}
-    <div class="ui grid">
-      <div class="row">
-        <div class="six wide computer twelve wide tablet column">
-          <div class="field">
-            {{ renderer.render_field(form.name) }}
-          </div>
-        </div>
-      </div>
-      <div class="row">
-        <div class="three wide computer twelve wide tablet column">
-          <div class="field">
-            {{ renderer.render_field(form.frame_rate) }}
-          </div>
-        </div>
-      </div>
-      <div class="row">
-        <div class="three wide computer twelve wide tablet column">
-            <div class="row"> <span style="font-size: .92857143em; font-weight: 700;">Frame Size:</span></div>
-        </div>
-      </div>
-      <div class="row">
-        <div class="six wide computer twelve wide tablet column">
-          <div class="ui segment">
-            <div class="fields">
-              <div class="field">
-                {{ renderer.render_field(form.width) }}
+<div class="ui two column grid">
+  <div class="column">
+    <div class="ui segment">
+      <form class="ui big form" method="POST">
+        {{ form.csrf_token }}
+        <div class="left floated column">
+          <div class="ui four column grid">
+            <div class="two column row">
+              <div class="ten wide column">
+                <div class="field">
+                  {{ renderer.render_field(form.name) }}
+                </div>
               </div>
-              <div class="field">
-                {{ renderer.render_field(form.height) }}
+              <div class="six wide column">
+                <div class="field">
+                  {{ renderer.render_field(form.frame_rate) }}
+                </div>
               </div>
             </div>
-          </div>
-        <div class="row"> <span style="font-size: .92857143em; font-weight: 700;">Location:</span></div>
-        <div class="ui segment">
-          <div class="fields">
-            <div class="field">
-              {% if form.longitude.errors | count > 0 %}
-                <div class="ui negative message">
-                  {{ renderer.render_field(form.longitude) }}
+            <div class="one column row">
+              <div class="column">
+                <div class="field">
+                  {{ renderer.render_field(form.uri) }}
                 </div>
-              {% else %}
-                {{ renderer.render_field(form.longitude) }}
-              {% endif %}
+              </div>
             </div>
-            <div class="field">
-              {% if form.latitude.errors | count > 0 %}
-                <div class="ui negative message">
-                  {{ renderer.render_field(form.latitude) }}
+            <div class="two column row">
+              <div class="ten wide column">
+                <div class="field">
+                  <label>Locations</label>
+                  <div class="two fields">
+                    <div class="field">
+                      {{form.latitude(placeholder="Latitude")}}
+                    </div>
+                    <div class="field">
+                      {{form.longitude(placeholder="Longitude")}}
+                    </div>
+                  </div>
                 </div>
-              {% else %}
-                {{ renderer.render_field(form.latitude) }}
-              {% endif %}
+              </div>
+              <div class="six wide column">
+                <div class="field">
+                  {{ renderer.render_field(form.frame_size) }}
+                </div>
+              </div>
+            </div>
+            <div class="one column row">
+              <div class="five wide column">
+                <div class="field">
+                  {{ renderer.render_field(form.storage_period) }}
+                  <div class="ui pointing  label"> 0 Day: Don't remove data.</div>
+                </div>
+              </div>
+            </div>
+            <div class="one column row">
+              <div class="column">
+                <button class="ui submit primary button" type="submit">Confirm</button>
+                <a class="ui button" href="{{ url_for('projects.view',project_id=project.id) }}">Back</a>
+              </div>
             </div>
           </div>
         </div>
-        <div class="field">
-          {{ renderer.render_field(form.uri) }}
-        </div>
-        <div>
-          <a class="ui secondary button" href="#"><i class="plus icon"></i>New camera model</a>
-        </div>
-      </div>
+      </form>
     </div>
-    <div class="row">
-      <div class="three wide computer twelve wide tablet column">
-        <div class="inline field">
-          {{ renderer.render_field(form.storage_period) }}
-          <div class="ui pointing  label"> 0 day: Don't remove data.</div>
-        </div>
-        <button class="ui submit primary button" type="submit">Confirm</button>
-        <a class="ui button" href="{{ url_for('projects.view',project_id=project.id) }}">Back</a>
-      </div>
-    </div>
-    <div class="row">
-      <div class="seven wide computer twelve wide tablet column">
-        <div class="ui error message"></div>
-      </div>
-    </div>
-  </form>
+  </div>
 </div>
 {% endblock %}
 
 {% block additional_js %}
 <script src="{{ url_for('static', filename='node_modules/fomantic-ui-css/components/form.min.js') }}"></script>
 <script type="text/javascript">
-$('.ui.radio.checkbox').checkbox();
-$('.ui.form')
-  .form({
-    fields: {
-      name: {
-        rules: [
-          {
-            type   : "empty",
-            prompt : "Please enter camera name"
-          },
-          {
-            type   : "maxLength[35]",
-            prompt : "Camera name is too long (maximum is 35 characters). "
-          }
-        ]
-      },
-      frame_rate: {
-        rules: [
-          {
-            type: "empty",
-            prompt: "Please enter frame rate"
-          }
-        ]
-      },
-      width: {
-        rules: [
-          {
-            type: "empty",
-            prompt: "Please enter width"
-          }
-        ]
-      },
-      height: {
-        rules: [
-          {
-            type: "empty",
-            prompt: "Please enter height"
-          }
-        ]
-      },
-      uri: {
-        rules: [
-          {
-            type: "empty",
-            prompt: "Please enter uri"
-          }
-        ]
-      },
-      storage_period:{
-        rules: [
-          {
-            type: "decimal",
-            prompt: "Please enter a valid decimal"
-          }
-        ]
+  $('.ui.radio.checkbox').checkbox();
+  $('.ui.form')
+    .form({
+      fields: {
+        name: {
+          rules: [
+            {
+              type: "empty",
+              prompt: "Please enter camera name"
+            },
+            {
+              type: "maxLength[35]",
+              prompt: "Camera name is too long (maximum is 35 characters). "
+            }
+          ]
+        },
+        frame_rate: {
+          rules: [
+            {
+              type: "empty",
+              prompt: "Please enter frame rate"
+            }
+          ]
+        },
+        latitude: {
+          rules: [
+            {
+              type: "empty",
+              prompt: "Please enter Latitude"
+            }
+          ]
+        },
+        longitude: {
+          rules: [
+            {
+              type: "empty",
+              prompt: "Please enter Longitude"
+            }
+          ]
+        },
+        width: {
+          rules: [
+            {
+              type: "empty",
+              prompt: "Please enter width"
+            }
+          ]
+        },
+        height: {
+          rules: [
+            {
+              type: "empty",
+              prompt: "Please enter height"
+            }
+          ]
+        },
+        uri: {
+          rules: [
+            {
+              type: "empty",
+              prompt: "Please enter uri"
+            }
+          ]
+        },
+        storage_period: {
+          rules: [
+            {
+              type: "decimal",
+              prompt: "Please enter a valid decimal"
+            }
+          ]
+        }
       }
-    }
-  });
+    });
 </script>
 {% endblock %}

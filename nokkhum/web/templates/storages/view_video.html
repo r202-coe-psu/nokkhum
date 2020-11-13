@@ -2,29 +2,34 @@
 {% import '/base/html-renderer.html' as renderer %}
 
 {% block dashboard_title %}
-  Storage Camera: {{camera.name}}
+Storage Camera: {{camera.name}}
 {% endblock %}
 
 {% block breadcrumbs %}
-  {{ super() }}
-  <i class="right angle icon divider"></i>
-  <a class="section" href="{{ url_for('storages.list_records_by_date', processor_id=processor.id, date_dir=video_path.parent.name) }}">{{ video_path.parent.name }}</a>
+{{ super() }}
+<i class="right angle icon divider"></i>
+<a class="section"
+  href="{{ url_for('storages.list_records_by_date', processor_id=processor.id, date_dir=video_path.parent.name) }}">{{ video_path.parent.name }}</a>
 {% endblock %}
 
 {% block content %}
-  <div class="ui container">
-    <h3 class="ui header">{{ video_path.name }}</h3>
-    <div class="ui placeholder segment">
-      <div class="ui embed" data-url="{{ url_for('storages.download', processor_id=processor.id, date_dir=video_path.parent.name, filename=video_path.name) }}" data-placeholder="{{ url_for('storages.download', processor_id=processor.id, date_dir=video_path.parent.name, filename='{}-thumbnail.png'.format(video_path.stem)) }}" data-icon="right circle arrow"></div>
-      <div style="margin-top: 1em;">
-        <a class="ui primary button" href="{{ url_for('storages.download', processor_id=processor.id, date_dir=video_path.parent.name, filename=video_path.name) }}">Download</a>
-      </div>
+<div class="ui container">
+  <h3 class="ui header">{{ video_path.name }}</h3>
+  <div class="ui placeholder segment">
+    <div class="ui embed"
+      data-url="{{ url_for('storages.download', processor_id=processor.id, date_dir=video_path.parent.name, filename=video_path.name) }}"
+      data-placeholder="{{ url_for('storages.download', processor_id=processor.id, date_dir=video_path.parent.name, filename='{}-thumbnail.png'.format(video_path.stem)) }}"
+      data-icon="right play circle"></div>
+    <div style="margin-top: 1em;">
+      <a class="ui primary button"
+        href="{{ url_for('storages.download', processor_id=processor.id, date_dir=video_path.parent.name, filename=video_path.name) }}">Download</a>
     </div>
   </div>
+</div>
 {% endblock %}
 
 {% block additional_js %}
-  <script type="text/javascript">
-    $('.ui.embed').embed();
-  </script>
+<script type="text/javascript">
+  $('.ui.embed').embed();
+</script>
 {% endblock %}

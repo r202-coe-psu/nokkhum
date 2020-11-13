@@ -2,44 +2,46 @@
 {% import '/base/html-renderer.html' as renderer %}
 
 {% block dashboard_title %}
-  Storage Camera: {{camera.name}}
-{% endblock %}
-
-{% block breadcrumbs %}
-  {{ super() }}
-  <i class="right angle icon divider"></i>
-  <a class="section" href="{{ url_for('storages.list_records_by_date', processor_id=processor.id, date_dir=date_dir) }}">{{ date_dir }}</a>
+Storage Camera: {{camera.name}}
 {% endblock %}
 
 {% block content %}
-  <div>
-    <div class="ui divided items">
-      {% for f in file_list %}
-        {%- if f.name.startswith('_') %}
-          {% set image_style = ' disabled' %}
+
+<div class="ui segment">
+  <div class="ui stackable five column grid">
+    {% if file_list | length == 0%}
+    <p style="padding-top: 1rem; padding-bottom: 1rem;"><span class="ui medium grey text">Don't have any video file in
+        this
+        Directory.</span></p>
+
+    {% endif %}
+    {% for f in file_list %}
+    {%- if f.name.startswith('_') %}
+    {% set image_style = ' disabled' %}
+    {% else %}
+    {% set image_style = '' %}
+    {%- endif %}
+    <div class="column">
+      <div class="ui medium image{{ image_style }}">
+        {%- if not f.name.startswith('_') %}
+        <img
+          src="{{ url_for('storages.download', processor_id=processor.id, date_dir=date_dir, filename='{}-thumbnail.png'.format(f.stem)) }}">
         {% else %}
-          {% set image_style = '' %}
+        <img
+          src="{{ url_for('storages.download', processor_id=processor.id, date_dir=date_dir, filename='{}-thumbnail.png'.format(f.stem[1:])) }} ">
         {%- endif %}
-        <div class="item">
-          <div class="ui tiny image{{ image_style }}">
-            {%- if not f.name.startswith('_') %}
-              <img src="{{ url_for('storages.download', processor_id=processor.id, date_dir=date_dir, filename='{}-thumbnail.png'.format(f.stem)) }}">
-            {% else %}
-              <img src="{{ url_for('storages.download', processor_id=processor.id, date_dir=date_dir, filename='{}-thumbnail.png'.format(f.stem[1:])) }} ">
-            {%- endif %}
-          </div>
-          <div class="middle aligned content">
-            {% set name = f.name[f.name.find('-')+1: f.name.rfind('-')]  %}
-            {%- if not f.name.startswith('_') %}
-              <a class="header" href="{{ url_for('storages.view_video', processor_id=processor.id, date_dir=date_dir, filename=f.name) }}">{{ name }}</a>
-              {# <div class="description">Updated 10 mins ago</div> #}
-            {% else %}
-              <div class="header">{{ name }}</div>
-              <div class="description">Recording</div>
-            {%- endif %}
-          </div>
-        </div>
-      {% endfor %}
+      </div>
+      {% set name = f.name[f.name.find('-')+1: f.name.rfind('-')]  %}
+      {%- if not f.name.startswith('_') %}
+      <a href="{{ url_for('storages.view_video', processor_id=processor.id, date_dir=date_dir, filename=f.name) }}"><i
+          class="file video icon"></i><span class="ui medium grey text"> {{ name }}</span></a>
+      {% else %}
+      <div class="header">{{ name }}</div>
+      <div class="description">Recording</div>
+      {%- endif %}
     </div>
+    {% endfor %}
   </div>
+</div>
+
 {% endblock %}
