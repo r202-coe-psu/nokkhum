@@ -26,7 +26,9 @@ class GridViewController:
         ev.preventDefault()
 
     def clear_display(self, ev):
-        print("clear")
+        ev.target.unbind("click")
+        ev.target.parent.unbind("dragstart")
+        ev.target.parent.clear()
 
     def drop(self, ev):
         """Function attached to the destination zone.
@@ -51,14 +53,15 @@ class GridViewController:
         )
         btn = html.A(
             "Clear",
-            Class="ui button",
+            Class="clear-btn ui button",
         )
         display.clear()
         display <= img
         display <= btn
         img.draggable = True
-        img.bind("dragstart", self.dragstart_img)
         btn.bind("click", self.clear_display)
+        img.bind("dragstart", self.dragstart_img)
+
         ev.preventDefault()
 
     def save_grid(self, ev):
@@ -93,6 +96,8 @@ class GridViewController:
             document[id].innerHTML = img_html
             for child in document[id].children:
                 child.bind("dragstart", self.dragstart_img)
+        for clear_btn in document.select(".clear-btn"):
+            clear_btn.bind("click", self.clear_display)
 
     def start(self):
         print("start")
