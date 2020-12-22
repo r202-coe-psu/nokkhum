@@ -29,7 +29,8 @@ class ResultController:
 
             files_path = self.path / str(processor.id)
             if not files_path.exists() and not files_path.is_dir():
-                return
+                continue
+
             logger.debug(f'start remove file {files_path}')
             for dir_file in files_path.iterdir():
                 year = int(dir_file.name[0:4])
