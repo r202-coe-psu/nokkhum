@@ -219,4 +219,10 @@ class ControllerServer:
         finally:
             loop.close()
 
-  
+    def run_storage_one(self):
+        
+        self.running = True
+        loop = asyncio.get_event_loop()
+        # loop.set_debug(True)
+        loop.run_until_complete(self.set_up(loop))
+        self.command_controller.expired_processor_commands()

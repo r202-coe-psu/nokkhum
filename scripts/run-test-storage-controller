@@ -1,0 +1,15 @@
+#!/bin/env python3
+
+from nokkhum import controller
+
+import os
+os.environ['NOKKHUM_SETTINGS'] = 'nokkhum.cfg'
+
+def main():
+    print("Start Server")
+    server = controller.create_server()
+    server.run_storage_one()
+
+
+if __name__ == '__main__':
+    main()
