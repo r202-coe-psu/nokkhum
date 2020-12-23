@@ -4,21 +4,19 @@ import time
 import cv2
 
 import logging
+
 logger = logging.getLogger(__name__)
 
 
-
 class ImageDispatcher(threading.Thread):
-    def __init__(self,
-                 queue,
-                 ):
+    def __init__(self, queue, sc):
         super().__init__()
         self.running = False
         self.input_queue = queue
         self.daemon = True
         self.active = False
-
-        self.name = 'Image Dispatcher'
+        self.sc = sc
+        self.name = "Image Dispatcher"
 
     def set_active(self):
         self.active = True
@@ -28,7 +26,7 @@ class ImageDispatcher(threading.Thread):
 
     def run(self):
         self.running = True
-        logger.debug('Start Image Dispatcher')
+        logger.debug("Start Image Dispatcher")
 
         while self.running:
             img = self.input_queue.get()
@@ -38,5 +36,6 @@ class ImageDispatcher(threading.Thread):
 
             if not self.active:
                 continue
+            logger.debug(f"in dispatch {img}")
 
-        logger.debug('End Image Dispatcher')
+        logger.debug("End Image Dispatcher")

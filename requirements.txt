@@ -27,3 +27,6 @@ pillow
 watchdog
 brython
 
+# streaming
+quart
+asyncio-nats-streaming

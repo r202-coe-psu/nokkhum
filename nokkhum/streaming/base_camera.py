@@ -1,6 +1,7 @@
 # base code from Github : https://github.com/miguelgrinberg/flask-video-streaming
 import time
 import threading
+
 try:
     from greenlet import getcurrent as get_ident
 except ImportError:
@@ -14,6 +15,7 @@ class CameraEvent(object):
     """An Event-like class that signals all active clients when a new frame is
     available.
     """
+
     def __init__(self):
         self.events = {}
 
@@ -53,7 +55,6 @@ class CameraEvent(object):
 
 
 class BaseCamera:
-
     def __init__(self):
         self.thread = None  # background thread that reads frames from camera
         self.frame = None  # current frame is stored here by background thread
@@ -91,16 +92,16 @@ class BaseCamera:
     # @staticmethod
     def frames(self):
         """"Generator that returns frames from the camera."""
-        raise RuntimeError('Must be implemented by subclasses.')
+        raise RuntimeError("Must be implemented by subclasses.")
 
     # @classmethod
     def _thread(self):
         """Camera background thread."""
-        print('Starting camera thread.')
+        print("Starting camera thread.")
         frames_iterator = self.frames()
         for frame in frames_iterator:
             if not self.running:
-                print('Not Runninggg')
+                print("Not Runninggg")
                 frames_iterator.close()
                 break
 
@@ -112,6 +113,6 @@ class BaseCamera:
             # the last 10 seconds then stop the thread
             if time.time() - self.last_access > 10:
                 frames_iterator.close()
-                print('Stopping camera thread due to inactivity.')
+                print("Stopping camera thread due to inactivity.")
                 break
         self.thread = None
