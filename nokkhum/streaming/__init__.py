@@ -1,54 +1,67 @@
-__version__ = '0.0.1'
+__version__ = "0.0.1"
 
 import optparse
 
-from flask import Flask
+from quart import Quart
 
-from .. import models
-from . import cameras_live
+from nokkhum import models
+from . import live_streaming
+from .subscribers import StreamingSubscriber
+from nokkhum.utils import config
+
+app = Quart(__name__)
 
 
 def create_app():
-    app = Flask(__name__)
-    app.config.from_object('nokkhum.default_settings')
-    app.config.from_envvar('NOKKHUM_SETTINGS', silent=True)
+    # app.config.from_object("nokkhum.default_settings")
+    # app.config.from_envvar("NOKKHUM_SETTINGS", silent=True)
 
-    models.init_db(app)
-    app.register_blueprint(cameras_live.module)
+    # models.init_db(app)
+    app.register_blueprint(live_streaming.module)
+    settings = config.get_settings()
+    streaming_sub = StreamingSubscriber(settings)
+    streaming_sub.run()
 
     return app
 
 
-def get_program_options(default_host='127.0.0.1',
-                        default_port='8081'):
+def get_program_options(default_host="127.0.0.1", default_port="8081"):
 
     """
-    Takes a flask.Flask instance and runs it. Parses 
+    Takes a quart.Quart instance and runs it. Parses
     command-line flags to configure the app.
     """
 
     # Set up the command-line options
     parser = optparse.OptionParser()
-    parser.add_option("-H", "--host",
-                      help="Hostname of the Flask app " + \
-                           "[default %s]" % default_host,
-                      default=default_host)
-    parser.add_option("-P", "--port",
-                      help="Port for the Flask app " + \
-                           "[default %s]" % default_port,
-                      default=default_port)
+    parser.add_option(
+        "-H",
+        "--host",
+        help="Hostname of the Quart app " + "[default %s]" % default_host,
+        default=default_host,
+    )
+    parser.add_option(
+        "-P",
+        "--port",
+        help="Port for the Quart app " + "[default %s]" % default_port,
+        default=default_port,
+    )
 
-    # Two options useful for debugging purposes, but 
+    # Two options useful for debugging purposes, but
     # a bit dangerous so not exposed in the help message.
-    parser.add_option("-c", "--config",
-                      dest="config",
-                      help=optparse.SUPPRESS_HELP, default=None)
-    parser.add_option("-d", "--debug",
-                      action="store_true", dest="debug",
-                      help=optparse.SUPPRESS_HELP)
-    parser.add_option("-p", "--profile",
-                      action="store_true", dest="profile",
-                      help=optparse.SUPPRESS_HELP)
+    parser.add_option(
+        "-c", "--config", dest="config", help=optparse.SUPPRESS_HELP, default=None
+    )
+    parser.add_option(
+        "-d", "--debug", action="store_true", dest="debug", help=optparse.SUPPRESS_HELP
+    )
+    parser.add_option(
+        "-p",
+        "--profile",
+        action="store_true",
+        dest="profile",
+        help=optparse.SUPPRESS_HELP,
+    )
 
     options, _ = parser.parse_args()
 
@@ -57,10 +70,8 @@ def get_program_options(default_host='127.0.0.1',
     if options.profile:
         from werkzeug.contrib.profiler import ProfilerMiddleware
 
-        app.config['PROFILE'] = True
-        app.wsgi_app = ProfilerMiddleware(app.wsgi_app,
-                                          restrictions=[30])
+        app.config["PROFILE"] = True
+        app.wsgi_app = ProfilerMiddleware(app.wsgi_app, restrictions=[30])
         options.debug = True
 
     return options
-

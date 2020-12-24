@@ -12,9 +12,9 @@ services:
         networks:
             - default
 
-    nats-server:
+    tans-server:
         image: nats
-        container_name: nokkhum-nats-server
+        container_name: nokkhum-tans-server
         volumes:
             - /etc/localtime:/etc/localtime:ro
         # restart: always
@@ -23,6 +23,7 @@ services:
             - 8222:8222
         networks:
             - default
+        command: nats-streaming-server -cid nokkhum-cluster
 
     web:
         build: .

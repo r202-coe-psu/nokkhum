@@ -8,6 +8,6 @@ def main():
     app.run(
         debug=options.debug,
         host=options.host,
-        threaded=True,
-        port=int(options.port)
+        # threaded=True,
+        port=int(options.port),
     )
