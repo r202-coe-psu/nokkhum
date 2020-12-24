@@ -7,3 +7,5 @@ deployment
 package-lock.json
 *.egg-*
 .vscode
+
+*.brython.js
