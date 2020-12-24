@@ -19,7 +19,7 @@ class ResultController:
         processors = models.Processor.objects()
         for processor in processors:
 
-            storage_period = int(processor.storage_period)
+            storage_period = processor.storage_period
             if storage_period == 0:
                 continue
             expired_date = datetime.date.today() - datetime.timedelta(days=storage_period)
@@ -29,7 +29,8 @@ class ResultController:
 
             files_path = self.path / str(processor.id)
             if not files_path.exists() and not files_path.is_dir():
-                return
+                continue
+
             logger.debug(f'start remove file {files_path}')
             for dir_file in files_path.iterdir():
                 year = int(dir_file.name[0:4])

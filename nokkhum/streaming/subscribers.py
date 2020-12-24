@@ -13,7 +13,7 @@ class StreamingSubscriber:
         models.init_mongoengine(settings)
 
     async def streaming_cb(self, msg):
-        logger.debug(msg)
+        logger.debug(msg.data)
 
     async def set_up(self, loop):
         logging.basicConfig(
@@ -30,6 +30,7 @@ class StreamingSubscriber:
         await self.sc.connect(
             self.settings["NOKKHUM_TANS_CLUSTER"], "streaming-sub", nats=self.nc
         )
+        logger.debug("connected")
 
         live_streaming_topic = "nokkhum.streaming.live"
         # command_topic = "nokkhum.processor.command"
@@ -58,6 +59,7 @@ class StreamingSubscriber:
         except Exception as e:
             print(e)
             self.running = False
+            self.sc.unsubscribe(self.stream_id)
             # self.cn_report_queue.close()
             # self.processor_command_queue.close()
             self.nc.close()

@@ -4,24 +4,20 @@ import cv2
 import time
 
 import logging
+
 logger = logging.getLogger(__name__)
 
 
 class ImageAcquisitor(threading.Thread):
-    def __init__(self,
-                 capture,
-                 queues,
-                 fps=None,
-                 size=None):
+    def __init__(self, capture, queues, fps=None, size=None):
         super().__init__()
-        self.name = 'ImageAcquisitor'
+        self.name = "ImageAcquisitor"
         self.running = False
         self.daemon = True
-        self.name = 'ImageAcquisition {}'.format(capture.id)
+        self.name = "ImageAcquisition {}".format(capture.id)
 
         self.capture = capture
         self.queues = queues
-
 
         self.fps = None
         if fps:
@@ -34,11 +30,9 @@ class ImageAcquisitor(threading.Thread):
         else:
             self.size = capture.get_size()
 
-
-
     def reconnect_camera(self):
         self.capture.reconnect()
-        while(not self.capture.status()):
+        while not self.capture.status():
             self.capture.reconnect()
 
             logger.error("waiting camera connect sleep 1s")
@@ -47,23 +41,20 @@ class ImageAcquisitor(threading.Thread):
 
             time.sleep(1)
 
-
-    def resize_image(self, image): 
+    def resize_image(self, image):
         if self.size is None:
             return image
 
         width, height = image.size()
-            
+
         if not width == self.size[0] or not height == self.size[1]:
-            img = cv2.resize(image.data, self.size, interpolation = cv2.INTER_AREA)
+            img = cv2.resize(image.data, self.size, interpolation=cv2.INTER_AREA)
             image.data = img
 
         return image
 
-
     def stop(self):
         self.running = False
-
 
     def run(self):
         logger.debug("Start ImageAcquisitor")

@@ -13,17 +13,18 @@ services:
             - default
 
     tans-server:
-        image: nats
+        image: nats-streaming
         container_name: nokkhum-tans-server
         volumes:
             - /etc/localtime:/etc/localtime:ro
         # restart: always
         ports:
             - 4222:4222
+            - 6222:6222
             - 8222:8222
         networks:
             - default
-        command: nats-streaming-server -cid nokkhum-cluster
+        command: -cid nokkhum-cluster
 
     web:
         build: .
@@ -37,9 +38,9 @@ services:
             - 8080:8080
         links:
             - mongodb
-            - nats-server
+            - tans-server
         depends_on:
-            - nats-server
+            - tans-server
             - mongodb
         networks:
             - default
@@ -63,9 +64,9 @@ services:
             - 8081:8081
         links:
             - mongodb
-            - nats-server
+            - tans-server
         depends_on:
-            - nats-server
+            - tans-server
             - mongodb
         networks:
             - default
@@ -87,9 +88,9 @@ services:
             - /etc/localtime:/etc/localtime:ro
         links:
             - mongodb
-            - nats-server
+            - tans-server
         depends_on:
-            - nats-server
+            - tans-server
             - mongodb
         networks:
             - default
@@ -108,9 +109,9 @@ services:
             - ../deployment:/deployment
             - /etc/localtime:/etc/localtime:ro
         links:
-            - nats-server
+            - tans-server
         depends_on:
-            - nats-server
+            - tans-server
             - controller
         networks:
             - default

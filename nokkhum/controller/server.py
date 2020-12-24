@@ -45,8 +45,14 @@ class ControllerServer:
         data = json.loads(data)
         if data["action"] == "register":
             response = await self.register_compute_node(data)
+<<<<<<< HEAD
             await self.nc.publish(reply, json.dumps(response).encode())
             logger.debug("client {} is registed".format(data))
+=======
+            await self.nc.publish(reply,
+                            json.dumps(response).encode())
+            logger.debug(f'client {data["machine"]["name"]} is registed')
+>>>>>>> 3f3ff7839cd3d4c38f66a23104029416649431ae
             return
 
         await self.cn_report_queue.put(data)

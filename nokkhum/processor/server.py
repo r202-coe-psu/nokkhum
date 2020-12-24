@@ -134,7 +134,9 @@ class ProcessorServer:
         )
         acquisitor.start()
 
-        dispatcher = dispatchers.ImageDispatcher(dispatcher_queue, self.sc)
+        dispatcher = dispatchers.ImageDispatcher(
+            dispatcher_queue, self.sc, options.processor_id
+        )
         dispatcher.set_active()
         dispatcher.start()
 
