@@ -5,20 +5,37 @@ import cv2
 import pickle
 import logging
 
+from nats.aio.client import Client as NATS
+from stan.aio.client import Client as STAN
+
+
 logger = logging.getLogger(__name__)
 
 
 class ImageDispatcher(threading.Thread):
-    def __init__(self, queue, sc, processor_id, expected_frame_size=(640, 480)):
+    def __init__(self,
+                 queue,
+                 processor_id,
+                 settings={},
+                 expected_frame_size=(640, 480),
+                 ):
         super().__init__()
+        self.name = "Image Dispatcher"
+
         self.running = False
-        self.input_queue = queue
         self.daemon = True
         self.active = False
-        self.sc = sc
+
+        self.input_queue = queue
+        self.publish_queue = asyncio.queues.Queue()
+
         self.expected_frame_size = expected_frame_size
-        self.name = "Image Dispatcher"
         self.processor_id = processor_id
+
+        self.settings = settings
+        self.sc = None
+        self.nc = None
+        self.loop = asyncio.get_event_loop()
 
     def set_active(self):
         self.active = True
@@ -26,14 +43,38 @@ class ImageDispatcher(threading.Thread):
     def stop(self):
         self.running = False
 
-    async def publish_frame(self, data):
+    async def set_up_message(self):
+        self.nc = NATS()
+        self.nc._max_payload = 2097152
+        await self.nc.connect(self.settings["NOKKHUM_MESSAGE_NATS_HOST"], io_loop=self.loop)
+
+        # Start session with NATS Streaming cluster.
+        self.sc = STAN()
+        await self.sc.connect(
+            self.settings["NOKKHUM_TANS_CLUSTER"], "streaming-pub", nats=self.nc
+        )
+
+    async def tear_down_message(self):
+        await self.sc.close()
+        await self.nc.close()
+
+    async def publish_data(self, data):
+        logger.debug('check publish')
         await self.sc.publish("nokkhum.streaming.live", data)
 
-    def run(self):
-        self.running = True
-        logger.debug("Start Image Dispatcher")
-        # loop = asyncio.new_event_loop()
-        # asyncio.set_event_loop(loop)
+    async def publish_frame(self): 
+        while self.running:
+            data = None
+            if self.publish_queue.empty():
+                await asyncio.sleep(0.01)
+                continue
+
+            data = await self.publish_queue.get()
+            # await self.publish_data(data)
+
+    async def process_frame(self):
+        # loop = asyncio.get_event_loop()
+        # asyncio.set_event_loop(self.loop)
         while self.running:
             image = None
             try:
@@ -47,7 +88,7 @@ class ImageDispatcher(threading.Thread):
 
             if not self.active:
                 continue
-            logger.debug(f"in dispatch {image.data}")
+            # logger.debug(f"in dispatch {image.data}")
             w, h = image.size()
 
             ratio = self.expected_frame_size[0] / w
@@ -58,10 +99,29 @@ class ImageDispatcher(threading.Thread):
             image_frame = cv2.imencode(".jpg", image)[1]
             data = {self.processor_id: image_frame}
             data = pickle.dumps(data)
+
+            await self.publish_queue.put(data)
+            await asyncio.sleep(0.0001)
             # need to await on publish
             # asyncio.run(self.sc.publish("nokkhum.streaming.live", data))
             # <----
             # asyncio.ensure_future(foo(loop))
         #     loop.run_until_complete(self.publish_frame(data))
+            # asyncio.run(self.sc.publish("nokkhum.streaming.live", data))
+            # self.loop.call_soon_threadsafe(self.publish_frame, data)
+            # self.loop.create_task(self.sc.publish("nokkhum.streaming.live", data))
         # loop.close()
+
+
+    def run(self):
+        self.running = True
+        logger.debug("Start Image Dispatcher")
+
+        self.loop.run_until_complete(self.set_up_message())
+        self.loop.create_task(self.publish_frame())
+        self.loop.run_until_complete(self.process_frame())
+
+        self.loop.run_until_complete(self.tear_down_message())
+        self.loop.close()
+
         logger.debug("End Image Dispatcher")

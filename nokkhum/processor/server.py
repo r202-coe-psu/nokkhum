@@ -6,8 +6,6 @@ import threading
 import time
 
 import asyncio
-from nats.aio.client import Client as NATS
-from stan.aio.client import Client as STAN
 
 from .utils import ImageQueue
 
@@ -45,25 +43,15 @@ class ProcessorServer:
 
         return parser.parse_args()
 
-    async def setup(self, options, loop):
+    def setup(self, options):
         logging.basicConfig(
             format="%(asctime)s - %(name)s:%(levelname)s - %(message)s",
             datefmt="%d-%b-%y %H:%M:%S",
             level=logging.DEBUG,
         )
-        self.nc = NATS()
-        self.nc._max_payload = 2097152
-        await self.nc.connect(self.settings["NOKKHUM_MESSAGE_NATS_HOST"], io_loop=loop)
 
-        # Start session with NATS Streaming cluster.
-        self.sc = STAN()
-        await self.sc.connect(
-            self.settings["NOKKHUM_TANS_CLUSTER"], "streaming-pub", nats=self.nc
-        )
         path = pathlib.Path(options.directory)
-
         logger.debug(f"prepare directory {options.directory} is exists {path.exists()}")
-
         if not path.exists():
             path.mkdir(parents=True)
 
@@ -94,8 +82,7 @@ class ProcessorServer:
         options = self.get_options()
         loop = asyncio.get_event_loop()
 
-        # self.setup(options)
-        loop.run_until_complete(self.setup(options, loop))
+        self.setup(options)
 
         command = self.get_input()
         while command.get("action") != "start":
@@ -135,7 +122,9 @@ class ProcessorServer:
         acquisitor.start()
 
         dispatcher = dispatchers.ImageDispatcher(
-            dispatcher_queue, self.sc, options.processor_id
+            dispatcher_queue,
+            options.processor_id,
+            self.settings,
         )
         dispatcher.set_active()
         dispatcher.start()
@@ -171,18 +160,13 @@ class ProcessorServer:
                 time.sleep(1)
             except KeyboardInterrupt as e:
                 logger.exception(e)
-                self.sc.close()
-                self.nc.close()
                 self.running = False
                 break
             except Exception as e:
                 logger.exception(e)
-                self.sc.close()
-                self.nc.close()
                 self.running = False
                 break
-            finally:
-                loop.close()
+
 
             for p in processors:
                 if p.running == False:
