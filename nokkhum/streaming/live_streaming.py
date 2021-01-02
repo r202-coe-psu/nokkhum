@@ -1,15 +1,16 @@
-from quart import Blueprint, Response, g
+import asyncio
+from quart import Blueprint, Response, g, make_response, current_app
 
 module = Blueprint("live_streaming", __name__, url_prefix="/live")
 
 
-def gen(camera_id):
+async def generate_frame(queue):
     """Video streaming generator function."""
     while True:
-        frame = g.cameras[camera_id].get_frame()
+        frame = await queue.get()
         if frame is None:
             break
-        yield (b"--frame\r\n" b"Content-Type: image/jpeg\r\n\r\n" + frame + b"\r\n")
+        yield (b"--frame\r\n" b"Content-Type: image/png\r\n\r\n" + frame + b"\r\n")
 
 
 
@@ -20,7 +21,14 @@ async def index():
 
 @module.route("/cameras/<camera_id>")
 async def live(camera_id):
-	return Response(
-        gen(camera_id), mimetype="multipart/x-mixed-replace; boundary=frame"
-    )
+
+    queue = None
+    while not queue:
+        g = current_app
+        queue = g.queues.get(camera_id)
+        if not queue:
+            await asyncio.sleep(0.001)
+            continue
+    
+    return generate_frame(queue), 200, dict(mimetype="multipart/x-mixed-replace; boundary=frame")
 

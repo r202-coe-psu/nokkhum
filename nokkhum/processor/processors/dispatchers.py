@@ -61,7 +61,8 @@ class ImageDispatcher(threading.Thread):
     async def publish_data(self, data):
         serialized_data = pickle.dumps(data)
         await self.sc.publish(
-                f"nokkhum.streaming.processors.{data['processor_id']}",
+                # f"nokkhum.streaming.processors.{data['processor_id']}",
+                f"nokkhum.streaming.processors",
                 serialized_data)
 
     async def publish_frame(self): 

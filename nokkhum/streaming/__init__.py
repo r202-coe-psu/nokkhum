@@ -19,14 +19,19 @@ def create_app():
 
     # models.init_db(app)
     app.register_blueprint(live_streaming.module)
-    app.queues = {}
  
     @app.before_serving
     async def before():
+        
+        g = app
+        g.queues = {}
+
         settings = config.get_settings()
-        streaming_sub = StreamingSubscriber(app.queues, settings)
+        streaming_sub = StreamingSubscriber(g.queues, settings)
         await streaming_sub.set_up()
         app.streaming_sub = streaming_sub
+
+        # print(id(g), dir(g))
 
     return app
 

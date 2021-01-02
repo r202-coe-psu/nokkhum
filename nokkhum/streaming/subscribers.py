@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import pickle
+import cv2
 
 from nats.aio.client import Client as NATS
 from stan.aio.client import Client as STAN
@@ -16,12 +17,20 @@ class StreamingSubscriber:
         self.queues = queues
 
     async def streaming_cb(self, msg):
-        pass
-        # print('==>', msg['processor_id'])
-        # data = pickle.loads(msg)
-        # print('===>')
-        # logger.debug(f'topic: {data["processor_id"]}')
+        data = pickle.loads(msg.data)
+
+        queue = self.queues.get(data["processor_id"])
+        if not queue:
+            self.queues[data["processor_id"]] = asyncio.queues.Queue(maxsize=30)
+
+
+        if queue.full():
+            logger.debug('drop image')
+            queue.get_nowait()
         
+        img = cv2.imdecode(data['frame'], 1).tobytes()
+        queue.put_nowait(img)
+
 
     async def set_up(self):
         logging.basicConfig(
@@ -30,8 +39,8 @@ class StreamingSubscriber:
             level=logging.DEBUG,
         )
 
-        loop = asyncio.get_event_loop()
-        loop.set_debug(True)
+        # loop = asyncio.get_event_loop()
+        # loop.set_debug(True)
         self.nc = NATS()
         self.nc._max_payload = 2097152
         # logger.debug("in setup")
@@ -45,36 +54,6 @@ class StreamingSubscriber:
                 self.settings["NOKKHUM_TANS_CLUSTER"], "streaming-sub", nats=self.nc)
         logger.debug("connected")
 
-        live_streaming_topic = "nokkhum.streaming.processors.test"
-        # command_topic = "nokkhum.processor.command"
-
-        # cns_id = await self.nc.subscribe(
-        #     report_topic, cb=self.handle_compute_node_report
-        # )
-        # ps_id = await self.nc.subscribe(command_topic, cb=self.handle_processor_command)
+        live_streaming_topic = "nokkhum.streaming.processors"
         self.stream_id = await self.sc.subscribe(live_streaming_topic, cb=self.streaming_cb)
-        
-
-        print('--->', self.stream_id)
-    # def run(self):
-
-    #     self.running = True
-    #     loop = asyncio.get_event_loop()
-    #     # loop.set_debug(True)
-    #     loop.run_until_complete(self.set_up(loop))
-    #     # cn_report_task = loop.create_task(self.process_compute_node_report())
-    #     # processor_command_task = loop.create_task(self.process_processor_command())
-    #     # handle_expired_data_task = loop.create_task(self.process_expired_controller())
-    #     # handle_controller_task = loop.create_task(self.handle_controller())
-
-    #     try:
-    #         loop.run_forever()
-    #     except Exception as e:
-    #         print(e)
-    #         self.running = False
-    #         self.sc.unsubscribe(self.stream_id)
-    #         # self.cn_report_queue.close()
-    #         # self.processor_command_queue.close()
-    #         self.nc.close()
-    #     finally:
-    #         loop.close()
+    
