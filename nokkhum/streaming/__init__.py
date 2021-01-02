@@ -2,25 +2,31 @@ __version__ = "0.0.1"
 
 import optparse
 
-from quart import Quart
+from quart import Quart, g
+import asyncio
 
-from nokkhum import models
-from . import live_streaming
-from .subscribers import StreamingSubscriber
+from nokkhum import models, default_settings
 from nokkhum.utils import config
 
-app = Quart(__name__)
+from . import live_streaming
+from .subscribers import StreamingSubscriber
 
 
 def create_app():
-    # app.config.from_object("nokkhum.default_settings")
-    # app.config.from_envvar("NOKKHUM_SETTINGS", silent=True)
+    app = Quart(__name__)
+    app.config.from_object(default_settings)
+    app.config.from_envvar("NOKKHUM_SETTINGS", silent=True)
 
     # models.init_db(app)
     app.register_blueprint(live_streaming.module)
-    settings = config.get_settings()
-    streaming_sub = StreamingSubscriber(settings)
-    streaming_sub.run()
+    app.queues = {}
+ 
+    @app.before_serving
+    async def before():
+        settings = config.get_settings()
+        streaming_sub = StreamingSubscriber(app.queues, settings)
+        await streaming_sub.set_up()
+        app.streaming_sub = streaming_sub
 
     return app
 

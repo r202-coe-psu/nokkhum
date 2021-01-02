@@ -1,3 +1,3 @@
-#!/bin/sh
+#!/bin/bash
 
-FLASK_ENV=development NOKKHUM_SETTINGS=$(pwd)/nokkhum.cfg DEBUG=1 nokkhum-streaming -d
+QUART_ENV=development NOKKHUM_SETTINGS=$(pwd)/nokkhum.cfg DEBUG=1 nokkhum-streaming -d

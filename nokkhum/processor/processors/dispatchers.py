@@ -59,8 +59,10 @@ class ImageDispatcher(threading.Thread):
         await self.nc.close()
 
     async def publish_data(self, data):
-        logger.debug('check publish')
-        await self.sc.publish("nokkhum.streaming.live", data)
+        serialized_data = pickle.dumps(data)
+        await self.sc.publish(
+                f"nokkhum.streaming.processors.{data['processor_id']}",
+                serialized_data)
 
     async def publish_frame(self): 
         while self.running:
@@ -70,13 +72,17 @@ class ImageDispatcher(threading.Thread):
                 continue
 
             data = await self.publish_queue.get()
-            # await self.publish_data(data)
+            await self.publish_data(data)
 
     async def process_frame(self):
         # loop = asyncio.get_event_loop()
         # asyncio.set_event_loop(self.loop)
         while self.running:
             image = None
+            if self.input_queue.empty():
+                await asyncio.sleep(0.001)
+                continue
+
             try:
                 image = self.input_queue.get(timeout=1)
                 if image is None:
@@ -97,11 +103,13 @@ class ImageDispatcher(threading.Thread):
             size = (width, height)
             image = cv2.resize(image.data, size)
             image_frame = cv2.imencode(".jpg", image)[1]
-            data = {self.processor_id: image_frame}
-            data = pickle.dumps(data)
+            data = dict(
+                    processor_id=self.processor_id,
+                    frame=image_frame,
+            )
 
             await self.publish_queue.put(data)
-            await asyncio.sleep(0.0001)
+            await asyncio.sleep(0)
             # need to await on publish
             # asyncio.run(self.sc.publish("nokkhum.streaming.live", data))
             # <----
