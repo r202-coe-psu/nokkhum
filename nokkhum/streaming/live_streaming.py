@@ -10,7 +10,9 @@ async def generate_frame(queue):
         frame = await queue.get()
         if frame is None:
             break
-        yield (b"--frame\r\n" b"Content-Type: image/png\r\n\r\n" + frame + b"\r\n")
+
+        yield (b"--frame\r\n"
+               b"Content-Type: image/jpeg\r\n\r\n" + frame + b"\r\n")
 
 
 
@@ -30,5 +32,11 @@ async def live(camera_id):
             await asyncio.sleep(0.001)
             continue
     
-    return generate_frame(queue), 200, dict(mimetype="multipart/x-mixed-replace; boundary=frame")
-
+    return Response(
+            generate_frame(queue),
+            200,
+            {
+                'Content-Type': "multipart/x-mixed-replace; boundary=frame",
+                'mimetype': "multipart/x-mixed-replace; boundary=frame",
+            }
+            )

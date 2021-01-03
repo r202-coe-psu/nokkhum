@@ -25,19 +25,20 @@ class StreamingSubscriber:
 
 
         if queue.full():
-            logger.debug('drop image')
+            # print('drop image')
             queue.get_nowait()
         
-        img = cv2.imdecode(data['frame'], 1).tobytes()
-        queue.put_nowait(img)
+        img = cv2.imdecode(data['frame'], 1)
+        byte_img = cv2.imencode('.jpg', img)[1].tobytes()
+        await queue.put(byte_img)
 
 
     async def set_up(self):
-        logging.basicConfig(
-            format="%(asctime)s - %(name)s:%(levelname)s - %(message)s",
-            datefmt="%d-%b-%y %H:%M:%S",
-            level=logging.DEBUG,
-        )
+        # logging.basicConfig(
+        #     format="%(asctime)s - %(name)s:%(levelname)s - %(message)s",
+        #     datefmt="%d-%b-%y %H:%M:%S",
+        #     level=logging.DEBUG,
+        # )
 
         # loop = asyncio.get_event_loop()
         # loop.set_debug(True)

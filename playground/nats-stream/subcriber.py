@@ -17,12 +17,12 @@ class Subscriber:
 
     async def run(self, loop):
         self.nc = NATS()
-        await self.nc.connect('localhost:4223', io_loop=loop)
+        await self.nc.connect('localhost:4222', io_loop=loop)
 
         # Start session with NATS Streaming cluster.
         self.sc = STAN()
         await self.sc.connect("test-cluster", "client-456", nats=self.nc)
-        await self.sc.subscribe("video.cap", start_at='first', cb=self.handle_msg)
+        await self.sc.subscribe("nokkhum.streaming.processors", cb=self.handle_msg)
 
     async def handle_msg(self, msg):
        # print('cb topic')
@@ -39,8 +39,9 @@ class Subscriber:
             print('have data in q')
             data = self.q.get()
             try:
-                img = pickle.loads(data)
-                print(data)
+                data = pickle.loads(data)
+                print(data['processor_id'])
+                img = data['frame']
                 cv2.imshow('live_camera', cv2.imdecode(img,1))
                 if cv2.waitKey(1) & 0xFF == ord('q'): break
             except Exception as e:
