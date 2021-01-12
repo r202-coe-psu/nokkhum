@@ -1,7 +1,9 @@
 import asyncio
 from quart import Blueprint, Response, g, make_response, current_app
+import logging
 
 module = Blueprint("live_streaming", __name__, url_prefix="/live")
+# logger = logging.getLogger(__name__)
 
 
 async def generate_frame(queue):
@@ -9,16 +11,15 @@ async def generate_frame(queue):
     while True:
         frame = await queue.get()
         if frame is None:
-            break
+            await asyncio.sleep(0.001)
+            continue
 
-        yield (b"--frame\r\n"
-               b"Content-Type: image/jpeg\r\n\r\n" + frame + b"\r\n")
-
+        yield (b"--frame\r\n" b"Content-Type: image/jpeg\r\n\r\n" + frame + b"\r\n")
 
 
 @module.route("/")
 async def index():
-    return "asdsad"
+    return "Live Camera"
 
 
 @module.route("/cameras/<camera_id>")
@@ -31,12 +32,16 @@ async def live(camera_id):
         if not queue:
             await asyncio.sleep(0.001)
             continue
-    
-    return Response(
-            generate_frame(queue),
-            200,
-            {
-                'Content-Type': "multipart/x-mixed-replace; boundary=frame",
-                'mimetype': "multipart/x-mixed-replace; boundary=frame",
-            }
-            )
+    response = await make_response(generate_frame(queue))
+    response.timeout = None  # No timeout for this route
+    response.headers["Content-Type"] = "multipart/x-mixed-replace; boundary=frame"
+    return response
+
+    # return Response(
+    #     generate_frame(queue),
+    #     200,
+    #     {
+    #         "Content-Type": "multipart/x-mixed-replace; boundary=frame",
+    #         "mimetype": "multipart/x-mixed-replace; boundary=frame",
+    #     },
+    # )
