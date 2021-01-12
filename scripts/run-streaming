@@ -1,4 +1,4 @@
 #!/bin/bash
 
 # NOKKHUM_SETTINGS=$(pwd)/nokkhum.cfg DEBUG=1 nokkhum-streaming -d
-QUART_ENV=development NOKKHUM_SETTINGS=$(pwd)/nokkhum.cfg DEBUG=1 nokkhum-streaming -d
+QUART_ENV=development NOKKHUM_SETTINGS=$(pwd)/nokkhum-quart.cfg DEBUG=1 nokkhum-streaming -d
