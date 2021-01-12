@@ -21,7 +21,7 @@ class Camera(me.Document):
 
     def get_streaming_url(self):
         config = current_app.config
-        return "{}/cameras/{}/live".format(
+        return "{}/live/cameras/{}".format(
             config.get("NOKKHUM_STREAMING_URL"), str(self.id)
         )
 
