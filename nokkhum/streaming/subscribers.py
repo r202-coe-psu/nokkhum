@@ -18,20 +18,20 @@ class StreamingSubscriber:
 
     async def streaming_cb(self, msg):
         data = pickle.loads(msg.data)
-
-        queue = self.queues.get(data["processor_id"])
+        # logger.debug(data)
+        queue = self.queues.get(data["camera_id"])
+        # if len(self.queues[data["camera_id"]])
         if not queue:
-            self.queues[data["processor_id"]] = asyncio.queues.Queue(maxsize=30)
-
+            self.queues[data["camera_id"]] = asyncio.queues.Queue(maxsize=30)
 
         if queue.full():
-            # print('drop image')
+            # logger.debug("drop image")
             queue.get_nowait()
-        
-        img = cv2.imdecode(data['frame'], 1)
-        byte_img = cv2.imencode('.jpg', img)[1].tobytes()
-        await queue.put(byte_img)
+            await asyncio.sleep(0)
 
+        img = cv2.imdecode(data["frame"], 1)
+        byte_img = cv2.imencode(".jpg", img)[1].tobytes()
+        await queue.put(byte_img)
 
     async def set_up(self):
         # logging.basicConfig(
@@ -52,9 +52,11 @@ class StreamingSubscriber:
         self.sc = STAN()
 
         await self.sc.connect(
-                self.settings["NOKKHUM_TANS_CLUSTER"], "streaming-sub", nats=self.nc)
+            self.settings["NOKKHUM_TANS_CLUSTER"], "streaming-sub", nats=self.nc
+        )
         logger.debug("connected")
 
-        live_streaming_topic = "nokkhum.streaming.processors"
-        self.stream_id = await self.sc.subscribe(live_streaming_topic, cb=self.streaming_cb)
-    
+        live_streaming_topic = "nokkhum.streaming.cameras"
+        self.stream_id = await self.sc.subscribe(
+            live_streaming_topic, cb=self.streaming_cb
+        )

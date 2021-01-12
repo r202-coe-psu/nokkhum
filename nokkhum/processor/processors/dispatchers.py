@@ -13,12 +13,14 @@ logger = logging.getLogger(__name__)
 
 
 class ImageDispatcher(threading.Thread):
-    def __init__(self,
-                 queue,
-                 processor_id,
-                 settings={},
-                 expected_frame_size=(640, 480),
-                 ):
+    def __init__(
+        self,
+        queue,
+        processor_id,
+        camera_id,
+        settings={},
+        expected_frame_size=(640, 480),
+    ):
         super().__init__()
         self.name = "Image Dispatcher"
 
@@ -31,7 +33,7 @@ class ImageDispatcher(threading.Thread):
 
         self.expected_frame_size = expected_frame_size
         self.processor_id = processor_id
-
+        self.camera_id = camera_id
         self.settings = settings
         self.sc = None
         self.nc = None
@@ -46,7 +48,9 @@ class ImageDispatcher(threading.Thread):
     async def set_up_message(self):
         self.nc = NATS()
         self.nc._max_payload = 2097152
-        await self.nc.connect(self.settings["NOKKHUM_MESSAGE_NATS_HOST"], io_loop=self.loop)
+        await self.nc.connect(
+            self.settings["NOKKHUM_MESSAGE_NATS_HOST"], io_loop=self.loop
+        )
 
         # Start session with NATS Streaming cluster.
         self.sc = STAN()
@@ -61,11 +65,12 @@ class ImageDispatcher(threading.Thread):
     async def publish_data(self, data):
         serialized_data = pickle.dumps(data)
         await self.sc.publish(
-                # f"nokkhum.streaming.processors.{data['processor_id']}",
-                f"nokkhum.streaming.processors",
-                serialized_data)
+            # f"nokkhum.streaming.processors.{data['processor_id']}",
+            f"nokkhum.streaming.cameras",
+            serialized_data,
+        )
 
-    async def publish_frame(self): 
+    async def publish_frame(self):
         while self.running:
             data = None
             if self.publish_queue.empty():
@@ -105,8 +110,8 @@ class ImageDispatcher(threading.Thread):
             image = cv2.resize(image.data, size)
             image_frame = cv2.imencode(".jpg", image)[1]
             data = dict(
-                    processor_id=self.processor_id,
-                    frame=image_frame,
+                camera_id=self.camera_id,
+                frame=image_frame,
             )
 
             await self.publish_queue.put(data)
@@ -116,11 +121,10 @@ class ImageDispatcher(threading.Thread):
             # <----
             # asyncio.ensure_future(foo(loop))
         #     loop.run_until_complete(self.publish_frame(data))
-            # asyncio.run(self.sc.publish("nokkhum.streaming.live", data))
-            # self.loop.call_soon_threadsafe(self.publish_frame, data)
-            # self.loop.create_task(self.sc.publish("nokkhum.streaming.live", data))
+        # asyncio.run(self.sc.publish("nokkhum.streaming.live", data))
+        # self.loop.call_soon_threadsafe(self.publish_frame, data)
+        # self.loop.create_task(self.sc.publish("nokkhum.streaming.live", data))
         # loop.close()
-
 
     def run(self):
         self.running = True

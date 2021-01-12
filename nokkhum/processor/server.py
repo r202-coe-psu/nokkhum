@@ -124,6 +124,7 @@ class ProcessorServer:
         dispatcher = dispatchers.ImageDispatcher(
             dispatcher_queue,
             options.processor_id,
+            command.get("camera_id"),
             self.settings,
         )
         dispatcher.set_active()
@@ -166,7 +167,6 @@ class ProcessorServer:
                 logger.exception(e)
                 self.running = False
                 break
-
 
             for p in processors:
                 if p.running == False:

@@ -19,10 +19,10 @@ def create_app():
 
     # models.init_db(app)
     app.register_blueprint(live_streaming.module)
- 
+
     @app.before_serving
     async def before():
-        
+
         g = app
         g.queues = {}
 
