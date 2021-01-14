@@ -1,20 +1,33 @@
 import asyncio
-from quart import Blueprint, Response, g, make_response, current_app
+from quart import (
+    Blueprint,
+    Response,
+    g,
+    make_response,
+    current_app,
+    stream_with_context,
+)
 import logging
 
 module = Blueprint("live_streaming", __name__, url_prefix="/live")
-# logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
-async def generate_frame(queue):
-    """Video streaming generator function."""
-    while True:
-        frame = await queue.get()
-        if frame is None:
-            await asyncio.sleep(0.001)
-            continue
+async def generate_frame(camera_id, ss):
+    queue = await ss.add_new_queue(camera_id)
 
-        yield (b"--frame\r\n" b"Content-Type: image/jpeg\r\n\r\n" + frame + b"\r\n")
+    try:
+        while True:
+            frame = await queue.get()
+            if frame is None:
+                await asyncio.sleep(0.001)
+                continue
+            yield (b"--frame\r\n" b"Content-Type: image/jpeg\r\n\r\n" + frame + b"\r\n")
+    finally:
+        logger.debug("close connection")
+        queue.task_done()
+        await ss.remove_queue(camera_id, queue)
+        logger.debug("remove queue")
 
 
 @module.route("/")
@@ -24,24 +37,8 @@ async def index():
 
 @module.route("/cameras/<camera_id>")
 async def live(camera_id):
-
-    queue = None
-    while not queue:
-        g = current_app
-        queue = g.queues.get(camera_id)
-        if not queue:
-            await asyncio.sleep(0.001)
-            continue
-    response = await make_response(generate_frame(queue))
+    ss = current_app.streaming_sub
+    response = await make_response(generate_frame(camera_id, ss))
     response.timeout = None  # No timeout for this route
     response.headers["Content-Type"] = "multipart/x-mixed-replace; boundary=frame"
     return response
-
-    # return Response(
-    #     generate_frame(queue),
-    #     200,
-    #     {
-    #         "Content-Type": "multipart/x-mixed-replace; boundary=frame",
-    #         "mimetype": "multipart/x-mixed-replace; boundary=frame",
-    #     },
-    # )
