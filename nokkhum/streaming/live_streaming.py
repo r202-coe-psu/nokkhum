@@ -7,10 +7,11 @@ from quart import (
     current_app,
     stream_with_context,
 )
-import logging
+
+# import logging
 
 module = Blueprint("live_streaming", __name__, url_prefix="/live")
-logger = logging.getLogger(__name__)
+# logger = logging.getLogger(__name__)
 
 
 async def generate_frame(camera_id, ss):
@@ -24,10 +25,10 @@ async def generate_frame(camera_id, ss):
                 continue
             yield (b"--frame\r\n" b"Content-Type: image/jpeg\r\n\r\n" + frame + b"\r\n")
     finally:
-        logger.debug("close connection")
+        # logger.debug("close connection")
         queue.task_done()
         await ss.remove_queue(camera_id, queue)
-        logger.debug("remove queue")
+        # logger.debug("remove queue")
 
 
 @module.route("/")

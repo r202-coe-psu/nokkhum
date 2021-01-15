@@ -4,7 +4,7 @@ import asyncio
 import cv2
 import pickle
 import logging
-
+import json
 from nats.aio.client import Client as NATS
 from stan.aio.client import Client as STAN
 
@@ -38,12 +38,40 @@ class ImageDispatcher(threading.Thread):
         self.sc = None
         self.nc = None
         self.loop = asyncio.get_event_loop()
+        self.camera_topics = {}
 
     def set_active(self):
         self.active = True
 
     def stop(self):
         self.running = False
+
+    def camera_register_cb(self, msg):
+        data = msg.data.decode()
+        data = json.loads(data)
+        logger.debug("register")
+        if "camera_id" not in data:
+            return
+        logger.debug("add topic")
+        self.camera_topics[
+            data["camera_id"]
+        ] = f"nokkhum.streaming.cameras.{data['camera_id']}"
+        logger.debug(self.camera_topics)
+
+    def camera_remove_cb(self, msg):
+        logger.debug("remove camera")
+        data = msg.data.decode()
+        data = json.loads(data)
+        # logger.debug(type(data))
+        if "camera_id" not in data:
+            return
+        logger.debug("add topic")
+        del self.camera_topics[data["camera_id"]]
+        logger.debug(self.camera_topics)
+
+        # self.camera_topics[
+        #     data["camera_id"]
+        # ] = f"nokkhum.streaming.cameras.{data['camera_id']}"
 
     async def set_up_message(self):
         self.nc = NATS()
@@ -58,7 +86,19 @@ class ImageDispatcher(threading.Thread):
             self.settings["NOKKHUM_TANS_CLUSTER"], "streaming-pub", nats=self.nc
         )
 
+        camera_register_topic = "nokkhum.streaming.cameras.register"
+        self.camera_topic_register = await self.nc.subscribe(
+            camera_register_topic, cb=self.camera_register_cb
+        )
+
+        camera_remove_topic = "nokkhum.streaming.cameras.remove"
+        self.camera_topic_remove = await self.nc.subscribe(
+            camera_remove_topic, cb=self.camera_remove_cb
+        )
+
     async def tear_down_message(self):
+        # await self.camera_topic_register.unsubscribe()
+        # await self.camera_topic_remove.unsubscribe()
         await self.sc.close()
         await self.nc.close()
 
@@ -66,7 +106,8 @@ class ImageDispatcher(threading.Thread):
         serialized_data = pickle.dumps(data)
         await self.sc.publish(
             # f"nokkhum.streaming.processors.{data['processor_id']}",
-            f"nokkhum.streaming.cameras",
+            self.camera_topics.get(data["camera_id"]),
+            # f"nokkhum.streaming.cameras",
             serialized_data,
         )
 
@@ -78,6 +119,7 @@ class ImageDispatcher(threading.Thread):
                 continue
 
             data = await self.publish_queue.get()
+
             await self.publish_data(data)
 
     async def process_frame(self):
@@ -99,6 +141,11 @@ class ImageDispatcher(threading.Thread):
                 pass
 
             if not self.active:
+                await asyncio.sleep(0.001)
+                continue
+
+            if self.camera_id not in self.camera_topics:
+                await asyncio.sleep(0.001)
                 continue
             # logger.debug(f"in dispatch {image.data}")
             w, h = image.size()
