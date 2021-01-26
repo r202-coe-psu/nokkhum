@@ -100,20 +100,20 @@ class StreamingSubscriber:
         if camera_id in self.camera_queues and queue in self.camera_queues[camera_id]:
             self.camera_queues[camera_id].remove(queue)
         if len(self.camera_queues[camera_id]) == 0:
-            logger.debug("remove topic")
+            # logger.debug("remove topic")
             await self.stream_id[camera_id].unsubscribe()
             del self.camera_queues[camera_id]
             await self.remove_camera_topic(camera_id)
-            logger.debug("success")
+            # logger.debug("success")
 
     async def register_camera_topic(self, camera_id):
-        logger.debug("add_camera_topic")
+        # logger.debug("add_camera_topic")
         data = {"camera_id": camera_id}
         camera_register_topic = "nokkhum.streaming.cameras.register"
         await self.nc.publish(camera_register_topic, json.dumps(data).encode())
 
     async def remove_camera_topic(self, camera_id):
-        logger.debug("remove_camera_topic")
+        # logger.debug("remove_camera_topic")
         data = {"camera_id": camera_id}
         camera_remove_topic = "nokkhum.streaming.cameras.remove"
         await self.nc.publish(camera_remove_topic, json.dumps(data).encode())
