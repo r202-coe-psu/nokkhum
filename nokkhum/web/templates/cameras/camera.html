@@ -41,9 +41,10 @@
             src="{{ url_for('storages.download', processor_id=processor.id, date_dir=date_dir.name, filename='{}-thumbnail.png'.format(f.stem[1:])) }} ">
           {%- endif %}
         </div>
-        {% set name = f.name[f.name.find('-')+1: f.name.rfind('-')]  %}
+        {% set name = f.name[f.name.find('-')+1: f.name.rfind('-')] %}
         {%- if not f.name.startswith('_') %}
-        {% set path_url = url_for('storages.download', processor_id=processor.id, date_dir=date_dir.name, filename=f.name) %}
+        {% set path_url = url_for('storages.download', processor_id=processor.id, date_dir=date_dir.name,
+        filename=f.name) %}
         <a class="header" href="#" onclick="switchMonitor('{{path_url}}')">{{ name }}</a>
         {% else %}
         <a class="ui grey label" href="#">Recording</a>

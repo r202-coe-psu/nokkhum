@@ -104,12 +104,11 @@ def view_video(processor_id, date_dir, filename):
 @module.route("/processors/<processor_id>/<date_dir>/<filename>")
 @login_required
 def download(processor_id, date_dir, filename):
-
     if filename.startswith("_"):
         abort(404)
     media_path = get_video_path(processor_id, date_dir, filename)
     suffix = media_path.suffix[1:]
     if suffix in ["png"]:
         return send_file(str(media_path), mimetype=f"image/{suffix}")
-    elif suffix in ["mp4"]:
+    else:
         return send_file(str(media_path), mimetype=f"video/{suffix}")
