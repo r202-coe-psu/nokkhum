@@ -45,8 +45,7 @@ class ControllerServer:
         data = json.loads(data)
         if data["action"] == "register":
             response = await self.register_compute_node(data)
-            await self.nc.publish(reply,
-                            json.dumps(response).encode())
+            await self.nc.publish(reply, json.dumps(response).encode())
             logger.debug(f'client {data["machine"]["name"]} is registed')
             return
 
@@ -144,6 +143,7 @@ class ControllerServer:
                     video_uri=camera.uri,
                     fps=camera.frame_rate,
                     size=(camera.width, camera.height),
+                    camera_id=str(camera.id),
                 )
 
             topic = "nokkhum.compute.{}.rpc".format(compute_node.mac)
