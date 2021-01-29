@@ -21,7 +21,7 @@ class StreamingSubscriber:
 
     async def streaming_cb(self, msg):
         data = pickle.loads(msg.data)
-        # logger.debug(data)
+        logger.debug("streaming cb")
         queues = self.camera_queues.get(data["camera_id"])
         # if len(self.queues[data["camera_id"]])
         if not queues or len(queues) == 0:
@@ -40,6 +40,9 @@ class StreamingSubscriber:
 
             await q.put(byte_img)
 
+    async def disconnected_cb(self):
+        logger.debug("disconnect")
+
     async def set_up(self):
         logging.basicConfig(
             format="%(asctime)s - %(name)s:%(levelname)s - %(message)s",
@@ -49,15 +52,20 @@ class StreamingSubscriber:
         # loop.set_debug(True)
         self.nc = NATS()
         self.nc._max_payload = 2097152
-        # logger.debug("in setup")
+        logger.debug("in setup")
         # logger.debug(f'>>>>{self.settings["NOKKHUM_MESSAGE_NATS_HOST"]}')
 
-        await self.nc.connect(self.settings["NOKKHUM_MESSAGE_NATS_HOST"])
+        await self.nc.connect(
+            self.settings["NOKKHUM_MESSAGE_NATS_HOST"],
+            disconnected_cb=self.disconnected_cb,
+        )
 
         self.sc = STAN()
 
         await self.sc.connect(
-            self.settings["NOKKHUM_TANS_CLUSTER"], "streaming-sub", nats=self.nc
+            self.settings["NOKKHUM_TANS_CLUSTER"],
+            "streaming-sub",
+            nats=self.nc,
         )
         # logger.debug("connected")
 
@@ -75,6 +83,7 @@ class StreamingSubscriber:
     async def subscribe_camera_topic(self):
         while self.running:
             # for camera_id in self.cameras_list:
+            # logger.debug("")
             camera_id = await self.cameras_id_queue.get()
             live_streaming_topic = f"nokkhum.streaming.cameras.{camera_id}"
             self.stream_id[camera_id] = await self.sc.subscribe(
@@ -83,12 +92,15 @@ class StreamingSubscriber:
             await asyncio.sleep(0.01)
 
     async def add_new_queue(self, camera_id):
+        # make processors dict for check data processor if nor in processors dict send topic to controller
+        logger.debug("in add new")
         if camera_id not in self.camera_queues:
             # self.cameras_list.append()
             await self.cameras_id_queue.put(camera_id)
 
             await self.register_camera_topic(camera_id)
         queues = self.camera_queues.get(camera_id)
+        logger.debug("after add new queues")
         q = asyncio.queues.Queue(maxsize=10)
         if not queues:
             self.camera_queues[camera_id] = [q]
