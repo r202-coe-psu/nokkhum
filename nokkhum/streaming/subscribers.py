@@ -3,12 +3,37 @@ import logging
 import pickle
 import cv2
 import json
+import queue
 from nats.aio.client import Client as NATS
 from stan.aio.client import Client as STAN
+import threading
 
 from nokkhum import models
 
 logger = logging.getLogger(__name__)
+
+
+class ImageProcessor(threading.Thread):
+    def __init__(self, input_queue, output_queue):
+        super().__init__()
+        self.running = False
+        self.input_queue = input_queue
+        self.output_queue = output_queue
+
+    def run(self):
+        self.running = True
+
+        while self.running:
+            msg = self.input_queue.get()
+            data = pickle.loads(msg)
+
+
+            img = cv2.imdecode(data["frame"], 1)
+            byte_img = cv2.imencode(".jpg", img)[1].tobytes()
+
+            self.output_queue.put(
+                    (data["camera_id"], byte_img)
+                    )
 
 
 class StreamingSubscriber:
@@ -16,32 +41,53 @@ class StreamingSubscriber:
         self.settings = settings
         self.camera_queues = queues
         self.cameras_id_queue = asyncio.queues.Queue()
+        self.message_queue = queue.Queue()
+        self.image_queue = queue.Queue()
+
         self.running = False
         self.stream_id = {}
 
+        self.loop = asyncio.get_event_loop()
+        self.image_processor = ImageProcessor(
+                self.message_queue,
+                self.image_queue,
+                )
+
+        self.image_processor.start()
+
+
+    async def put_image_to_queue(self):
+        while self.running:
+            if self.image_queue.empty():
+                await asyncio.sleep(0.001)
+                continue
+
+            camera_id, img = self.image_queue.get()
+
+            queues = self.camera_queues.get(camera_id)
+            if not queues or len(queues) == 0:
+                return
+
+            if not img:
+                await asyncio.sleep(0.001)
+                continue
+
+            for q in queues:
+                if q.full():
+                    logger.debug("drop image")
+                    q.get_nowait()
+                    await asyncio.sleep(0)
+                
+                await q.put(img)
+
+
     async def streaming_cb(self, msg):
-        data = pickle.loads(msg.data)
-        # logger.debug("streaming cb")
-        queues = self.camera_queues.get(data["camera_id"])
-        # if len(self.queues[data["camera_id"]])
-        if not queues or len(queues) == 0:
-            # logger.debug(" no q in list")
-            return
-        # logger.debug(f"len >>>>{len(queues)}")
-        # self.queues[data["camera_id"]] = asyncio.queues.Queue(maxsize=30)
-        img = cv2.imdecode(data["frame"], 1)
-        byte_img = cv2.imencode(".jpg", img)[1].tobytes()
+        self.message_queue.put(msg.data)
 
-        for q in queues:
-            if q.full():
-                logger.debug("drop image")
-                q.get_nowait()
-                await asyncio.sleep(0)
-
-            await q.put(byte_img)
 
     async def disconnected_cb(self):
         logger.debug("disconnect")
+
 
     async def set_up(self):
         logging.basicConfig(
@@ -55,7 +101,7 @@ class StreamingSubscriber:
         # loop.set_debug(True)
         self.nc = NATS()
         self.nc._max_payload = 2097152
-        logger.debug("in setup")
+        # logger.debug("in setup")
         # logger.debug(f'>>>>{self.settings["NOKKHUM_MESSAGE_NATS_HOST"]}')
 
         await self.nc.connect(
@@ -72,9 +118,11 @@ class StreamingSubscriber:
         )
         # logger.debug("connected")
 
-        # loop = asyncio.get_event_loop()
-        # loop.create_task(self.subscribe_camera_topic())
         self.running = True
+        loop = asyncio.get_event_loop()
+        loop.create_task(self.put_image_to_queue())
+        
+
         # try:
         # loop.run_forever()
         # except Exception as e:

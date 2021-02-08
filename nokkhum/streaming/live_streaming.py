@@ -16,8 +16,6 @@ logger = logging.getLogger(__name__)
 
 async def generate_frame(camera_id, ss):
     queue = await ss.add_new_queue(camera_id)
-    # logger.debug("gen frame ")
-    logger.debug(f'=>{ss.sc._loop}')
     try:
         while True:
             # logger.debug("trueee")
@@ -31,17 +29,11 @@ async def generate_frame(camera_id, ss):
                 continue
             yield (b"--frame\r\n" b"Content-Type: image/jpeg\r\n\r\n" + frame + b"\r\n")
     finally:
-        try:
-            logger.debug("close connection")
-            queue.task_done()
-            # logger.debug("finally")
-            await ss.remove_queue(camera_id, queue)
-            logger.debug("close connection after remove queue")
-            # logger.debug("remove queue")
-        except Exception as e:
-            logger.debug(f"xxxx {e}")
+        queue.task_done()
+        # logger.debug("finally")
+        await ss.remove_queue(camera_id, queue)
+        # logger.debug("remove queue")
     
-    logger.debug(f"end {e}")
 
 @module.route("/")
 async def index():

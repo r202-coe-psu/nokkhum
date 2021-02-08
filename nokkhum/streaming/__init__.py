@@ -27,10 +27,12 @@ def create_app():
         g.queues = {}
 
         settings = config.get_settings()
+
+
         streaming_sub = StreamingSubscriber(g.queues, settings)
         await streaming_sub.set_up()
         app.streaming_sub = streaming_sub
-
+        
         # print(id(g), dir(g))
 
     return app
