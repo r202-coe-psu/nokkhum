@@ -7,33 +7,10 @@ import queue
 from nats.aio.client import Client as NATS
 from stan.aio.client import Client as STAN
 import threading
+import concurrent.futures
 
-from nokkhum import models
 
 logger = logging.getLogger(__name__)
-
-
-class ImageProcessor(threading.Thread):
-    def __init__(self, input_queue, output_queue):
-        super().__init__()
-        self.running = False
-        self.input_queue = input_queue
-        self.output_queue = output_queue
-
-    def run(self):
-        self.running = True
-
-        while self.running:
-            msg = self.input_queue.get()
-            data = pickle.loads(msg)
-
-
-            img = cv2.imdecode(data["frame"], 1)
-            byte_img = cv2.imencode(".jpg", img)[1].tobytes()
-
-            self.output_queue.put(
-                    (data["camera_id"], byte_img)
-                    )
 
 
 class StreamingSubscriber:
@@ -41,19 +18,24 @@ class StreamingSubscriber:
         self.settings = settings
         self.camera_queues = queues
         self.cameras_id_queue = asyncio.queues.Queue()
-        self.message_queue = queue.Queue()
-        self.image_queue = queue.Queue()
+        self.image_queue = asyncio.queues.Queue()
 
         self.running = False
         self.stream_id = {}
 
-        self.loop = asyncio.get_event_loop()
-        self.image_processor = ImageProcessor(
-                self.message_queue,
-                self.image_queue,
-                )
+        self.loop = asyncio.get_running_loop()
+        self.pool = concurrent.futures.ThreadPoolExecutor(max_workers=2)
 
-        self.image_processor.start()
+
+    def process_message_data(self, message):
+        self.running = True
+
+        data = pickle.loads(message)
+
+        img = cv2.imdecode(data["frame"], 1)
+        byte_img = cv2.imencode(".jpg", img)[1].tobytes()
+
+        return data["camera_id"], byte_img
 
 
     async def put_image_to_queue(self):
@@ -62,7 +44,11 @@ class StreamingSubscriber:
                 await asyncio.sleep(0.001)
                 continue
 
-            camera_id, img = self.image_queue.get()
+            future_result = await self.image_queue.get()
+            while not future_result.done():
+                await asyncio.sleep(0.001)
+
+            camera_id, img = future_result.result()
 
             queues = self.camera_queues.get(camera_id)
             if not queues or len(queues) == 0:
@@ -82,7 +68,11 @@ class StreamingSubscriber:
 
 
     async def streaming_cb(self, msg):
-        self.message_queue.put(msg.data)
+        # self.message_queue.put(msg.data)
+
+        result = self.loop.run_in_executor(
+                self.pool, self.process_message_data, msg.data)
+        await self.image_queue.put(result)
 
 
     async def disconnected_cb(self):
