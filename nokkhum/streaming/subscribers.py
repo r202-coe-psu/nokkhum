@@ -24,11 +24,11 @@ class StreamingSubscriber:
         self.stream_id = {}
 
         self.loop = asyncio.get_running_loop()
-        self.pool = concurrent.futures.ThreadPoolExecutor(max_workers=2)
-
+        self.pool = concurrent.futures.ThreadPoolExecutor(
+            max_workers=settings.get("NOKKHUM_STREAMING_MAX_WORKER")
+        )
 
     def process_message_data(self, message):
-        self.running = True
 
         data = pickle.loads(message)
 
@@ -36,7 +36,6 @@ class StreamingSubscriber:
         byte_img = cv2.imencode(".jpg", img)[1].tobytes()
 
         return data["camera_id"], byte_img
-
 
     async def put_image_to_queue(self):
         while self.running:
@@ -63,21 +62,19 @@ class StreamingSubscriber:
                     logger.debug("drop image")
                     q.get_nowait()
                     await asyncio.sleep(0)
-                
-                await q.put(img)
 
+                await q.put(img)
 
     async def streaming_cb(self, msg):
         # self.message_queue.put(msg.data)
 
         result = self.loop.run_in_executor(
-                self.pool, self.process_message_data, msg.data)
+            self.pool, self.process_message_data, msg.data
+        )
         await self.image_queue.put(result)
-
 
     async def disconnected_cb(self):
         logger.debug("disconnect")
-
 
     async def set_up(self):
         logging.basicConfig(
@@ -111,7 +108,6 @@ class StreamingSubscriber:
         self.running = True
         loop = asyncio.get_event_loop()
         loop.create_task(self.put_image_to_queue())
-        
 
         # try:
         # loop.run_forever()
@@ -122,8 +118,7 @@ class StreamingSubscriber:
         #     loop.close()
 
     async def subscribe_camera_topic_error(self, error):
-        print(f'error sub {error}')
-
+        print(f"error sub {error}")
 
     async def subscribe_camera_topic(self, camera_id):
         live_streaming_topic = f"nokkhum.streaming.cameras.{camera_id}"
@@ -133,12 +128,11 @@ class StreamingSubscriber:
             error_cb=self.subscribe_camera_topic_error,
         )
 
-
     async def add_new_queue(self, camera_id):
         # make processors dict for check data processor if nor in processors dict send topic to controller
         if camera_id not in self.camera_queues:
             await self.subscribe_camera_topic(camera_id)
-        await self.register_camera_topic(camera_id)
+        await self.send_start_live(camera_id)
 
         queues = self.camera_queues.get(camera_id)
         q = asyncio.queues.Queue(maxsize=10)
@@ -148,7 +142,6 @@ class StreamingSubscriber:
             self.camera_queues[camera_id].append(q)
         return q
 
-
     async def remove_queue(self, camera_id, queue):
         if camera_id in self.camera_queues and queue in self.camera_queues[camera_id]:
             self.camera_queues[camera_id].remove(queue)
@@ -157,18 +150,16 @@ class StreamingSubscriber:
             # logger.debug("remove topic")
             await self.stream_id[camera_id].unsubscribe()
             del self.camera_queues[camera_id]
-            await self.remove_camera_topic(camera_id)
+            await self.send_stop_live(camera_id)
             # logger.debug("success")
 
-
-    async def register_camera_topic(self, camera_id):
+    async def send_start_live(self, camera_id):
         # logger.debug("add_camera_topic")
         data = {"camera_id": camera_id}
         camera_register_topic = "nokkhum.streaming.cameras.register"
         await self.nc.publish(camera_register_topic, json.dumps(data).encode())
 
-
-    async def remove_camera_topic(self, camera_id):
+    async def send_stop_live(self, camera_id):
         # logger.debug("remove_camera_topic")
         data = {"camera_id": camera_id}
         camera_remove_topic = "nokkhum.streaming.cameras.remove"
