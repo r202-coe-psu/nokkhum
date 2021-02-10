@@ -33,7 +33,7 @@ async def generate_frame(camera_id, ss):
         # logger.debug("finally")
         await ss.remove_queue(camera_id, queue)
         # logger.debug("remove queue")
-    
+
 
 @module.route("/")
 async def index():
