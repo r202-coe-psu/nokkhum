@@ -46,32 +46,32 @@ class ImageDispatcher(threading.Thread):
     def stop(self):
         self.running = False
 
-    def camera_register_cb(self, msg):
-        data = msg.data.decode()
-        data = json.loads(data)
-        logger.debug("register")
-        if "camera_id" not in data:
-            return
-        logger.debug("add topic")
-        self.camera_topics[
-            data["camera_id"]
-        ] = f"nokkhum.streaming.cameras.{data['camera_id']}"
-        logger.debug(self.camera_topics)
+    # def camera_register_cb(self, msg):
+    #     data = msg.data.decode()
+    #     data = json.loads(data)
+    #     logger.debug("register")
+    #     if "camera_id" not in data:
+    #         return
+    #     logger.debug("add topic")
+    #     self.camera_topics[
+    #         data["camera_id"]
+    #     ] = f"nokkhum.streaming.cameras.{data['camera_id']}"
+    #     logger.debug(self.camera_topics)
 
-    def camera_remove_cb(self, msg):
-        logger.debug("remove camera")
-        data = msg.data.decode()
-        data = json.loads(data)
-        # logger.debug(type(data))
-        if "camera_id" not in data:
-            return
-        logger.debug("add topic")
-        del self.camera_topics[data["camera_id"]]
-        logger.debug(self.camera_topics)
+    # def camera_remove_cb(self, msg):
+    #     logger.debug("remove camera")
+    #     data = msg.data.decode()
+    #     data = json.loads(data)
+    #     # logger.debug(type(data))
+    #     if "camera_id" not in data:
+    #         return
+    #     logger.debug("add topic")
+    #     del self.camera_topics[data["camera_id"]]
+    #     logger.debug(self.camera_topics)
 
-        # self.camera_topics[
-        #     data["camera_id"]
-        # ] = f"nokkhum.streaming.cameras.{data['camera_id']}"
+    # self.camera_topics[
+    #     data["camera_id"]
+    # ] = f"nokkhum.streaming.cameras.{data['camera_id']}"
 
     async def set_up_message(self):
         self.nc = NATS()
@@ -83,18 +83,20 @@ class ImageDispatcher(threading.Thread):
         # Start session with NATS Streaming cluster.
         self.sc = STAN()
         await self.sc.connect(
-            self.settings["NOKKHUM_TANS_CLUSTER"], "streaming-pub", nats=self.nc
+            self.settings["NOKKHUM_TANS_CLUSTER"],
+            f"streaming-pub-{self.camera_id}",
+            nats=self.nc,
         )
 
-        camera_register_topic = "nokkhum.streaming.cameras.register"
-        self.camera_topic_register = await self.nc.subscribe(
-            camera_register_topic, cb=self.camera_register_cb
-        )
+        # camera_register_topic = "nokkhum.streaming.cameras.register"
+        # self.camera_topic_register = await self.nc.subscribe(
+        #     camera_register_topic, cb=self.camera_register_cb
+        # )
 
-        camera_remove_topic = "nokkhum.streaming.cameras.remove"
-        self.camera_topic_remove = await self.nc.subscribe(
-            camera_remove_topic, cb=self.camera_remove_cb
-        )
+        # camera_remove_topic = "nokkhum.streaming.cameras.remove"
+        # self.camera_topic_remove = await self.nc.subscribe(
+        #     camera_remove_topic, cb=self.camera_remove_cb
+        # )
 
     async def tear_down_message(self):
         # await self.camera_topic_register.unsubscribe()
