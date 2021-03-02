@@ -29,7 +29,6 @@ class ImageDispatcher(threading.Thread):
         self.active = False
 
         self.input_queue = queue
-        self.publish_queue = asyncio.queues.Queue()
 
         self.expected_frame_size = expected_frame_size
         self.processor_id = processor_id
@@ -37,8 +36,13 @@ class ImageDispatcher(threading.Thread):
         self.settings = settings
         self.sc = None
         self.nc = None
-        self.loop = asyncio.get_event_loop()
         self.camera_topics = {}
+
+        # self.loop = asyncio.get_event_loop()
+        self.loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(self.loop)
+
+        self.publish_queue = asyncio.queues.Queue()
 
     def set_active(self):
         self.active = True

@@ -76,24 +76,23 @@ class ProcessorController:
                 return response
 
             logger.debug('Begin to start processor')
-            logger.debug('processor_id: %s' % processor_id)
+            logger.debug(f'processor_id: {processor_id}')
 
             processor_process = processors.Processor(processor_id)
 
-            logger.debug('start VS for processor id: %s', processor_id)
+            logger.debug(f'start VS for processor id: {processor_id}')
             processor_process.start(attributes)
             logger.debug(
-                'add process processor id: %s to process manager',
-                processor_id)
+                f'add process processor id: {processor_id} to process manager')
             self.processor_manager.add(processor_id, processor_process)
 
             response['success'] = True
 
-            logger.debug('Processor id: %s started' % (processor_id))
+            logger.debug('Processor id: {processor_id} started')
         except Exception as e:
             logger.exception(e)
             response['comment'] = 'Add Processor Error'
-            logger.debug('Processor name: %s started error' % (processor_id))
+            logger.debug('Processor name: {processor_id} started error')
 
         return response
 

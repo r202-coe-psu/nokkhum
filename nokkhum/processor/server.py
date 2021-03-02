@@ -24,8 +24,10 @@ class ProcessorServer:
     def __init__(self, settings):
         self.settings = settings
         self.running = False
+        self.processors = {"video-streamer": None, "recorder": None, "acquisitor": None}
+
         self.image_queues = []
-        self.processors = {"live": None, "record": None, "acquisitor": None}
+        self.capture_output_queues = []
 
     def get_options(self):
         parser = argparse.ArgumentParser(description="Nokkhum Recorder")
@@ -72,53 +74,79 @@ class ProcessorServer:
                 continue
 
             if "action" in command:
-                if command["action"] == "stop":
+
+                if command.get("action") == "start-acquisitor":
+                    self.init_acquisitor(command)
+                elif command.get("action") == "start-streamer":
+                    self.init_dispatcher(command)
+                    self.processors["vdo-streamer"].set_active()
+                elif command.get("action") == "start-recorder":
+                    self.init_recorder(command)
+
+                elif command["action"] == "stop":
                     self.running = False
-
-                elif command["action"] == "stop-live":
+                    for p in self.processors.values():
+                        if p:
+                            p.stop()
+                elif command["action"] == "stop-streamer":
                     # self.running = False
-                    if "live" in self.processors:
-                        self.processors["live"].running = False
-                        self.processors["live"].stop()
-
-                elif command["action"] == "stop-record":
+                    if self.processors["vdo-streamer"]:
+                        self.processors["vdo-streamer"].stop()
+                elif command["action"] == "stop-recorder":
                     # self.running = False
-                    if "record" in self.processors:
-                        self.processors["record"].running = False
-                        self.processors["record"].stop()
+                    if self.processors["recorder"]:
+                        self.processors["recorder"].stop()
 
-                if command.get("action") == "start-live":
-                    self.processors["live"].set_active()
-                    self.processors["live"].start()
-
-                elif command.get("action") == "start-record":
-                    self.processors["record"].start()
 
         logger.debug("End Commander")
 
-    def run(self):
-
-        self.running = True
-        options = self.get_options()
-        loop = asyncio.get_event_loop()
-
-        self.setup(options)
-
-        command = self.get_input()
-        while command.get("action") not in ["start", "start-live", "start-record"]:
-            command = self.get_input()
-
-        recorder_queue = ImageQueue()
-        self.image_queues.append(recorder_queue)
-
-        dispatcher_queue = ImageQueue()
-        self.image_queues.append(dispatcher_queue)
+    def init_acquisitor(self, command):
+        if 'acquisitor' in self.processors and self.processors['acquisitor'] and self.processors["acquisitor"].is_alive():
+            return
 
         # capture output queue default 2 queue
         # capture_output_queues = [recorder_queue, dispatcher_queue]
-        capture_output_queues = [dispatcher_queue]
+        # capture_output_queues = [dispatcher_queue]
 
-        if "motion" in command and command["motion"]:
+        fps=command.get("fps", self.settings.get('NOKKHUM_PROCESSOR_ACQUISITOR_DEFAULT_FPS'))
+        size=tuple(command.get("size", self.settings.get('NOKKHUM_PROCESSOR_ACQUISITOR_DEFAULT_SIZE')))
+
+
+
+        capture = captures.VideoCapture(
+            command["video_uri"],
+            # options.processor_id,
+            command['camera_id'],
+        )
+
+        
+        acquisitor = acquisitors.ImageAcquisitor(
+            capture=capture,
+            queues=self.capture_output_queues,
+            fps=fps,
+            size=size,
+        )
+        acquisitor.start()
+        self.processors["acquisitor"] = acquisitor
+
+
+    def init_recorder(self, command):
+
+        is_motion = command.get('motion', False)
+        if 'recorder' in self.processors and self.processors["recorder"]  and self.processors["recorder"].is_alive():
+            return
+        recorder_queue = ImageQueue()
+        self.image_queues.append(recorder_queue)
+        self.capture_output_queues.append(recorder_queue)
+
+        fps=command.get("fps", 0)
+        if fps == 0 and self.processors["acquisitor"]:
+            fps = self.processors["acquisitor"].fps
+        size=tuple(command.get("size", []))
+        if size == tuple([]):
+            size = self.processors["acquisitor"].size
+
+        if is_motion:
             motion_queue = ImageQueue()
             self.image_queues.append(motion_queue)
 
@@ -129,55 +157,67 @@ class ProcessorServer:
             )
             motion_detector.start()
 
-        capture = captures.VideoCapture(
-            command["video_uri"],
-            options.processor_id,
-        )
 
-        acquisitor = acquisitors.ImageAcquisitor(
-            capture=capture,
-            queues=capture_output_queues,
-            fps=command.get("fps", None),
-            size=tuple(command.get("size", None)),
-        )
-        acquisitor.start()
-        self.processors["acquisitor"] = acquisitor
-
-        dispatcher = dispatchers.ImageDispatcher(
-            dispatcher_queue,
-            options.processor_id,
-            command.get("camera_id"),
-            self.settings,
-        )
-        self.processors["live"] = dispatcher
-
-        if "motion" in command and command["motion"]:
             recorder = recorders.MotionVideoRecorder(
                 queue=recorder_queue,
-                directory=options.directory,
-                processor_id=options.processor_id,
-                fps=command.get("fps", capture.get_fps()),
-                size=tuple(command.get("size", capture.get_size())),
+                directory=self.options.directory,
+                processor_id=self.options.processor_id,
+                fps=fps,
+                size=size,
                 extension="mkv",
             )
 
         else:
             recorder = recorders.VideoRecorder(
                 queue=recorder_queue,
-                directory=options.directory,
-                processor_id=options.processor_id,
-                fps=command.get("fps", capture.get_fps()),
-                size=tuple(command.get("size", capture.get_size())),
+                directory=self.options.directory,
+                processor_id=self.options.processor_id,
+                fps=fps,
+                size=size,
                 extension="mkv",
             )
-        self.processors["record"] = recorder
+        recorder.start()
+        self.processors["recorder"] = recorder
 
-        if command.get("action") == "start-live":
-            self.processors["live"].set_active()
-            self.processors["live"].start()
 
-        elif command.get("action") == "start-record":
-            self.processors["record"].start()
+
+
+    def init_dispatcher(self, command):
+        if 'vdo-streamer' in self.processors and self.processors["vdo-streamer"] and self.processors["vdo-streamer"].is_alive():
+            return
+        dispatcher_queue = ImageQueue()
+        self.image_queues.append(dispatcher_queue)
+        dispatcher = dispatchers.ImageDispatcher(
+            dispatcher_queue,
+            self.options.processor_id,
+            command.get("camera_id"),
+            self.settings,
+        )
+        dispatcher.start()
+        self.processors["vdo-streamer"] = dispatcher
+
+
+
+    def run(self):
+
+        self.running = True
+        options = self.get_options()
+        loop = asyncio.get_event_loop()
+
+        self.setup(options)
+        self.options = options
+
+        # command = self.get_input()
+        # while command.get("action") not in ["start", "start-live", "start-record"]:
+        #     command = self.get_input()
+
+
+        # if command.get("action") == "start-live":
+        #     self.processors["live"].set_active()
+        #     self.processors["live"].start()
+
+        # elif command.get("action") == "start-record":
+        #     self.processors["record"].start()
 
         command_thread = threading.Thread(target=self.command_action, daemon=True)
         command_thread.start()
