@@ -26,6 +26,8 @@ class ProcessorReport(me.EmbeddedDocument):
             default=datetime.datetime.now)
     compute_node = me.ReferenceField('ComputeNode', dbref=True)
 
+    processors = me.ListField(me.StringField())
+
 
 class Processor(me.Document):
     meta = {'collection': 'processors'}
@@ -48,13 +50,14 @@ class Processor(me.Document):
     project = me.ReferenceField('Project', required=True, dbref=True)
     # owner = me.ReferenceField('User', required=True, dbref=True)
 
-    user_command = me.ReferenceField('ProcessorCommand', dbref=True)
+    # user_command = me.ReferenceField('ProcessorCommand', dbref=True)
+    # reference_command = me.ReferenceField('ProcessorCommand', dbref=True)
+
     state = me.StringField(required=True,
                            default='stop',
                            choices=PROCESSOR_OPERATING_STATE)
 
     compute_node = me.ReferenceField('ComputeNode', dbref=True)
-    reference_command = me.ReferenceField('ProcessorCommand', dbref=True)
     report = me.ListField(me.EmbeddedDocumentField('ProcessorReport'))
 
     def push_processor_report(self, report):

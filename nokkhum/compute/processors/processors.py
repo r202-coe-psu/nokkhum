@@ -49,24 +49,54 @@ class Processor:
                                         stdout=subprocess.PIPE,
                                         stderr=subprocess.PIPE)
         data = attributes
-        data['action'] = 'start'
+        data['action'] = 'start-acquisitor'
+
         self.write(data)
         
-        logger.debug(f'Attributes: {data}')
+        logger.debug(f'start processor {self.id} attributes: {data}')
+
+
+    def start_recorde(self, attributes={}):
+        data = attributes
+        data['action'] = 'start-recorder'
+        self.write(data)
+        
+        logger.debug(f'start recorder processor {self.id} attributes: {data}')
+
+    def start_streamer(self, attributes={}):
+        data = attributes
+        data['action'] = 'start-streamer'
+        self.write(data)
+        
+        logger.debug(f'start streamer processor {self.id} attributes: {data}')
+
+
 
     def stop(self):
         data = dict(action='stop')
         self.write(data)
         try:
-            self.process.wait(timeout=60)
+            self.process.wait(timeout=30)
         except Exception as e:
             logger.exception(e)
 
         if self.process.poll() is None:
             self.process.terminate()
 
+
+    def stop_recorder(self):
+        data = dict(action='stop-recorder')
+        self.write(data)
+        logger.debug(f'stop recorder processor {self.id}')
+
+
+    def stop_streamer(self):
+        data = dict(action='stop-streamer')
+        self.write(data)
+        logger.debug(f'stop streamer processor {self.id}')
+
     def get_attributes(self):
-        return self.attributes
+        return self.atdtributes
 
     def is_running(self):
         if self.process.poll() is None:

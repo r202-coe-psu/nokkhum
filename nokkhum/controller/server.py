@@ -95,7 +95,6 @@ class ControllerServer:
                 self.cn_resource.update_machine_resources(
                     data["compute_node_id"], data["resource"]
                 )
-                continue
             elif data["action"] == "report-fail-processor":
                 # logger.debug('pcnr: {}'.format(data))
                 # logger.debug('>>>>>>> {}'.format(data['fail_processor_data']))
@@ -104,10 +103,9 @@ class ControllerServer:
                     data["compute_node_id"],
                     self.processor_command_queue,
                 )
-                continue
             elif data["action"] != "report":
                 logger.debug("got unproccess report {}".format(str(data)))
-                continue
+
             # process report command
             # await self.manager.update(data)
 
@@ -116,29 +114,32 @@ class ControllerServer:
             data = await self.processor_command_queue.get()
             logger.debug("processor command: {}".format(data))
 
-            # save infomation into database
-            # send command to compute node
-
-            deadline_date = datetime.datetime.now() - datetime.timedelta(seconds=60)
-            compute_node = models.ComputeNode.objects(
-                updated_date__gt=deadline_date
-            ).first()
             camera = models.Camera.objects(id=data["camera_id"]).first()
-            # logger.debug('after query camera')
-            if compute_node is None:
-                logger.debug("compute node is None")
-                await asyncio.sleep(20)
-                await self.processor_command_queue.put(data)
-                continue
+
             if camera is None:
                 logger.debug("camera is None")
                 continue
+
+            if data['action'] == 'start-recorder':
+                deadline_date = datetime.datetime.now() - datetime.timedelta(seconds=60)
+
+                # need a cheduling
+                compute_node = models.ComputeNode.objects(
+                    updated_date__gt=deadline_date
+                ).first()
+
+                if compute_node is None:
+                    logger.debug("compute node is None")
+                    await asyncio.sleep(20)
+                    await self.processor_command_queue.put(data)
+                    continue
+
             # logger.debug('before find processor')
             processor = self.processor_controller.process_command(data)
             processor.compute_node = compute_node
 
             command = dict(processor_id=str(processor.id), action=data["action"])
-            if data["action"] == "start":
+            if data["action"] == "start-recorder":
                 command["attributes"] = dict(
                     video_uri=camera.uri,
                     fps=camera.frame_rate,
@@ -148,9 +149,9 @@ class ControllerServer:
 
             topic = "nokkhum.compute.{}.rpc".format(compute_node.mac)
 
-            if data["action"] == "start":
+            if 'start' in data["action"]:
                 processor.state = "starting"
-            elif data["action"] == "stop":
+            elif 'stop' in data["action"]:
                 processor.state = "stopping"
             processor.save()
 

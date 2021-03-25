@@ -86,7 +86,7 @@ def view():
     )
 
 
-@module.route("/view_advance", methods=["GET"])
+@module.route("/view-advance", methods=["GET"])
 @login_required
 def view_advance():
     project_id = request.args.get("project_id")
@@ -153,7 +153,7 @@ def delete():
     return redirect(url_for("projects.view", project_id=project.id))
 
 
-@module.route("/<camera_id>/startlpr", methods=["POST"])
+@module.route("/<camera_id>/start-recorder", methods=["POST"])
 @login_required
 def start_lpr_process(camera_id):
     # print(request.form.get('camera_id'))
@@ -161,7 +161,7 @@ def start_lpr_process(camera_id):
     project_id = request.form.get("project_id")
     data = json.dumps(
         {
-            "action": "start",
+            "action": "start-recorder",
             "camera_id": camera_id,
             "project_id": project_id,
             "user_id": str(current_user._get_current_object().id),
@@ -177,14 +177,14 @@ def start_lpr_process(camera_id):
     return response
 
 
-@module.route("/<camera_id>/stoplpr", methods=["GET", "POST"])
+@module.route("/<camera_id>/stop-recorder", methods=["GET", "POST"])
 @login_required
 def stop_lpr_process(camera_id):
     # print(request.form.get('camera_id'))
     project_id = request.form.get("project_id")
     data = json.dumps(
         {
-            "action": "stop",
+            "action": "stop-recorder",
             "camera_id": camera_id,
             "project_id": project_id,
             "user_id": str(current_user._get_current_object().id),

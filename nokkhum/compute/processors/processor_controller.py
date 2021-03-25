@@ -88,13 +88,41 @@ class ProcessorController:
 
             response['success'] = True
 
-            logger.debug('Processor id: {processor_id} started')
+            logger.debug(f'Processor id: {processor_id} started')
         except Exception as e:
             logger.exception(e)
             response['comment'] = 'Add Processor Error'
-            logger.debug('Processor name: {processor_id} started error')
+            logger.debug(f'Processor name: {processor_id} started error')
 
         return response
+
+
+    def start_recorder(self, processor_id, attributes):
+
+        processor = self.processor_manager.get(processor_id)
+        if processor is not None:
+            response = self.start(processor_id, attributes)
+            if not response['success']:
+                return response
+
+            processor = self.processor_manager.get(processor_id)
+        
+
+        processor.start_recorder(attributes)
+
+    def start_streamer(self, processor_id, attributes):
+
+        processor = self.processor_manager.get(processor_id)
+        if processor is not None:
+            response = self.start(processor_id, attributes)
+            if not response['success']:
+                return response
+
+            processor = self.processor_manager.get(processor_id)
+        
+
+        processor.start_streamer(attributes)
+
 
     def stop_processor(self, processor_id):
         '''
@@ -127,12 +155,21 @@ class ProcessorController:
 
             response['success'] = True
             self.processor_manager.delete(processor_id)
-            logger.debug('Processor name: %s deleted' % (processor_id))
+            logger.debug(f'Processor name: {processor_id} deleted')
         except Exception as e:
             logger.exception(e)
             response['comment'] = 'Delete Processor Error'
 
         return response
+
+    def stop_recorder(self, processor_id):
+        processor = self.processor_manager.get(processor_id)
+        processor.stop_recorder()
+
+
+    def stop_streamer(self, processor_id):
+        processor = self.processor_manager.get(processor_id)
+        processor.stop_streamer()
 
     def stop_all(self):
 

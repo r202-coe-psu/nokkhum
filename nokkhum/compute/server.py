@@ -50,9 +50,27 @@ class ComputeNodeServer:
         if action == 'start':
             respons = self.processor_controller.start_processor(
                     data['processor_id'],
-                    data['attributes'])
+                    data['attributes'],
+                    )
+        elif action == 'start-recorder':
+            respons = self.processor_controller.start_recorder(
+                    data['processor_id'],
+                    data.get('attributes', {}),
+                    )
+
+        elif action == 'start-streamer':
+            respons = self.processor_controller.start_streamer(
+                    data['processor_id'],
+                    data.get('attributes', {}),
+                    )
         elif action == 'stop':
             respons = self.processor_controller.stop_processor(
+                    data['processor_id'])
+        elif action == 'stop-recorder':
+            respons = self.processor_controller.stop_recorder(
+                    data['processor_id'])
+        elif action == 'stop-streamer':
+            respons = self.processor_controller.stop_streamer(
                     data['processor_id'])
 
         await self.nc.publish(reply, json.dumps(respons).encode())

@@ -16,6 +16,7 @@ from .processors import dispatchers
 from .processors import detectors
 
 import logging
+from logging import handlers
 
 logger = logging.getLogger(__name__)
 
@@ -47,16 +48,30 @@ class ProcessorServer:
         return parser.parse_args()
 
     def setup(self, options):
-        logging.basicConfig(
-            format="%(asctime)s - %(name)s:%(levelname)s - %(message)s",
-            datefmt="%d-%b-%y %H:%M:%S",
-            level=logging.DEBUG,
-        )
 
-        path = pathlib.Path(options.directory)
-        logger.debug(f"prepare directory {options.directory} is exists {path.exists()}")
+        path = pathlib.Path(options.directory) / options.processor_id / 'log'
         if not path.exists():
             path.mkdir(parents=True)
+
+        # logging.basicConfig(
+        #     format="%(asctime)s - %(name)s:%(levelname)s - %(message)s",
+        #     datefmt="%d-%b-%y %H:%M:%S",
+        #     level=logging.DEBUG,
+        # )
+
+        handler = handlers.TimedRotatingFileHandler(
+                f'{path}/processor.log',
+                'midnight',
+                1,
+                backupCount=10)
+        formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s')
+        handler.setFormatter(formatter)
+
+        root_logger = logging.getLogger()
+        root_logger.addHandler(handler)
+        root_logger.setLevel(logging.DEBUG)
+
+        logger.debug('setup finish')
 
     def get_input(self):
         data = input().strip()
