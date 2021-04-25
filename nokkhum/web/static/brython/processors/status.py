@@ -18,17 +18,17 @@ class ProcessorStatus:
             if doc.id == cam_id:
                 doc.disabled = False
 
-    @bind("button.stoplpr", "click")
+    @bind("button.stop-recorder", "click")
     def stop_lpr(ev):
         # print(ev.target.id)
         camera_id, project_id = (ev.target.id).split("/")
-        ajax.post(f"/cameras/{camera_id}/stoplpr", data={"project_id": project_id})
+        ajax.post(f"/cameras/{camera_id}/stop-recorder", data={"project_id": project_id})
 
-    @bind("button.startlpr", "click")
+    @bind("button.start-recorder", "click")
     def start_lpr(ev):
         # print('start', ev.target.id)
         camera_id, project_id = (ev.target.id).split("/")
-        ajax.post(f"/cameras/{camera_id}/startlpr", data={"project_id": project_id})
+        ajax.post(f"/cameras/{camera_id}/start-recorder", data={"project_id": project_id})
 
     def update_state(self, req_data):
         for data in req_data:
@@ -40,23 +40,23 @@ class ProcessorStatus:
             if data["state"] in ["running", "start"]:
                 color = "green"
                 s = html.SPAN(style={"color": "green"})
-                self.disable_button(document.select(".startlpr"), data_id)
-                self.enable_button(document.select(".stoplpr"), data_id)
+                self.disable_button(document.select(".start-recorder"), data_id)
+                self.enable_button(document.select(".stop-recorder"), data_id)
             elif data["state"] in ["starting"]:
                 color = "yellow"
                 s = html.SPAN(style={"color": "yellow"})
-                self.disable_button(document.select(".stoplpr"), data_id)
-                self.enable_button(document.select(".startlpr"), data_id)
+                self.disable_button(document.select(".stop-recorder"), data_id)
+                self.enable_button(document.select(".start-recorder"), data_id)
             elif data["state"] in ["stop"]:
                 color = "grey"
                 s = html.SPAN(style={"color": "grey"})
-                self.disable_button(document.select(".stoplpr"), data_id)
-                self.enable_button(document.select(".startlpr"), data_id)
+                self.disable_button(document.select(".stop-recorder"), data_id)
+                self.enable_button(document.select(".start-recorder"), data_id)
             elif data["state"] in ["stopping"]:
                 color = "red"
                 s = html.SPAN(style={"color": "red"})
-                self.disable_button(document.select(".stoplpr"), data_id)
-                self.enable_button(document.select(".startlpr"), data_id)
+                self.disable_button(document.select(".stop-recorder"), data_id)
+                self.enable_button(document.select(".start-recorder"), data_id)
 
             i.class_name = f"ui {color} circle icon {self.icon_size}"
             label = html.DIV(

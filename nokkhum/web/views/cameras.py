@@ -1,8 +1,9 @@
-from flask import Blueprint, render_template, redirect, request, url_for, Response, g
+from flask import Blueprint, render_template, redirect, request, url_for, Response, g, current_app
 
 from flask_login import login_required, current_user
 import json
 from nokkhum import models
+from nokkhum.web import nats
 
 from .. import forms
 from .storages import get_dir_by_processor, get_file_by_dir_date, get_video_path
@@ -155,23 +156,17 @@ def delete():
 
 @module.route("/<camera_id>/start-recorder", methods=["POST"])
 @login_required
-def start_lpr_process(camera_id):
+def start_recorder(camera_id):
     # print(request.form.get('camera_id'))
     # print(current_user._get_current_object().id)
     project_id = request.form.get("project_id")
-    data = json.dumps(
-        {
+    data = {
             "action": "start-recorder",
             "camera_id": camera_id,
             "project_id": project_id,
             "user_id": str(current_user._get_current_object().id),
         }
-    )
-    loop = g.get_loop()
-    nats_client = g.get_nats_client()
-    loop.run_until_complete(
-        nats_client.publish("nokkhum.processor.command", data.encode())
-    )
+    nats.nats_client.publish("nokkhum.processor.command", data)
     response = Response()
     response.status_code = 200
     return response
@@ -179,23 +174,16 @@ def start_lpr_process(camera_id):
 
 @module.route("/<camera_id>/stop-recorder", methods=["GET", "POST"])
 @login_required
-def stop_lpr_process(camera_id):
+def stop_recorder(camera_id):
     # print(request.form.get('camera_id'))
     project_id = request.form.get("project_id")
-    data = json.dumps(
-        {
+    data = {
             "action": "stop-recorder",
             "camera_id": camera_id,
             "project_id": project_id,
             "user_id": str(current_user._get_current_object().id),
         }
-    )
-
-    loop = g.get_loop()
-    nats_client = g.get_nats_client()
-    loop.run_until_complete(
-        nats_client.publish("nokkhum.processor.command", data.encode())
-    )
+    nats.nats_client.publish("nokkhum.processor.command", data)
     response = Response()
     response.status_code = 200
     return response

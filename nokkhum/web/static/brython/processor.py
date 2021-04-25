@@ -14,31 +14,32 @@ class ProcessorController:
     def on_complete(self, req):
         # if req.status == 200:
         datas = js.JSON.parse(req.text)
+        print('xxx', datas)
         for data in datas:
-            # print(data)
+            print('--->', data)
             # document[f"state-{data['camera_id']}"].text = data['state']
             i = html.I()
             data_id = data['camera_id']+'/'+data['project_id'] 
             if data['state'] in ['running', 'start']:
                 i.class_name = "ui green circle icon big"
                 s = html.SPAN(style={'color':'green'})
-                self.disable_button(document.select('.startlpr'), data_id)
-                self.enable_button(document.select('.stoplpr'), data_id)
+                self.disable_button(document.select('.start-recorder'), data_id)
+                self.enable_button(document.select('.stop-recorder'), data_id)
             elif data['state'] in ['starting']:
                 i.class_name = "ui yellow circle icon big"
                 s = html.SPAN(style={'color':'yellow'})
-                self.disable_button(document.select('.stoplpr'), data_id)
-                self.enable_button(document.select('.startlpr'), data_id)
+                self.disable_button(document.select('.stop-recorder'), data_id)
+                self.enable_button(document.select('.start-recorder'), data_id)
             elif data['state'] in ['stop']:
                 i.class_name = "ui grey circle icon big"
                 s = html.SPAN(style={'color':'grey'})
-                self.disable_button(document.select('.stoplpr'), data_id)
-                self.enable_button(document.select('.startlpr'), data_id)
+                self.disable_button(document.select('.stop-recorder'), data_id)
+                self.enable_button(document.select('.start-recorder'), data_id)
             elif data['state'] in ['stopping']:
                 i.class_name = "ui red circle icon big"
                 s = html.SPAN(style={'color':'red'})
-                self.disable_button(document.select('.stoplpr'), data_id)
-                self.enable_button(document.select('.startlpr'), data_id)
+                self.disable_button(document.select('.stop-recorder'), data_id)
+                self.enable_button(document.select('.start-recorder'), data_id)
             s <= data['state'].capitalize()
             document[f"state-{data['camera_id']}"].text = ''
             document[f"state-{data['camera_id']}"] <= i+s
@@ -56,6 +57,7 @@ class ProcessorController:
     def get_data(self):
         # print('hello', self.project_id)
         # try:
+        print('xxx')
         ajax.get(f'/processor/{self.project_id}/state',
                  oncomplete=self.on_complete,
                  timeout=5)

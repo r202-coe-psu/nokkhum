@@ -30,7 +30,10 @@ class ProcessorReport(me.EmbeddedDocument):
 
 
 class Processor(me.Document):
-    meta = {'collection': 'processors'}
+    meta = {
+            'collection': 'processors',
+            'strict': False,
+            }
 
     camera = me.ReferenceField('Camera', dbref=True)
     storage_period = me.IntField(required=True, default=30)  # in day
