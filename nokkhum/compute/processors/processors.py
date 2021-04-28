@@ -34,6 +34,11 @@ class Processor:
         self.process.stdin.write(command.encode('utf-8'))
         self.process.stdin.flush()
 
+
+    def read(self):
+        data = self.process.stdout.readline().decode('utf-8')
+        return json.loads(data)
+
     def start(self, attributes):
         self.attributes = attributes
         # args = self.args + [
@@ -56,7 +61,7 @@ class Processor:
         logger.debug(f'start processor {self.id} attributes: {data}')
 
 
-    def start_recorde(self, attributes={}):
+    def start_recorder(self, attributes={}):
         data = attributes
         data['action'] = 'start-recorder'
         self.write(data)
@@ -98,6 +103,12 @@ class Processor:
     def get_attributes(self):
         return self.atdtributes
 
+    def get_status(self):
+        data = dict(action='get-status')
+        self.write(data)
+        status = self.read()
+        return status
+ 
     def is_running(self):
         if self.process.poll() is None:
             return True

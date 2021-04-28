@@ -98,17 +98,25 @@ class ProcessorController:
 
 
     def start_recorder(self, processor_id, attributes):
+        response = {'success': False,
+                    'action': 'start-recorder',
+                    'processor_id': processor_id}
 
         processor = self.processor_manager.get(processor_id)
-        if processor is not None:
-            response = self.start(processor_id, attributes)
+        if processor is None:
+            response = self.start_processor(processor_id, attributes)
             if not response['success']:
                 return response
 
             processor = self.processor_manager.get(processor_id)
         
+        try:
+            processor.start_recorder(attributes)
+            response['success'] = True
+        except Exception as e:
+            logger.exception(e)
 
-        processor.start_recorder(attributes)
+        return response
 
     def start_streamer(self, processor_id, attributes):
 
@@ -123,6 +131,14 @@ class ProcessorController:
 
         processor.start_streamer(attributes)
 
+
+    def post_stop_operation(self, processor):
+        data = processor.get_status()
+        if data['video-streamer'] or data['recorder']:
+            return
+
+        self.stop_processor(str(processor.id))
+        
 
     def stop_processor(self, processor_id):
         '''
@@ -155,7 +171,7 @@ class ProcessorController:
 
             response['success'] = True
             self.processor_manager.delete(processor_id)
-            logger.debug(f'Processor name: {processor_id} deleted')
+            logger.debug(f'Processor id: {processor_id} deleted')
         except Exception as e:
             logger.exception(e)
             response['comment'] = 'Delete Processor Error'
@@ -164,12 +180,27 @@ class ProcessorController:
 
     def stop_recorder(self, processor_id):
         processor = self.processor_manager.get(processor_id)
-        processor.stop_recorder()
+        if processor:
+            processor.stop_recorder()
+            self.post_stop_operation(processor)
+        
+        response = {'success': True,
+                    'action': 'stop-recorder',
+                    'processor_id': processor_id}
+        return response
 
 
     def stop_streamer(self, processor_id):
         processor = self.processor_manager.get(processor_id)
-        processor.stop_streamer()
+        if processor:
+            processor.stop_streamer()
+            self.post_stop_operation(processor)
+        
+        response = {'success': True,
+                    'action': 'stop-streamer',
+                    'processor_id': processor_id}
+        return response
+
 
     def stop_all(self):
 

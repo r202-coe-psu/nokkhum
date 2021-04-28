@@ -9,7 +9,17 @@ import datetime
 
 PROCESSOR_OPERATING_STATE = [
         'start', 'starting', 'running', 'stopping', 'stop']
-PROCESSOR_USER_COMMANDS = ['stop', 'start', 'suspend']
+PROCESSOR_USER_COMMANDS = [
+        'start',
+        'start-recorder',
+        'start-motion-recorder',
+        'start-streamer'
+        'stop',
+        'stop-recorder',
+        'stop-motion-recorder',
+        'stop-streamer'
+        'suspend',
+        ]
 
 MAX_RECORE = 20
 

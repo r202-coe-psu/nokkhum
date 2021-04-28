@@ -112,6 +112,14 @@ class ProcessorServer:
                     if self.processors["recorder"]:
                         self.processors["recorder"].stop()
 
+                elif command.get('action') == 'get-status':
+                    data = dict()
+                    for k, v in self.processors.items():
+                        if v and v.running:
+                            data[k] = True
+                        else:
+                            data[k] = False
+                    print(json.dumps(data))
 
         logger.debug("End Commander")
 

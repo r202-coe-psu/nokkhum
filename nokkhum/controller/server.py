@@ -21,11 +21,13 @@ class ControllerServer:
         self.settings = settings
         models.init_mongoengine(settings)
 
+        
+        self.nc = NATS()
         self.cn_report_queue = asyncio.Queue()
         self.processor_command_queue = asyncio.Queue()
         self.running = False
         self.cn_resource = compute_nodes.ComputeNodeResource()
-        self.processor_controller = processors.ProcessorController()
+        self.processor_controller = processors.ProcessorController(self.nc)
         self.command_controller = commands.CommandController(self.settings)
         self.result_controller = results.ResultController(self.settings)
 
@@ -112,74 +114,21 @@ class ControllerServer:
     async def process_processor_command(self):
         while self.running:
             data = await self.processor_command_queue.get()
-            logger.debug("processor command: {}".format(data))
-
-            camera = models.Camera.objects(id=data["camera_id"]).first()
-
-            if camera is None:
-                logger.debug("camera is None")
-                continue
-
-            if data['action'] == 'start-recorder':
-                deadline_date = datetime.datetime.now() - datetime.timedelta(seconds=60)
-
-                # need a cheduling
-                compute_node = models.ComputeNode.objects(
-                    updated_date__gt=deadline_date
-                ).first()
-
-                if compute_node is None:
-                    logger.debug("compute node is None")
-                    await asyncio.sleep(20)
-                    await self.processor_command_queue.put(data)
-                    continue
-
-            # logger.debug('before find processor')
-            processor = self.processor_controller.process_command(data)
-            processor.compute_node = compute_node
-
-            command = dict(processor_id=str(processor.id), action=data["action"])
-            if data["action"] == "start-recorder":
-                command["attributes"] = dict(
-                    video_uri=camera.uri,
-                    fps=camera.frame_rate,
-                    size=(camera.width, camera.height),
-                    camera_id=str(camera.id),
-                )
-
-            topic = "nokkhum.compute.{}.rpc".format(compute_node.mac)
-
-            if 'start' in data["action"]:
-                processor.state = "starting"
-            elif 'stop' in data["action"]:
-                processor.state = "stopping"
-            processor.save()
-
+            logger.debug(f"processor command: {data}")
+           
+            result = False
             try:
-                result = await self.nc.request(
-                    topic, json.dumps(command).encode(), timeout=120
-                )
+                result = await self.processor_controller.process_command(data)
             except Exception as e:
                 logger.exception(e)
-                continue
-
-            result_data = json.loads(result.data.decode())
-            logger.debug("processor result {}".format(result_data))
-
-            if result_data["success"]:
-                if data["action"] == "start":
-                    processor.state = "running"
-                elif data["action"] == "stop":
-                    processor.state = "stop"
-            else:
-                if data["action"] == "stop":
-                    processor.state = "stop"
-            processor.save()
-
-            # save data into database
+            
+            if not result:
+                logger.debug(f"process command fail, reentry command to queue")
+                await asyncio.sleep(20)
+                await self.processor_command_queue.put(data)
+                
 
     async def set_up(self, loop):
-        self.nc = NATS()
         await self.nc.connect(self.settings["NOKKHUM_MESSAGE_NATS_HOST"], loop=loop)
         logging.basicConfig(
             format="%(asctime)s - %(name)s:%(levelname)s - %(message)s",
