@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 class ImageAcquisitor(threading.Thread):
-    def __init__(self, capture, queues, fps=None, size=None):
+    def __init__(self, capture, queues, fps=None, size=None, command_builder=None):
         super().__init__()
         self.name = "ImageAcquisitor"
         self.running = False
@@ -20,6 +20,8 @@ class ImageAcquisitor(threading.Thread):
         self.queues = queues
 
         self.fps = None
+        self.command_builder = command_builder
+
         if fps:
             self.fps = fps
         elif capture.get_fps() > 0:
@@ -82,8 +84,9 @@ class ImageAcquisitor(threading.Thread):
 
             checker += 1
 
+            self.resize_image(image)
+            # logger.debug(f'qsize {len(self.queues)}')
             for q in self.queues:
-                self.resize_image(image)
                 q.put(image)
 
             if (current_date - start_date).seconds >= 1:

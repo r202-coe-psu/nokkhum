@@ -36,8 +36,11 @@ class Processor:
 
 
     def read(self):
-        data = self.process.stdout.readline().decode('utf-8')
-        return json.loads(data)
+        if self.process.poll():
+            data = self.process.stdout.readline().decode('utf-8')
+            return json.loads(data)
+        
+        return {'recorder': False, 'video-streamer': False}
 
     def start(self, attributes):
         self.attributes = attributes
@@ -81,12 +84,13 @@ class Processor:
         data = dict(action='stop')
         self.write(data)
         try:
-            self.process.wait(timeout=30)
+            if self.process.poll():
+                self.process.wait(timeout=30)
         except Exception as e:
             logger.exception(e)
 
-        if self.process.poll() is None:
-            self.process.terminate()
+        # if self.process.poll() is None:
+        self.process.terminate()
 
 
     def stop_recorder(self):

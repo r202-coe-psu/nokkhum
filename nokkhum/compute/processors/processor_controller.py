@@ -119,17 +119,26 @@ class ProcessorController:
         return response
 
     def start_streamer(self, processor_id, attributes):
+        response = {'success': False,
+                    'action': 'start-streamer',
+                    'processor_id': processor_id}
 
         processor = self.processor_manager.get(processor_id)
-        if processor is not None:
-            response = self.start(processor_id, attributes)
+        if processor is None:
+            response = self.start_processor(processor_id, attributes)
             if not response['success']:
                 return response
 
             processor = self.processor_manager.get(processor_id)
         
+        try:
+            processor.start_streamer(attributes)
+            response['success'] = True
+        except Exception as e:
+            logger.exception(e)
 
-        processor.start_streamer(attributes)
+        return response
+
 
 
     def post_stop_operation(self, processor):
@@ -166,7 +175,7 @@ class ProcessorController:
             for line in processor_process.process.stderr:
                 comment += line.decode('utf-8')
             if len(comment) > 0:
-                logger.debug(f'comment: \n{comment}')
+                logger.debug(f'comment: {comment}')
                 response['comment'] = comment
 
             response['success'] = True

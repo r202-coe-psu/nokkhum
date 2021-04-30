@@ -54,14 +54,16 @@ class ProcessorController:
         if data.get('processor_id', None) is not None:
             processor = models.Processor.objects(id=data['processor_id']).first()
         else:
-            project = models.Project.objects(id=data['project_id']).first()
-            processor = await self.get_processor(project, camera)
+
+            processor = models.Processor.objects(camera=camera).first()
+
+            if not processor:
+                project = models.Project.objects(id=data['project_id']).first()
+                processor = await self.get_processor(project, camera)
 
         result = await self.actuate_command(processor, camera, data)
         return result
 
-        logger.debug('before find processor')
-        logger.debug('end find processor')
        # save data into database
 
 
@@ -117,7 +119,7 @@ class ProcessorController:
         processor.save()
 
         command = dict(processor_id=str(processor.id), action=data["action"])
-        if data["action"] == "start-recorder":
+        if data["action"] in ["start-recorder", "start-streamer"]:
             command["attributes"] = dict(
                 video_uri=camera.uri,
                 fps=camera.frame_rate,
@@ -127,6 +129,8 @@ class ProcessorController:
 
         topic = "nokkhum.compute.{}.rpc".format(compute_node.mac)
 
+        result = None
+        result_data = dict(success=False)
         try:
             result = await self.nc.request(
                 topic, json.dumps(command).encode(), timeout=60
@@ -136,9 +140,10 @@ class ProcessorController:
             if 'start' in data["action"]:
                 return False
 
-        logger.debug(f"=> processor result {result.data.decode()}")
-        result_data = json.loads(result.data.decode())
-        logger.debug(f"processor result {result_data}")
+        if result:
+            logger.debug(f"=> processor result {result.data.decode()}")
+            result_data = json.loads(result.data.decode())
+            logger.debug(f"processor result {result_data}")
 
         if result_data["success"]:
             if 'start' in data["action"]:

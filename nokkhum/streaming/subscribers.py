@@ -40,7 +40,7 @@ class StreamingSubscriber:
     async def put_image_to_queue(self):
         while self.running:
             if self.image_queue.empty():
-                await asyncio.sleep(0.001)
+                await asyncio.sleep(0.1)
                 continue
 
             future_result = await self.image_queue.get()
@@ -155,12 +155,12 @@ class StreamingSubscriber:
 
     async def send_start_live(self, camera_id):
         # logger.debug("add_camera_topic")
-        data = {"camera_id": camera_id}
-        camera_register_topic = "nokkhum.streaming.cameras.register"
+        data = {"camera_id": camera_id, 'action': 'start-streamer'}
+        camera_register_topic = "nokkhum.processor.command"
         await self.nc.publish(camera_register_topic, json.dumps(data).encode())
 
     async def send_stop_live(self, camera_id):
-        # logger.debug("remove_camera_topic")
-        data = {"camera_id": camera_id}
-        camera_remove_topic = "nokkhum.streaming.cameras.remove"
+        logger.debug("remove_camera_topic")
+        data = {"camera_id": camera_id, 'action': 'stop-streamer'}
+        camera_remove_topic = "nokkhum.processor.command"
         await self.nc.publish(camera_remove_topic, json.dumps(data).encode())

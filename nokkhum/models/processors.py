@@ -13,11 +13,11 @@ PROCESSOR_USER_COMMANDS = [
         'start',
         'start-recorder',
         'start-motion-recorder',
-        'start-streamer'
+        'start-streamer',
         'stop',
         'stop-recorder',
         'stop-motion-recorder',
-        'stop-streamer'
+        'stop-streamer',
         'suspend',
         ]
 

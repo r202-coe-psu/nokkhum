@@ -41,8 +41,7 @@ class ComputeNodeServer:
         subject = msg.subject
         reply = msg.reply
         data = msg.data.decode()
-        logger.debug("Received a rpc message on '{subject} {reply}': {data}".format(
-            subject=subject, reply=reply, data=data))
+        logger.debug(f"Received rpc message on {subject}: {data}")
 
         data = json.loads(data)
         action = data.get('action', None)

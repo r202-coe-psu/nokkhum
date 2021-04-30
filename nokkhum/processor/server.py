@@ -10,6 +10,8 @@ import asyncio
 from .utils import ImageQueue
 
 from . import captures
+from . import commands
+
 from .processors import recorders
 from .processors import acquisitors
 from .processors import dispatchers
@@ -29,6 +31,8 @@ class ProcessorServer:
 
         self.image_queues = []
         self.capture_output_queues = []
+
+        self.command_builder = commands.CommandBuilder()
 
     def get_options(self):
         parser = argparse.ArgumentParser(description="Nokkhum Recorder")
@@ -148,6 +152,7 @@ class ProcessorServer:
             queues=self.capture_output_queues,
             fps=fps,
             size=size,
+            command_builder=self.command_builder,
         )
         acquisitor.start()
         self.processors["acquisitor"] = acquisitor
@@ -188,6 +193,7 @@ class ProcessorServer:
                 fps=fps,
                 size=size,
                 extension="mkv",
+                command_builder=self.command_builder,
             )
 
         else:
@@ -198,6 +204,7 @@ class ProcessorServer:
                 fps=fps,
                 size=size,
                 extension="mkv",
+                command_builder=self.command_builder,
             )
         recorder.start()
         self.processors["recorder"] = recorder
@@ -210,11 +217,13 @@ class ProcessorServer:
             return
         dispatcher_queue = ImageQueue()
         self.image_queues.append(dispatcher_queue)
+        self.capture_output_queues.append(dispatcher_queue)
         dispatcher = dispatchers.ImageDispatcher(
             dispatcher_queue,
             self.options.processor_id,
             command.get("camera_id"),
             self.settings,
+            command_builder=self.command_builder,
         )
         dispatcher.start()
         self.processors["vdo-streamer"] = dispatcher

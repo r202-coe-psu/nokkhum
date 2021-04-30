@@ -20,6 +20,7 @@ class ImageDispatcher(threading.Thread):
         camera_id,
         settings={},
         expected_frame_size=(640, 480),
+        command_builder=None,
     ):
         super().__init__()
         self.name = "Image Dispatcher"
@@ -27,6 +28,8 @@ class ImageDispatcher(threading.Thread):
         self.running = False
         self.daemon = True
         self.active = False
+
+        self.command_builder = command_builder
 
         self.input_queue = queue
 
@@ -36,7 +39,7 @@ class ImageDispatcher(threading.Thread):
         self.settings = settings
         self.sc = None
         self.nc = None
-        self.camera_topics = {}
+        self.camera_topic = f"nokkhum.streaming.cameras.{camera_id}"
 
         # self.loop = asyncio.get_event_loop()
         self.loop = asyncio.new_event_loop()
@@ -110,9 +113,10 @@ class ImageDispatcher(threading.Thread):
 
     async def publish_data(self, data):
         serialized_data = pickle.dumps(data)
+        logger.debug('public data')
         await self.sc.publish(
             # f"nokkhum.streaming.processors.{data['processor_id']}",
-            self.camera_topics.get(data["camera_id"]),
+            self.camera_topic,
             # f"nokkhum.streaming.cameras",
             serialized_data,
         )
@@ -136,7 +140,6 @@ class ImageDispatcher(threading.Thread):
             if self.input_queue.empty():
                 await asyncio.sleep(0.001)
                 continue
-
             try:
                 image = self.input_queue.get(timeout=1)
                 if image is None:
@@ -150,9 +153,10 @@ class ImageDispatcher(threading.Thread):
                 await asyncio.sleep(0.001)
                 continue
 
-            if self.camera_id not in self.camera_topics:
-                await asyncio.sleep(0.001)
-                continue
+            # if self.camera_id not in self.camera_topics:
+            #     await asyncio.sleep(0.001)
+            #     continue
+
             # logger.debug(f"in dispatch {image.data}")
             w, h = image.size()
 

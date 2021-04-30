@@ -20,6 +20,7 @@ class VideoRecorder(threading.Thread):
         fps=15,
         size=(640, 480),
         minutes=10,
+        command_builder=None,
     ):
         super().__init__()
         self.name = "VideoRecorder"
@@ -34,6 +35,9 @@ class VideoRecorder(threading.Thread):
         self.fps = fps
         self.size = size
         self.api_preference = api_preference
+        
+        self.command_builder = command_builder
+
         if minutes > 2:
             self.duration = minutes * 60
         else:
