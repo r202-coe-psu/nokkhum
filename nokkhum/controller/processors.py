@@ -78,7 +78,8 @@ class ProcessorController:
                     # action=data['action'],
                     owner=user,
                     type='user')
-            processor.user_command = processor_command
+            if 'recorder' in data['action']:
+                processor.user_command = processor_command
              
         else:
             processor_command = models.ProcessorCommand(
@@ -108,7 +109,7 @@ class ProcessorController:
         if 'start' in data['action']:
             processor.state = 'start'
 
-        processor.reference_command = processor_command
+        processor.last_command = processor_command
         processor_command.save()
         processor.save()
 

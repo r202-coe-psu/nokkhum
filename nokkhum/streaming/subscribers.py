@@ -160,7 +160,7 @@ class StreamingSubscriber:
         await self.nc.publish(camera_register_topic, json.dumps(data).encode())
 
     async def send_stop_live(self, camera_id):
-        logger.debug("remove_camera_topic")
+        # logger.debug("remove_camera_topic")
         data = {"camera_id": camera_id, 'action': 'stop-streamer'}
         camera_remove_topic = "nokkhum.processor.command"
         await self.nc.publish(camera_remove_topic, json.dumps(data).encode())

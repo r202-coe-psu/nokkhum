@@ -63,7 +63,8 @@ class Processor(me.Document):
     project = me.ReferenceField('Project', required=True, dbref=True)
     # owner = me.ReferenceField('User', required=True, dbref=True)
 
-    # user_command = me.ReferenceField('ProcessorCommand', dbref=True)
+    user_command = me.ReferenceField('ProcessorCommand', dbref=True)
+    last_command = me.ReferenceField('ProcessorCommand', dbref=True)
     # reference_command = me.ReferenceField('ProcessorCommand', dbref=True)
 
     state = me.StringField(required=True,
