@@ -25,7 +25,7 @@ class MessageThread(threading.Thread):
 
     def stop(self):
         self.running = False
-        self.loop.stop()
+        # self.loop.stop()
 
         # self.loop.run_until_complete(self.queue.put(None))
 
@@ -34,6 +34,7 @@ class MessageThread(threading.Thread):
         try:
             self.queue.put_nowait(data)
         except Exception as e:
+            print(e)
             # check for queue empty
             pass
 
@@ -70,11 +71,17 @@ class MessageThread(threading.Thread):
 
             self.loop.run_until_complete(self.run_async_loop())
 
-
 class NatsClient:
     def __init__(self, app=None):
         if app:
             self.init(app)
+
+    def init_nats(self, app):
+        message_thread = MessageThread(app)
+        s = {"app": app, "thread": message_thread}
+        app.extensions["nokkhum_nats"][self] = s
+        message_thread.start()
+
 
     def init_app(self, app):
         self.app = app
@@ -84,24 +91,21 @@ class NatsClient:
         if "nokkhum_nats" not in app.extensions:
             app.extensions["nokkhum_nats"] = {}
 
-        if self in app.extensions["nokkhum_nats"]:
-            raise 'Extension already initialized'
-
-        message_thread = MessageThread(app)
-        s = {"app": app, "thread": message_thread}
-        app.extensions["nokkhum_nats"][self] = s
-        # print('check', app.extensions["nokkhum_nats"])
-
         @app.before_first_request
         def start_thread():
-            if not message_thread.is_alive():
-                message_thread.start()
+
+
+            if self in app.extensions["nokkhum_nats"]:
+                self.stop()
+            
+            self.init_nats(app)
 
         atexit.register(self.stop)
 
 
     def stop(self):
-        self.app.extensions["nokkhum_nats"][self]['thread'].stop()
+        if self in self.app.extensions["nokkhum_nats"]:
+            self.app.extensions["nokkhum_nats"][self]['thread'].stop()
         
     def publish(self, topic: str, message: str):
         t = self.app.extensions["nokkhum_nats"][self]['thread']
