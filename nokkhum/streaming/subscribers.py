@@ -29,7 +29,6 @@ class StreamingSubscriber:
         )
 
     def process_message_data(self, message):
-
         data = pickle.loads(message)
 
         img = cv2.imdecode(data["frame"], 1)
@@ -39,31 +38,38 @@ class StreamingSubscriber:
 
     async def put_image_to_queue(self):
         while self.running:
-            if self.image_queue.empty():
-                await asyncio.sleep(0.1)
-                continue
+            try:
+                if self.image_queue.empty():
+                    await asyncio.sleep(0.1)
+                    continue
 
-            future_result = await self.image_queue.get()
-            while not future_result.done():
-                await asyncio.sleep(0.001)
+                future_result = await self.image_queue.get()
+                while not future_result.done():
+                    await asyncio.sleep(0.001)
 
-            camera_id, img = future_result.result()
+                camera_id, img = future_result.result()
 
-            queues = self.camera_queues.get(camera_id)
-            if not queues or len(queues) == 0:
-                return
+                queues = self.camera_queues.get(camera_id)
+                if not queues or len(queues) == 0:
+                    continue
 
-            if not img:
-                await asyncio.sleep(0.001)
-                continue
+                if not img:
+                    await asyncio.sleep(0.001)
+                    continue
 
-            for q in queues:
-                if q.full():
-                    logger.debug("drop image")
-                    q.get_nowait()
-                    await asyncio.sleep(0)
 
-                await q.put(img)
+                for q in queues:
+                    if q.full():
+                        logger.debug("drop image")
+                        q.get_nowait()
+                        await asyncio.sleep(0)
+
+                    await q.put(img)
+            except Exception as e:
+                logger.exception(e)
+
+        logger.debug('end live')
+
 
     async def streaming_cb(self, msg):
         # self.message_queue.put(msg.data)
@@ -151,7 +157,7 @@ class StreamingSubscriber:
             await self.stream_id[camera_id].unsubscribe()
             del self.camera_queues[camera_id]
             await self.send_stop_live(camera_id)
-            # logger.debug("success")
+        
 
     async def send_start_live(self, camera_id):
         # logger.debug("add_camera_topic")

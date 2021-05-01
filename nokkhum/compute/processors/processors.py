@@ -36,11 +36,11 @@ class Processor:
 
 
     def read(self):
-        if self.process.poll():
+        if self.process.poll() is None:
             data = self.process.stdout.readline().decode('utf-8')
             return json.loads(data)
         
-        return {'recorder': False, 'video-streamer': False}
+        return None
 
     def start(self, attributes):
         self.attributes = attributes
@@ -84,7 +84,7 @@ class Processor:
         data = dict(action='stop')
         self.write(data)
         try:
-            if self.process.poll():
+            if self.process.poll() is None:
                 self.process.wait(timeout=30)
         except Exception as e:
             logger.exception(e)
@@ -111,7 +111,11 @@ class Processor:
         data = dict(action='get-status')
         self.write(data)
         status = self.read()
+        if not status:
+            status = {'video-streamer': False, 'video-recorder': False}
+        
         return status
+
  
     def is_running(self):
         if self.process.poll() is None:

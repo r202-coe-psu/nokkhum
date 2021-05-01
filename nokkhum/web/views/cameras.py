@@ -166,7 +166,9 @@ def start_recorder(camera_id):
             "project_id": project_id,
             "user_id": str(current_user._get_current_object().id),
         }
+
     nats.nats_client.publish("nokkhum.processor.command", data)
+
     response = Response()
     response.status_code = 200
     return response

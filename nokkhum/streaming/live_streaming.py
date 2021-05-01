@@ -47,8 +47,14 @@ async def generate_frame(camera_id, ss):
     finally:
         # queue.task_done()
         logger.debug(f"{camera_id} is finish")
-        await ss.remove_queue(camera_id, queue)
+        try:
+            await ss.remove_queue(camera_id, queue)
+        except Exception as e:
+            print(e)
+            logger.exception(e)
         # logger.debug("remove queue")
+
+    logger.debug('finish --')
 
 
 @module.route("/")

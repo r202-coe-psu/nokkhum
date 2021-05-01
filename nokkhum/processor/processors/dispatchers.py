@@ -47,38 +47,8 @@ class ImageDispatcher(threading.Thread):
 
         self.publish_queue = asyncio.queues.Queue()
 
-    def set_active(self):
-        self.active = True
-
     def stop(self):
         self.running = False
-
-    # def camera_register_cb(self, msg):
-    #     data = msg.data.decode()
-    #     data = json.loads(data)
-    #     logger.debug("register")
-    #     if "camera_id" not in data:
-    #         return
-    #     logger.debug("add topic")
-    #     self.camera_topics[
-    #         data["camera_id"]
-    #     ] = f"nokkhum.streaming.cameras.{data['camera_id']}"
-    #     logger.debug(self.camera_topics)
-
-    # def camera_remove_cb(self, msg):
-    #     logger.debug("remove camera")
-    #     data = msg.data.decode()
-    #     data = json.loads(data)
-    #     # logger.debug(type(data))
-    #     if "camera_id" not in data:
-    #         return
-    #     logger.debug("add topic")
-    #     del self.camera_topics[data["camera_id"]]
-    #     logger.debug(self.camera_topics)
-
-    # self.camera_topics[
-    #     data["camera_id"]
-    # ] = f"nokkhum.streaming.cameras.{data['camera_id']}"
 
     async def set_up_message(self):
         self.nc = NATS()
@@ -95,16 +65,6 @@ class ImageDispatcher(threading.Thread):
             nats=self.nc,
         )
 
-        # camera_register_topic = "nokkhum.streaming.cameras.register"
-        # self.camera_topic_register = await self.nc.subscribe(
-        #     camera_register_topic, cb=self.camera_register_cb
-        # )
-
-        # camera_remove_topic = "nokkhum.streaming.cameras.remove"
-        # self.camera_topic_remove = await self.nc.subscribe(
-        #     camera_remove_topic, cb=self.camera_remove_cb
-        # )
-
     async def tear_down_message(self):
         # await self.camera_topic_register.unsubscribe()
         # await self.camera_topic_remove.unsubscribe()
@@ -113,19 +73,17 @@ class ImageDispatcher(threading.Thread):
 
     async def publish_data(self, data):
         serialized_data = pickle.dumps(data)
-        logger.debug('public data')
+        # logger.debug('public data')
         await self.sc.publish(
-            # f"nokkhum.streaming.processors.{data['processor_id']}",
             self.camera_topic,
-            # f"nokkhum.streaming.cameras",
             serialized_data,
         )
 
     async def publish_frame(self):
         while self.running:
-            data = None
             if self.publish_queue.empty():
                 await asyncio.sleep(0.01)
+                # logger.debug(f'check status: {self.running}')
                 continue
 
             data = await self.publish_queue.get()
@@ -140,6 +98,7 @@ class ImageDispatcher(threading.Thread):
             if self.input_queue.empty():
                 await asyncio.sleep(0.001)
                 continue
+
             try:
                 image = self.input_queue.get(timeout=1)
                 if image is None:
@@ -149,9 +108,9 @@ class ImageDispatcher(threading.Thread):
                 logger.exception(e)
                 pass
 
-            if not self.active:
-                await asyncio.sleep(0.001)
-                continue
+            # if not self.active:
+            #     await asyncio.sleep(0.001)
+            #     continue
 
             # if self.camera_id not in self.camera_topics:
             #     await asyncio.sleep(0.001)
@@ -192,6 +151,6 @@ class ImageDispatcher(threading.Thread):
         self.loop.run_until_complete(self.process_frame())
 
         self.loop.run_until_complete(self.tear_down_message())
-        self.loop.close()
+        # self.loop.close()
 
         logger.debug("End Image Dispatcher")

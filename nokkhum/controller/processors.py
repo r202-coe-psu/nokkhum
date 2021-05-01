@@ -70,6 +70,12 @@ class ProcessorController:
 
     async def actuate_command(self, processor, camera, data):
 
+        # need to decision
+        if data['action'] in ['start-recorder', 'start-motion-recorder']:
+            if processor.state != 'running':
+                processor.state = 'start'
+            processor.save()
+
         # logger.debug('in actuate command ')
         if data.get('system', False):
             user = models.User.objects(id=data['user_id']).first()
@@ -106,11 +112,8 @@ class ProcessorController:
 
         # need to decision
         processor_command.action = data['action']
-        if 'start' in data['action']:
-            processor.state = 'start'
-
-        processor.last_command = processor_command
         processor_command.save()
+        processor.last_command = processor_command
         processor.save()
 
         if 'start' in data["action"]:

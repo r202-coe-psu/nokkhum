@@ -27,7 +27,7 @@ class ProcessorServer:
     def __init__(self, settings):
         self.settings = settings
         self.running = False
-        self.processors = {"video-streamer": None, "recorder": None, "acquisitor": None}
+        self.processors = {"video-streamer": None, "video-recorder": None, "acquisitor": None}
 
         self.image_queues = []
         self.capture_output_queues = []
@@ -85,9 +85,11 @@ class ProcessorServer:
         return json.loads(data)
 
     def command_action(self):
+        logger.debug("Start Commander")
         while self.running:
             try:
                 command = self.get_input()
+                logger.debug(f'get command {command}')
             except Exception as e:
                 logger.debug(f"error {e}")
                 continue
@@ -98,7 +100,7 @@ class ProcessorServer:
                     self.init_acquisitor(command)
                 elif command.get("action") == "start-streamer":
                     self.init_dispatcher(command)
-                    self.processors["vdo-streamer"].set_active()
+                    # self.processors["video-streamer"].set_active()
                 elif command.get("action") == "start-recorder":
                     self.init_recorder(command)
 
@@ -108,13 +110,12 @@ class ProcessorServer:
                         if p:
                             p.stop()
                 elif command["action"] == "stop-streamer":
-                    # self.running = False
-                    if self.processors["vdo-streamer"]:
-                        self.processors["vdo-streamer"].stop()
+                    if self.processors["video-streamer"]:
+                        self.processors["video-streamer"].stop()
                 elif command["action"] == "stop-recorder":
-                    # self.running = False
-                    if self.processors["recorder"]:
-                        self.processors["recorder"].stop()
+                    if self.processors["video-recorder"]:
+                        self.stop_dispatcher()
+                        # self.processors["video-recorder"].stop()
 
                 elif command.get('action') == 'get-status':
                     data = dict()
@@ -128,7 +129,9 @@ class ProcessorServer:
         logger.debug("End Commander")
 
     def init_acquisitor(self, command):
-        if 'acquisitor' in self.processors and self.processors['acquisitor'] and self.processors["acquisitor"].is_alive():
+        if 'acquisitor' in self.processors and \
+                self.processors['acquisitor'] and \
+                self.processors["acquisitor"].is_alive():
             return
 
         # capture output queue default 2 queue
@@ -161,7 +164,9 @@ class ProcessorServer:
     def init_recorder(self, command):
 
         is_motion = command.get('motion', False)
-        if 'recorder' in self.processors and self.processors["recorder"]  and self.processors["recorder"].is_alive():
+        if 'video-recorder' in self.processors and \
+                self.processors["video-recorder"]  and \
+                self.processors["video-recorder"].is_alive():
             return
         recorder_queue = ImageQueue()
         self.image_queues.append(recorder_queue)
@@ -207,14 +212,15 @@ class ProcessorServer:
                 command_builder=self.command_builder,
             )
         recorder.start()
-        self.processors["recorder"] = recorder
-
-
+        self.processors["video-recorder"] = recorder
 
 
     def init_dispatcher(self, command):
-        if 'vdo-streamer' in self.processors and self.processors["vdo-streamer"] and self.processors["vdo-streamer"].is_alive():
+        if 'video-streamer' in self.processors and \
+                self.processors["video-streamer"] and \
+                self.processors["video-streamer"].is_alive():
             return
+
         dispatcher_queue = ImageQueue()
         self.image_queues.append(dispatcher_queue)
         self.capture_output_queues.append(dispatcher_queue)
@@ -226,8 +232,26 @@ class ProcessorServer:
             command_builder=self.command_builder,
         )
         dispatcher.start()
-        self.processors["vdo-streamer"] = dispatcher
+        self.processors["video-streamer"] = dispatcher
 
+    def stop_dispatcher(self):
+        if 'video-streamer' in self.processors and \
+                self.processors["video-streamer"] is None:
+            return
+
+        processor = self.processors["video-streamer"]
+
+        logger.debug(f'q size {len(self.image_queues)}')
+        input_queue = processor.input_queue
+        self.capture_output_queues.remove(input_queue)
+        self.image_queues.remove(input_queue)
+        
+        processor.stop()
+        processor.join()
+        self.processors["video-streamer"] = None
+
+
+        logger.debug(f'q size {len(self.image_queues)}')
 
 
     def run(self):
@@ -281,7 +305,7 @@ class ProcessorServer:
             q.stop()
 
         for p in self.processors.values():
-            if p:
+            if p and p.is_alive():
                 p.join()
 
         # capture.stop()

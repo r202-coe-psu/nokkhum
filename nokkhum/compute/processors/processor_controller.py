@@ -143,11 +143,11 @@ class ProcessorController:
 
     def post_stop_operation(self, processor):
         data = processor.get_status()
-        if data['video-streamer'] or data['recorder']:
+        logger.debug(f'status -> {data}')
+        if data['video-streamer'] or data['video-recorder']:
             return
 
         self.stop_processor(str(processor.id))
-        
 
     def stop_processor(self, processor_id):
         '''

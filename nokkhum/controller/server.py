@@ -123,10 +123,10 @@ class ControllerServer:
                 logger.exception(e)
             
             if not result:
-                logger.debug(f"process command fail, reentry command to queue")
-                if 'start-recorder' == data['action']:
-                    await asyncio.sleep(20)
-                    await self.processor_command_queue.put(data)
+                logger.debug(f"process command fail")
+                # if 'start-recorder' == data['action']:
+                #     await asyncio.sleep(20)
+                #     await self.processor_command_queue.put(data)
                 
 
     async def set_up(self, loop):
