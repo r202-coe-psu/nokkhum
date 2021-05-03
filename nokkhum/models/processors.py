@@ -39,6 +39,11 @@ class ProcessorReport(me.EmbeddedDocument):
     processors = me.ListField(me.StringField())
 
 
+class UserProcessorCommand(me.EmbeddedDocument):
+    streamer = me.ReferenceField('ProcessorCommand', dbref=True)
+    recorder = me.ReferenceField('ProcessorCommand', dbref=True)
+
+
 class Processor(me.Document):
     meta = {
             'collection': 'processors',
@@ -63,8 +68,10 @@ class Processor(me.Document):
     project = me.ReferenceField('Project', required=True, dbref=True)
     # owner = me.ReferenceField('User', required=True, dbref=True)
 
-    user_command = me.ReferenceField('ProcessorCommand', dbref=True)
-    last_command = me.ReferenceField('ProcessorCommand', dbref=True)
+    user_command = me.EmbeddedDocumentField(
+            UserProcessorCommand,
+            default=UserProcessorCommand())
+    # last_command = me.ReferenceField('ProcessorCommand', dbref=True)
     # reference_command = me.ReferenceField('ProcessorCommand', dbref=True)
 
     state = me.StringField(required=True,
@@ -79,6 +86,15 @@ class Processor(me.Document):
             self.report.pop(0)
 
         self.report.append(report)
+
+    def update_user_command(self, processor_command):
+        if processor_command.type != 'user':
+            return
+
+        if 'streamer' in processor_command.action:
+            self.user_command.streamer = processor_command
+        elif 'recorder' in processor_command.action:
+            self.user_command.recorder = processor_command
 
     @classmethod
     def pre_save(cls, sender, document, **kwargs):

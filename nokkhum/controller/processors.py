@@ -71,10 +71,10 @@ class ProcessorController:
     async def actuate_command(self, processor, camera, data):
 
         # need to decision
-        if data['action'] in ['start-recorder', 'start-motion-recorder']:
-            if processor.state != 'running':
+        if 'start' in data['action']:
+            if processor.state == 'stop':
                 processor.state = 'start'
-            processor.save()
+                processor.save()
 
         # logger.debug('in actuate command ')
         if data.get('system', False):
@@ -113,9 +113,10 @@ class ProcessorController:
         # need to decision
         processor_command.action = data['action']
         processor_command.save()
-        processor.last_command = processor_command
+        processor.update_user_command(processor_command)
         processor.save()
 
+        # check starting process
         if 'start' in data["action"]:
             processor.state = "starting"
         elif 'stop' in data["action"]:
@@ -145,22 +146,47 @@ class ProcessorController:
                 return False
 
         if result:
-            logger.debug(f"=> processor result {result.data.decode()}")
             result_data = json.loads(result.data.decode())
-            logger.debug(f"processor result {result_data}")
 
-        if result_data["success"]:
-            if 'start' in data["action"]:
-                processor.state = "running"
-            elif 'stop' in data["action"]:
-                processor.state = "stop"
-        else:
-            if 'stop' in data["action"]:
-                processor.state = "stop"
+        await self.update_status(processor)
         processor.save()
         logger.debug(f"end {result_data}")
 
         return True
+
+
+    async def update_status(self, processor):
+        command = dict(
+            action='get-status',
+            processor_id=str(processor.id),
+            )
+
+        try:
+
+            topic = "nokkhum.compute.{}.rpc".format(
+                    processor.compute_node.mac)
+            result = await self.nc.request(
+                topic, json.dumps(command).encode(), timeout=60
+            )
+        except Exception as e:
+            logger.exception(e)
+            return
+
+        result_data = json.loads(result.data.decode())
+        
+        checked = False
+        if result_data["success"]:
+            if result_data['state'] == 'stop':
+                processor.state = 'stop'
+                return
+
+            for k, v in result_data['status'].items():
+                checked = checked or v
+
+        if not checked:
+            processor.state = 'stop'
+        else:
+            processor.state = 'running'
 
 
 

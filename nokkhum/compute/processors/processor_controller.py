@@ -143,7 +143,6 @@ class ProcessorController:
 
     def post_stop_operation(self, processor):
         data = processor.get_status()
-        logger.debug(f'status -> {data}')
         if data['video-streamer'] or data['video-recorder']:
             return
 
@@ -219,3 +218,23 @@ class ProcessorController:
                 self.stop_processor(processor_id)
             except Exception as e:
                 logger.exception(e)
+
+
+    def get_status(self, processor_id):
+        response = {
+                'success': True,
+                'action': 'get_status',
+                'status': {},
+                'state': 'stop',
+                'processor_id': processor_id,
+                }
+
+        processor = self.processor_manager.get(processor_id)
+        if processor:
+            result = processor.get_status()
+            response['status'] = result
+            response['state'] = 'running'
+
+        return response
+
+

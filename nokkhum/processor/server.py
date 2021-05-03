@@ -111,11 +111,11 @@ class ProcessorServer:
                             p.stop()
                 elif command["action"] == "stop-streamer":
                     if self.processors["video-streamer"]:
-                        self.processors["video-streamer"].stop()
+                        # self.processors["video-streamer"].stop()
+                        self.stop_dispatcher()
                 elif command["action"] == "stop-recorder":
                     if self.processors["video-recorder"]:
-                        self.stop_dispatcher()
-                        # self.processors["video-recorder"].stop()
+                        self.processors["video-recorder"].stop()
 
                 elif command.get('action') == 'get-status':
                     data = dict()
@@ -234,6 +234,7 @@ class ProcessorServer:
         dispatcher.start()
         self.processors["video-streamer"] = dispatcher
 
+
     def stop_dispatcher(self):
         if 'video-streamer' in self.processors and \
                 self.processors["video-streamer"] is None:
@@ -241,7 +242,7 @@ class ProcessorServer:
 
         processor = self.processors["video-streamer"]
 
-        logger.debug(f'q size {len(self.image_queues)}')
+        # logger.debug(f'q size {len(self.image_queues)}')
         input_queue = processor.input_queue
         self.capture_output_queues.remove(input_queue)
         self.image_queues.remove(input_queue)
@@ -251,7 +252,7 @@ class ProcessorServer:
         self.processors["video-streamer"] = None
 
 
-        logger.debug(f'q size {len(self.image_queues)}')
+        # logger.debug(f'q size {len(self.image_queues)}')
 
 
     def run(self):

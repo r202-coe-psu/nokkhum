@@ -71,6 +71,9 @@ class ComputeNodeServer:
         elif action == 'stop-streamer':
             respons = self.processor_controller.stop_streamer(
                     data['processor_id'])
+        elif action == 'get-status':
+            respons = self.processor_controller.get_status(
+                    data['processor_id'])
 
         await self.nc.publish(reply, json.dumps(respons).encode())
 
