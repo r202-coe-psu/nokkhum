@@ -77,23 +77,22 @@ class ProcessorController:
                 processor.save()
 
         # logger.debug('in actuate command ')
-        if data.get('system', False):
-            user = models.User.objects(id=data['user_id']).first()
+        if data.get('system'):
             processor_command = models.ProcessorCommand(
                     processor=processor,
-                    # action=data['action'],
-                    owner=user,
-                    type='user')
-            if 'recorder' in data['action']:
-                processor.user_command = processor_command
-             
-        else:
-            processor_command = models.ProcessorCommand(
-                    processor=processor,
-                    # action=data['action'],
+                    action=data['action'],
                     type='system')
- 
-
+        else:
+            print('check data', data)
+            processor_command = models.ProcessorCommand(
+                    processor=processor,
+                    action=data['action'],
+                    type='user')
+            if data.get('user_id'):
+                user = models.User.objects(id=data['user_id']).first()
+                print('got user', user)
+                processor.owner=user,
+       
         compute_node = None
         if data['action'] == 'start-recorder':
             compute_node = await self.get_available_compute_node()

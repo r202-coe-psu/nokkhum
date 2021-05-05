@@ -64,28 +64,37 @@ class ControllerServer:
         await self.processor_command_queue.put(data)
 
     async def process_expired_controller(self):
+        time_check = self.settings["DAIRY_TIME_TO_REMOVE"]
+        hour, minute = time_check.split(":")
+        process_time = datetime.time(int(hour), int(minute), 0)
+
         while self.running:
             logger.debug("start process expired data")
-            time_check = self.settings["DAIRY_TIME_TO_REMOVE"]
-            hour, minute = time_check.split(":")
             date = datetime.date.today()
-            time = datetime.time(int(hour), int(minute), 0)
-            time_set = datetime.datetime.combine(date, time)
+            time_set = datetime.datetime.combine(date, process_time)
             time_to_check = time_set - datetime.datetime.now()
 
             # logger.debug(f'time to sleep {time_to_check.seconds}')
-            await asyncio.sleep(time_to_check.seconds)
-            self.command_controller.expired_processor_commands()
+            try:
+                await asyncio.sleep(time_to_check.seconds)
+                await self.command_controller.remove_expired_processor_commands()
 
-            await asyncio.sleep(1)
-            self.result_controller.expired_video_records()
+                await asyncio.sleep(1)
+                await self.result_controller.remove_expired_video_records()
+            except Exception as e:
+                logger.exception(e)
+
 
     async def handle_controller(self):
         while self.running:
             await asyncio.sleep(20)
-            await self.command_controller.handle_controller_after_restart(
-                self.processor_command_queue
-            )
+            try:
+                await self.command_controller.restart_processors(
+                    self.processor_command_queue
+                )
+            except Exception as e:
+                logger.exception(e)
+
 
     # async def handle_
     async def process_compute_node_report(self):

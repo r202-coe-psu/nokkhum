@@ -142,12 +142,18 @@ class ProcessorServer:
         size=tuple(command.get("size", self.settings.get('NOKKHUM_PROCESSOR_ACQUISITOR_DEFAULT_SIZE')))
 
 
+        capture = None
+        try:
+            capture = captures.VideoCapture(
+                command["video_uri"],
+                # options.processor_id,
+                command['camera_id'],
+            )
+        except Exception as e:
+            logger.exception(e)
+            self.running = False
+            return
 
-        capture = captures.VideoCapture(
-            command["video_uri"],
-            # options.processor_id,
-            command['camera_id'],
-        )
 
         
         acquisitor = acquisitors.ImageAcquisitor(
@@ -159,6 +165,7 @@ class ProcessorServer:
         )
         acquisitor.start()
         self.processors["acquisitor"] = acquisitor
+
 
 
     def init_recorder(self, command):

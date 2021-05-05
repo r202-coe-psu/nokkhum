@@ -13,7 +13,7 @@ class ResultController:
         self.settings = settings
         self.path = pathlib.Path(self.settings['NOKKHUM_PROCESSOR_RECORDER_PATH'])
 
-    def expired_video_records(self):
+    async def remove_expired_video_records(self):
         logger.debug('start remove expired records')
 
         processors = models.Processor.objects()

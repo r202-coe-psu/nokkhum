@@ -1,5 +1,6 @@
 import asyncio
 from quart import (
+    request,
     Blueprint,
     Response,
     g,
@@ -17,8 +18,8 @@ logger = logging.getLogger(__name__)
 
 TIMEOUT = 30
 
-async def generate_frame(camera_id, ss):
-    queue = await ss.add_new_queue(camera_id)
+async def generate_frame(camera_id, user_id, ss):
+    queue = await ss.add_new_queue(camera_id, user_id)
 
     served_date = datetime.datetime.now()
     running = True
@@ -48,13 +49,11 @@ async def generate_frame(camera_id, ss):
         # queue.task_done()
         logger.debug(f"{camera_id} is finish")
         try:
-            await ss.remove_queue(camera_id, queue)
+            await ss.remove_queue(camera_id, user_id, queue)
         except Exception as e:
-            print(e)
             logger.exception(e)
         # logger.debug("remove queue")
 
-    logger.debug('finish --')
 
 
 @module.route("/")
@@ -65,7 +64,8 @@ async def index():
 @module.route("/cameras/<camera_id>")
 async def live(camera_id):
     ss = current_app.streaming_sub
-    response = await make_response(generate_frame(camera_id, ss))
+    user_id = request.args.get('user_id')
+    response = await make_response(generate_frame(camera_id, user_id, ss))
     response.timeout = None  # No timeout for this route
     response.headers["Content-Type"] = "multipart/x-mixed-replace; boundary=frame"
     return response

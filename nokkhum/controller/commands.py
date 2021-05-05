@@ -9,7 +9,7 @@ class CommandController:
     def __init__(self, settings):
         self.settings = settings
 
-    def expired_processor_commands(self):
+    async def remove_expired_processor_commands(self):
         days = self.settings['DUE_DATE']
         lifetime_date = datetime.datetime.now() - datetime.timedelta(days=days)
         processor_commands = models.ProcessorCommand.objects(
@@ -18,28 +18,43 @@ class CommandController:
                 )
         processor_commands.delete()
 
-    async def handle_controller_after_restart(self, command_q):
+    async def restart_processors(self, command_q):
         # await asyncio.sleep(20)
+        logger.debug('check and restart processor' )
         accepted_date = datetime.datetime.now() - datetime.timedelta(seconds=120)
+        pipeline = [
+                {
+                    '$lookup': {
+                        'from': 'processor_commands',
+                        'localField': 'user_command.recorder.$id',
+                        'foreignField': '_id',
+                        'as': 'recorder',
+                    }
+                },
+                {
+                    '$addFields': {
+                        "recorder": { '$arrayElemAt': ["$recorder", 0] }
+                    }
+                },
+                {
+                    '$match': {
+                        'recorder.action': 'start-recorder'
+                    }
+                }
+                ]
+
         processors = models.Processor.objects(
-                updated_date__lt=accepted_date)
-        # ,
-        #         state__in=['running', 'start', 'starting'])
+                updated_date__lt=accepted_date
+                ) \
+                .aggregate(pipeline)
 
-        # logger.debug(f'Check and restart processor {processors}')
         for processor in processors:
-            # logger.debug(f'check state {processor.state}')
-            if processor.user_command.action in ['stop', 'stop-recorder', 'stop-motion-recorder']:
-                # logger.debug('command stop')
-                if processor.state != 'stop':
-                    processor.state = 'stop'
-                    processor.save()
-                continue
+            logger.debug(f'check state {processor["state"]}')
 
-            # data = {'action': processor.user_command.action,
-            #         'camera_id': str(processor.camera.id),
-            #         'processor_id': str(processor.id),
-            #         'project_id': str(processor.project.id),
-            #         'system': True}
-            
-            # await command_q.put(data)
+            data = {'action': processor["recorder"]["action"],
+                    'camera_id': str(processor["camera"].id),
+                    'processor_id': str(processor["_id"]),
+                    'project_id': str(processor["project"].id),
+                    'system': True}
+
+            await command_q.put(data)

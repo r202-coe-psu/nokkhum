@@ -134,11 +134,11 @@ class StreamingSubscriber:
             error_cb=self.subscribe_camera_topic_error,
         )
 
-    async def add_new_queue(self, camera_id):
+    async def add_new_queue(self, camera_id, user_id):
         # make processors dict for check data processor if nor in processors dict send topic to controller
         if camera_id not in self.camera_queues:
             await self.subscribe_camera_topic(camera_id)
-        await self.send_start_live(camera_id)
+        await self.send_start_live(camera_id, user_id)
 
         queues = self.camera_queues.get(camera_id)
         q = asyncio.queues.Queue(maxsize=10)
@@ -148,7 +148,7 @@ class StreamingSubscriber:
             self.camera_queues[camera_id].append(q)
         return q
 
-    async def remove_queue(self, camera_id, queue):
+    async def remove_queue(self, camera_id, user_id, queue):
         if camera_id in self.camera_queues and queue in self.camera_queues[camera_id]:
             self.camera_queues[camera_id].remove(queue)
 
@@ -156,17 +156,25 @@ class StreamingSubscriber:
             # logger.debug("remove topic")
             await self.stream_id[camera_id].unsubscribe()
             del self.camera_queues[camera_id]
-            await self.send_stop_live(camera_id)
+            await self.send_stop_live(camera_id, user_id)
         
 
-    async def send_start_live(self, camera_id):
+    async def send_start_live(self, camera_id, user_id):
         # logger.debug("add_camera_topic")
-        data = {"camera_id": camera_id, 'action': 'start-streamer'}
+        data = {
+                "camera_id": camera_id,
+                "user_id": user_id,
+                'action': 'start-streamer'
+                }
         camera_register_topic = "nokkhum.processor.command"
         await self.nc.publish(camera_register_topic, json.dumps(data).encode())
 
-    async def send_stop_live(self, camera_id):
+    async def send_stop_live(self, camera_id, user_id):
         # logger.debug("remove_camera_topic")
-        data = {"camera_id": camera_id, 'action': 'stop-streamer'}
+        data = {
+                "camera_id": camera_id,
+                "user_id": user_id,
+                'action': 'stop-streamer'
+                }
         camera_remove_topic = "nokkhum.processor.command"
         await self.nc.publish(camera_remove_topic, json.dumps(data).encode())
