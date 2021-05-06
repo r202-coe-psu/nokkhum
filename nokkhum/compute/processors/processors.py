@@ -37,8 +37,16 @@ class Processor:
 
     def read(self):
         if self.process.poll() is None:
-            data = self.process.stdout.readline().decode('utf-8')
-            return json.loads(data)
+
+            result = {}
+            try:
+                data = self.process.stdout.readline().decode('utf-8')
+                result = json.loads(data)
+            except Exception as e:
+                logger.debug(e)
+                logger.debug(f'got {data}')
+
+            return result
         
         return None
 

@@ -96,6 +96,18 @@ class Processor(me.Document):
         elif 'recorder' in processor_command.action:
             self.user_command.recorder = processor_command
 
+    def count_system_start_recorder(self, seconds=10):
+        after_time = datetime.datetime.now() - datetime.timedelta(seconds)
+        
+        count = ProcessorCommand.objects(
+                processor=self,
+                action__in=['start-recorder', 'start-motion_recorder'],
+                type='system',
+                commanded_date__gt=after_time,
+                ).count()
+
+        return count
+
     @classmethod
     def pre_save(cls, sender, document, **kwargs):
         document.updated_date = datetime.datetime.now()
@@ -126,8 +138,9 @@ class ProcessorCommand(me.Document):
         required=True, default=datetime.datetime.now)
     processed_date = me.DateTimeField(
         required=True, default=datetime.datetime.now)
-    completed_date = me.DateTimeField()
 
+    completed_date = me.DateTimeField()
+    completed = me.BooleanField(required=True, default=False)
     # updated_date = me.DateTimeField(
     #     required=True, default=datetime.datetime.now)
     owner = me.ReferenceField('User', dbref=True)

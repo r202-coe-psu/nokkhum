@@ -6,20 +6,21 @@ logger = logging.getLogger(__name__)
 
 
 class CommandController:
-    def __init__(self, settings):
+    def __init__(self, settings, command_queue):
         self.settings = settings
+        self.command_queue = command_queue
 
     async def remove_expired_processor_commands(self):
         days = self.settings['DUE_DATE']
         lifetime_date = datetime.datetime.now() - datetime.timedelta(days=days)
         processor_commands = models.ProcessorCommand.objects(
                 commanded_date__lt=lifetime_date,
-                type='system'
+                type='system',
                 )
         processor_commands.delete()
 
-    async def restart_processors(self, command_q):
-        # await asyncio.sleep(20)
+    async def restart_processors(self):
+        await asyncio.sleep(60)
         logger.debug('check and restart processor' )
         accepted_date = datetime.datetime.now() - datetime.timedelta(seconds=120)
         pipeline = [
@@ -48,13 +49,25 @@ class CommandController:
                 ) \
                 .aggregate(pipeline)
 
-        for processor in processors:
-            logger.debug(f'check state {processor["state"]}')
+        for p in processors:
+            processor = models.Processor.objects(id=p['_id']).first()
+            await self.put_restart_processor_command(processor) 
 
-            data = {'action': processor["recorder"]["action"],
-                    'camera_id': str(processor["camera"].id),
-                    'processor_id': str(processor["_id"]),
-                    'project_id': str(processor["project"].id),
+    async def put_restart_processor_command(self, processor):
+        processor.state = 'stop'
+        processor.save()
+
+        # try to restart
+        if processor.count_system_start_recorder(600) > 30:
+            logger.debug(f'stop restart processor id: {processor.id} many retry')
+            return
+
+        if 'start' in processor.user_command.recorder.action:
+            logger.debug(f'Try to restart processor id {processor.id}')
+            data = {'action': processor.user_command.recorder.action,
+                    'camera_id': str(processor.camera.id),
+                    'processor_id': str(processor.id),
+                    'project_id': str(processor.project.id),
                     'system': True}
+            await self.command_queue.put(data)
 
-            await command_q.put(data)

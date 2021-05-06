@@ -81,14 +81,17 @@ class ComputeNodeServer:
     async def update_compute_node_resource(self):
         while self.running:
             await asyncio.sleep(20)
-            # logger.debug('begin update resource')
+            logger.debug('begin update resource')
             if not self.is_register:
                 continue
 
             # need remove process
             # self.monitor.get_processor_run_fail()
-            
-            resource = self.monitor.get_resource()
+            resource = None
+            try:
+                resource = await self.monitor.get_resource()
+            except Exception as e:
+                logger.exception(e)
             # logger.debug('start')
             response = dict(action='update-resource',
                             compute_node_id=self.id,
@@ -102,30 +105,45 @@ class ComputeNodeServer:
     
     async def update_fail_processor(self):
         while self.running:
-            await asyncio.sleep(20)
-            # logger.debug()
-            fail_processor_data = self.monitor.get_processor_run_fail()
+            await asyncio.sleep(10)
+            # logger.debug('begin update fail processor')
+            fail_processor_data = None
+            try:
+                fail_processor_data = await self.monitor.get_processor_run_fail()
+            except Exception as e:
+                logger.exception(e)
             # message = self.monitor.get_processor_run_fail()
             if fail_processor_data is None:
                 continue
 
+            logger.debug('begin update fail processor')
             response = dict(action='report-fail-processor',
                             compute_node_id=self.id,
                             fail_processor_data=fail_processor_data,
                             date=datetime.datetime.now().isoformat())
             # logger.debug('response : {}'.format(response))
-            await self.nc.publish(
+            try:
+                await self.nc.publish(
                     'nokkhum.compute.report',
                     json.dumps(response).encode())
-
+            except Exception as e:
+                logger.exception(e)
 
     async def update_processor_output(self):
         processor_manager = self.processor_controller.processor_manager
 
         while self.running:
+            # logger.debug('begin update processor output')
+
             is_sleep = True
             for pid in processor_manager.output.keys():
-                results = processor_manager.read_process_output(pid)
+                results = []
+
+                try:
+                    results = processor_manager.read_process_output(pid)
+                except Exception as e:
+                    logger.exception(e)
+
                 if len(results) == 0:
                     continue
 
@@ -142,14 +160,14 @@ class ComputeNodeServer:
                     is_sleep = False
 
             if is_sleep:
-                await asyncio.sleep(1)
+                await asyncio.sleep(10)
 
     async def set_up(self, loop):
         self.nc = NATS()
         await self.nc.connect(self.settings['NOKKHUM_MESSAGE_NATS_HOST'], loop=loop)
         
         logging.basicConfig(
-                format='%(asctime)s - %(name)s:%(levelname)s - %(message)s',
+                format='%(asctime)s - %(name)s:%(lineno)d %(levelname)s - %(message)s',
                 datefmt='%d-%b-%y %H:%M:%S',
                 level=logging.DEBUG,
                 )
@@ -178,7 +196,7 @@ class ComputeNodeServer:
                 data = json.loads(response.data.decode())
                 self.id = data['id']
             except Exception as e:
-                logger.debug(e)
+                logger.exception(e)
 
             if not self.is_register:
                 await asyncio.sleep(1)

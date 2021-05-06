@@ -41,10 +41,10 @@ class ComputeNodeMonitor:
     def set_publisher(self, publisher):
         self.publisher = publisher
 
-    def send_message(self, data):
-        self.publisher.publish(
-                'yana.compute.report',
-                json.dumps(data).encode())
+    # def send_message(self, data):
+    #     self.publisher.publish(
+    #             'yana.compute.report',
+    #             json.dumps(data).encode())
 
     def get_machine_specification(self):
         ms = machines.Machine(
@@ -54,7 +54,7 @@ class ComputeNodeMonitor:
 
         return ms.get_specification()
 
-    def update_machine_specification(self):
+    async def update_machine_specification(self):
 
         arguments = self.get_machine_specification()
         messages = {'method': 'update_machine_specification', 'args': arguments}
@@ -62,7 +62,7 @@ class ComputeNodeMonitor:
 
         return self.send_message(messages)
 
-    def get_resource(self):
+    async def get_resource(self):
         cpus = psutil.cpu_percent(interval=.3, percpu=True)
 
         ms = self.machine_specification
@@ -93,7 +93,12 @@ class ComputeNodeMonitor:
 
         pcpu = 0
         pmem = 0
-        for pid, processor_id in processor_manager.get_pids():
+
+        # for pid, processor_id in processor_manager.get_pids():
+        for processor_id, processor in processor_manager.pool.items():
+            if not processor.is_running():
+                continue
+            pid = processor.process.pid
             try:
                 process = psutil.Process(pid)
                 process_status = dict(
@@ -109,7 +114,7 @@ class ComputeNodeMonitor:
 
                 processor_list.append(process_status)
             except Exception as e:
-                logger.debug(e)
+                logger.exception(e)
 
         system_load = dict(
                 cpu=sum(cpus)-pcpu if sum(cpus)-pcpu >= 0 else 0,
@@ -132,14 +137,14 @@ class ComputeNodeMonitor:
 
         return resource
 
-    def update_machine_resources(self):
-        self.resource = self.get_resource()
+    async def update_machine_resources(self):
+        self.resource = await self.get_resource()
         messages = {'action': 'update_resources', 'resource': self.resource}
         return self.send_message(messages)
 
-    def get_processor_run_fail(self):
-        processor_manager = self.processor_manager
+    async def get_processor_run_fail(self):
         # logger.debug('try to remove dead process')
+        processor_manager = self.processor_manager
         dead_process = processor_manager.remove_dead_process()
         if len(dead_process) == 0:
             return None
@@ -156,15 +161,16 @@ class ComputeNodeMonitor:
 #        logging.debug('camera_running_fail_report: %s' % messages)
         return fail_processors
 
-    def processor_running_fail_report(self):
-        arguments = self.get_processor_run_fail()
+    async def processor_running_fail_report(self):
+        logger.debug('start processor running fail')
+        arguments = await self.get_processor_run_fail()
         if arguments is None:
             return
         messages = {'method': 'processor_run_fail_report', 'args': arguments}
         return self.send_message(messages)
 
-    def check_resources(self):
-        resource = self.get_resource()
+    async def check_resources(self):
+        resource = await self.get_resource()
 
         old_cpu = self.resource['cpu']['used']
         current_cpu = resource['cpu']['used']

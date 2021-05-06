@@ -8,8 +8,9 @@ logger = logging.getLogger(__name__)
 from nokkhum import models
 
 class ProcessorController:
-    def __init__(self, nc=None):
+    def __init__(self, nc=None, command_controller=None):
         self.nc = nc
+        self.command_controller = command_controller
 
     async def init_message(self, nc):
         self.nc = nc
@@ -30,8 +31,10 @@ class ProcessorController:
         return processor
 
 
+    async def get_available_compute_node(self, compute_node=None):
+        if compute_node and compute_node.is_online():
+            return compute_node
 
-    async def get_available_compute_node(self):
         deadline_date = datetime.datetime.now() - datetime.timedelta(seconds=60)
 
         # need a scheduling
@@ -54,7 +57,6 @@ class ProcessorController:
         if data.get('processor_id', None) is not None:
             processor = models.Processor.objects(id=data['processor_id']).first()
         else:
-
             processor = models.Processor.objects(camera=camera).first()
 
             if not processor:
@@ -65,7 +67,6 @@ class ProcessorController:
         return result
 
        # save data into database
-
 
 
     async def actuate_command(self, processor, camera, data):
@@ -81,21 +82,21 @@ class ProcessorController:
             processor_command = models.ProcessorCommand(
                     processor=processor,
                     action=data['action'],
-                    type='system')
+                    type='system',
+                    )
         else:
-            print('check data', data)
             processor_command = models.ProcessorCommand(
                     processor=processor,
                     action=data['action'],
-                    type='user')
+                    type='user',
+                    )
             if data.get('user_id'):
                 user = models.User.objects(id=data['user_id']).first()
-                print('got user', user)
-                processor.owner=user,
+                processor.owner=user
        
         compute_node = None
-        if data['action'] == 'start-recorder':
-            compute_node = await self.get_available_compute_node()
+        if data['action'] in ['start-recorder', 'start-motion-recorder']:
+            compute_node = await self.get_available_compute_node(processor.compute_node)
 
             if compute_node is None:
                 logger.debug("compute node is not available for start")
@@ -116,9 +117,9 @@ class ProcessorController:
         processor.save()
 
         # check starting process
-        if 'start' in data["action"]:
+        if 'start' in data["action"] and processor.state == 'start':
             processor.state = "starting"
-        elif 'stop' in data["action"]:
+        elif 'stop' in data["action"] and processor.state != 'stop':
             processor.state = "stopping"
         processor.save()
 
@@ -141,15 +142,20 @@ class ProcessorController:
             )
         except Exception as e:
             logger.exception(e)
-            if 'start' in data["action"]:
-                return False
+            processor_command.message = e
+            processor_command.completed = False
+            processor_command.save()
+            
+            return False
 
         if result:
             result_data = json.loads(result.data.decode())
 
         await self.update_status(processor)
         processor.save()
-        logger.debug(f"end {result_data}")
+        # logger.debug(f"end {result_data}")
+        processor_command.completed_date = datetime.datetime.now()
+        processor_command.save()
 
         return True
 
@@ -161,11 +167,13 @@ class ProcessorController:
             )
 
         try:
-
             topic = "nokkhum.compute.{}.rpc".format(
-                    processor.compute_node.mac)
+                    processor.compute_node.mac
+                    )
             result = await self.nc.request(
-                topic, json.dumps(command).encode(), timeout=60
+                topic,
+                json.dumps(command).encode(),
+                timeout=60
             )
         except Exception as e:
             logger.exception(e)
@@ -188,8 +196,7 @@ class ProcessorController:
             processor.state = 'running'
 
 
-
-    async def update_fail_processor(self, data, compute_node_id, command_q):
+    async def update_fail_processor(self, data, compute_node_id):
         # processor = self.get_processor(project, camera)
         # processor_id = next(iter(data['dead_process']))
         # logger.debug(next(iter(data['dead_process'])))
@@ -197,19 +204,12 @@ class ProcessorController:
         compute_node = models.ComputeNode.objects.get(id=compute_node_id)
         for processor_id, msg in data['dead_process'].items():
             processor = models.Processor.objects.get(id=processor_id)
-            processor.state = 'stop'
-            processor.save()
             fail_processor = models.FailRunningProcessor(
                     processor=processor,
                     compute_node=compute_node,
                     message=msg
                     )
             fail_processor.save()
-            if processor.user_command.action == 'start':
-                logger.debug('Try to restart')
-                data = {'action': 'start-recorder',
-                        'camera_id': str(processor.camera.id),
-                        'processor_id': str(processor.id),
-                        'project_id': str(processor.project.id),
-                        'system': True}
-                await command_q.put(data)
+
+            await self.command_controller.put_restart_processor_command(processor)
+

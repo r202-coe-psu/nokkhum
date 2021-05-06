@@ -27,8 +27,14 @@ class ControllerServer:
         self.processor_command_queue = asyncio.Queue()
         self.running = False
         self.cn_resource = compute_nodes.ComputeNodeResource()
-        self.processor_controller = processors.ProcessorController(self.nc)
-        self.command_controller = commands.CommandController(self.settings)
+        self.command_controller = commands.CommandController(
+                self.settings,
+                self.processor_command_queue,
+                )
+        self.processor_controller = processors.ProcessorController(
+                self.nc,
+                command_controller=self.command_controller,
+                )
         self.result_controller = results.ResultController(self.settings)
 
     async def register_compute_node(self, data):
@@ -85,16 +91,16 @@ class ControllerServer:
                 logger.exception(e)
 
 
-    async def handle_controller(self):
+    async def monitor_processor(self):
+
+        time_to_sleep = 1800
         while self.running:
-            await asyncio.sleep(20)
             try:
-                await self.command_controller.restart_processors(
-                    self.processor_command_queue
-                )
+                await self.command_controller.restart_processors()
             except Exception as e:
                 logger.exception(e)
 
+            await asyncio.sleep(time_to_sleep)
 
     # async def handle_
     async def process_compute_node_report(self):
@@ -102,20 +108,24 @@ class ControllerServer:
             data = await self.cn_report_queue.get()
             # logger.debug(f'process compute node: {data}')
 
-            if data["action"] == "update-resource":
-                self.cn_resource.update_machine_resources(
-                    data["compute_node_id"], data["resource"]
-                )
-            elif data["action"] == "report-fail-processor":
-                # logger.debug('pcnr: {}'.format(data))
-                # logger.debug('>>>>>>> {}'.format(data['fail_processor_data']))
-                await self.processor_controller.update_fail_processor(
-                    data["fail_processor_data"],
-                    data["compute_node_id"],
-                    self.processor_command_queue,
-                )
-            elif data["action"] != "report":
-                logger.debug("got unproccess report {}".format(str(data)))
+            try:
+                if data["action"] == "update-resource":
+                    self.cn_resource.update_machine_resources(
+                        data["compute_node_id"],
+                        data["resource"]
+                    )
+                elif data["action"] == "report-fail-processor":
+                    # logger.debug('pcnr: {}'.format(data))
+                    # logger.debug('>>>>>>> {}'.format(data['fail_processor_data']))
+                    await self.processor_controller.update_fail_processor(
+                        data["fail_processor_data"],
+                        data["compute_node_id"],
+                    )
+                elif data["action"] != "report":
+                    logger.debug("got unproccess report {}".format(str(data)))
+            except Exception as e:
+                logger.exception(e)
+
 
             # process report command
             # await self.manager.update(data)
@@ -131,8 +141,8 @@ class ControllerServer:
             except Exception as e:
                 logger.exception(e)
             
-            if not result:
-                logger.debug(f"process command fail")
+            # if not result:
+                # logger.debug(f"process command fail")
                 # if 'start-recorder' == data['action']:
                 #     await asyncio.sleep(20)
                 #     await self.processor_command_queue.put(data)
@@ -141,7 +151,7 @@ class ControllerServer:
     async def set_up(self, loop):
         await self.nc.connect(self.settings["NOKKHUM_MESSAGE_NATS_HOST"], loop=loop)
         logging.basicConfig(
-            format="%(asctime)s - %(name)s:%(levelname)s - %(message)s",
+                format="%(asctime)s - %(name)s:%(lineno)d %(levelname)s - %(message)s",
             datefmt="%d-%b-%y %H:%M:%S",
             level=logging.DEBUG,
         )
@@ -163,7 +173,7 @@ class ControllerServer:
         cn_report_task = loop.create_task(self.process_compute_node_report())
         processor_command_task = loop.create_task(self.process_processor_command())
         handle_expired_data_task = loop.create_task(self.process_expired_controller())
-        handle_controller_task = loop.create_task(self.handle_controller())
+        monitor_processor_task = loop.create_task(self.monitor_processor())
 
         try:
             loop.run_forever()
