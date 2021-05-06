@@ -81,7 +81,7 @@ class ComputeNodeServer:
     async def update_compute_node_resource(self):
         while self.running:
             await asyncio.sleep(20)
-            logger.debug('begin update resource')
+            # logger.debug('begin update resource')
             if not self.is_register:
                 continue
 
