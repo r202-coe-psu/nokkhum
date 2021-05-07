@@ -95,7 +95,7 @@ class StreamingSubscriber:
         self.nc = NATS()
         self.nc._max_payload = 2097152
         # logger.debug("in setup")
-        # logger.debug(f'>>>>{self.settings["NOKKHUM_MESSAGE_NATS_HOST"]}')
+        logger.debug(f'connect to nats server {self.settings["NOKKHUM_MESSAGE_NATS_HOST"]}')
 
         await self.nc.connect(
             self.settings["NOKKHUM_MESSAGE_NATS_HOST"],

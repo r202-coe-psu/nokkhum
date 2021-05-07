@@ -53,6 +53,7 @@ class ImageDispatcher(threading.Thread):
     async def set_up_message(self):
         self.nc = NATS()
         self.nc._max_payload = 2097152
+        logger.debug(f'connect to nats {self.settings["NOKKHUM_MESSAGE_NATS_HOST"]}')
         await self.nc.connect(
             self.settings["NOKKHUM_MESSAGE_NATS_HOST"], io_loop=self.loop
         )
