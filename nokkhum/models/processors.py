@@ -36,7 +36,7 @@ class ProcessorReport(me.EmbeddedDocument):
             default=datetime.datetime.now)
     compute_node = me.ReferenceField('ComputeNode', dbref=True)
 
-    processors = me.ListField(me.StringField())
+    processors = me.DictField()
 
 
 class UserProcessorCommand(me.EmbeddedDocument):
@@ -47,7 +47,7 @@ class UserProcessorCommand(me.EmbeddedDocument):
 class Processor(me.Document):
     meta = {
             'collection': 'processors',
-#             'strict': False,
+            # 'strict': False,
             }
 
     camera = me.ReferenceField('Camera', dbref=True)

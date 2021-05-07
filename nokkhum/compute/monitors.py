@@ -107,6 +107,7 @@ class ComputeNodeMonitor:
                     num_threads=process.num_threads(),
                     cpu=process.cpu_percent(interval=0.2),
                     memory=process.memory_info().rss,
+                    processors=processor.get_status(),
                     # messages=compute.processor_manager.read_process_output(processor_id)
                     )
                 pcpu += process_status['cpu']
