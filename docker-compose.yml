@@ -10,14 +10,15 @@ services:
         networks:
             - default
 
-    nats-server:
-        image: nats
-        container_name: nokkhum-nats-server
+    stan-server:
+        image: nats-streaming
+        container_name: nokkhum-stan-server
         volumes:
             - /etc/localtime:/etc/localtime:ro
         restart: always
         networks:
             - default
+        command: -cid nokkhum-stan-cluster
 
     web:
         build: .
@@ -30,9 +31,9 @@ services:
             - 8080:9000
         links:
             - mongodb
-            - nats-server
+            - stan-server
         depends_on:
-            - nats-server
+            - stan-server
             - mongodb
         networks:
             - default
@@ -49,17 +50,21 @@ services:
             - ../deployment:/deployment
             - /etc/localtime:/etc/localtime:ro
         ports:
-            - 8081:9000
+            - 8081:8081
         links:
             - mongodb
-            - nats-server
+            - stan-server
         depends_on:
-            - nats-server
+            - stan-server
             - mongodb
         networks:
             - default
+        environment:
+            NOKKHUM_SETTINGS: /app/nokkhum-production-quart.cfg
+            QUART_ENV: production
         restart: always
-        command: uwsgi --lazy-apps --ini /app/scripts/nokkhum-uwsgi-streaming.ini
+        # command: uwsgi --lazy-apps --ini /app/scripts/nokkhum-uwsgi-streaming.ini
+        command: nokkhum-streaming -d -H 0.0.0.0 -P 8081
 
     controller:
         build: .
@@ -70,9 +75,9 @@ services:
             - /etc/localtime:/etc/localtime:ro
         links:
             - mongodb
-            - nats-server
+            - stan-server
         depends_on:
-            - nats-server
+            - stan-server
             - mongodb
         networks:
             - default
@@ -89,9 +94,9 @@ services:
             - ../deployment:/deployment
             - /etc/localtime:/etc/localtime:ro
         links:
-            - nats-server
+            - stan-server
         depends_on:
-            - nats-server
+            - stan-server
             - controller
         networks:
             - default

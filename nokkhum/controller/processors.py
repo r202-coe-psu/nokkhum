@@ -108,6 +108,8 @@ class ProcessorController:
 
             if compute_node and not compute_node.is_online():
                 logger.debug(f"compute node {compute_node.name} is not online")
+                processor.state = 'stop'
+                processor.save()
                 return False
 
         # need to decision

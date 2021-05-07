@@ -2,7 +2,7 @@ flask
 flask-mongoengine
 flask-login
 flask-allows
-authlib
+authlib==0.15.3
 bcrypt
 blinker
 requests
@@ -12,7 +12,8 @@ flask_jwt_extended
 loginpass
 email_validator
 
-Flask-uWSGI-WebSocket
+
+# Flask-uWSGI-WebSocket
 asyncio-nats-client
 
 psutil
