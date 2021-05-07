@@ -1,23 +1,37 @@
 {% extends "/base/base-layout.html" %}
-{% block body %}
-<header>
-{% block header %}
-  {% include "/base/menu.html" %}
-  {% if request.path == '/' %}
-    {% include "/base/banner.html" %}
-  {% else %}
-    <div style="padding-top:50px;"></div>
-  {% endif %}
+{% block additional_head %}
+<style type="text/css">
+  .pusher {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+</style>
 {% endblock %}
-</header>
+{% block body %}
+<div class="pusher">
+  <div class="full height">
+    <header>
+      {% block header %}
+      {% if request.path == '/' %}
+      {% include "/base/banner.html" %}
+      {% else %}
+      <div style="padding-top:50px;"></div>
+      {% endif %}
+      {% endblock %}
+      <main>
+        <div class="container">
+          {% block content %}{% endblock content %}
+        </div>
+      </main>
 
-<main>
-  <div class="container">
-    {% block content %}{% endblock content %}
+    </header>
   </div>
-</main>
 
-<footer class="ui vertical footer segment" style="padding-top: 2em;">
-{% include "/base/footer.html" %}
-</footer>
+  <footer class="ui vertical footer segment">
+    {% include "/base/footer.html" %}
+  </footer>
+</div>
+
 {% endblock %}

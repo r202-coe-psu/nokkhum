@@ -2,59 +2,69 @@
 {% import '/base/html-renderer.html' as renderer %}
 
 {% block dashboard_title %}
-  Camera: {{camera.name}}
-{% endblock %}
+<h2><a href="{{ url_for('projects.view', project_id=camera.project.id) }}">{{ camera.project.name | title }}</a>>
+  Camera: {{camera.name}} <a href="{{ url_for('cameras.edit', camera_id=camera.id, project_id=project.id) }}"><i
+      class="edit icon"></i></a>
+</h2>
 
-{% block breadcrumbs %}
-  {{ super() }}
-  <i class="right angle icon divider"></i>
-  <a class="section" href="{{ url_for('cameras.view', project_id=project.id, camera_id=camera.id) }}">{{camera.name}}</a>
-{% endblock %}
 
+{% endblock %}
 {% block content %}
-  <input id="streaming-url" type="hidden" value="{{ config.get('NOKKHUM_LPRSTREAMING_URL', 'localhost') }}">
-{#
-<script type="text/python" id="test1" src="{{ url_for('static', filename='brython/camera.py') }}"></script>
-#}
 
-<div class="ui grid" style="margin-top: 1em;">
-  <div class="twelve wide centered column">
-    <div class="ui segment column">
-      <div class="ui stackable two column grid">
-        <div class="black column">
-          <img src="{{ camera.get_streaming_url() }}" width="100%">
-        </div>
-        <div class="column">
-          <div class="ui divided huge list">
-            <div class="item">
-              <i class="folder icon"></i>
-              <div class="content">
-                <a href="{{ url_for('storages.list_storage_by_processor', processor_id=camera.get_processor().id) }}"></i> Storage</a>
-              </div>
-            </div>
-            <div class="item">
-              <i class="edit icon"></i>
-              <div class="content">
-                <a href="{{ url_for('cameras.edit', camera_id=camera.id, project_id=project.id) }}"></i> Edit</a>
-              </div>
-            </div>
-          </div>
-        </div>
+<div class="ui horizontal segments" style="margin-top: 2rem;">
+  <div id="monitor" class="ui segment">
+    <p><img src="{{ camera.get_streaming_url() }}" width="100%"></p>
+  </div>
+  <div class="ui segment">
+    <div class="ui basic segments">
+      <div class="ui segment">
+        <a class="ui red label" href="#" onclick="switchMonitor('live_stream')">Live Streaming</a>
+        <i class="big folder icon"></i> {{ date_dir.name }} <a
+          href="{{ url_for('storages.list_records_by_date', processor_id=camera.get_processor().id, date_dir=date_dir.name) }}">See
+          all</a>
+
       </div>
+      {% for f in files_list %}
+      {%- if f.name.startswith('_') %}
+      {% set image_style = ' disabled' %}
+      {% else %}
+      {% set image_style = '' %}
+      {%- endif %}
+      <div class="ui segment">
+
+        <div class="ui small image{{ image_style }}">
+          {%- if not f.name.startswith('_') %}
+          <img
+            src="{{ url_for('storages.download', processor_id=processor.id, date_dir=date_dir.name, filename='{}-thumbnail.png'.format(f.stem)) }}">
+          {% else %}
+          <img
+            src="{{ url_for('storages.download', processor_id=processor.id, date_dir=date_dir.name, filename='{}-thumbnail.png'.format(f.stem[1:])) }} ">
+          {%- endif %}
+        </div>
+        {% set name = f.name[f.name.find('-')+1: f.name.rfind('-')] %}
+        {%- if not f.name.startswith('_') %}
+        {% set path_url = url_for('storages.download', processor_id=processor.id, date_dir=date_dir.name,
+        filename=f.name) %}
+        <a class="header" href="#" onclick="switchMonitor('{{path_url}}')">{{ name }}</a>
+        {% else %}
+        <a class="ui grey label" href="#">Recording</a>
+        {%- endif %}
+      </div>
+      {% endfor %}
     </div>
   </div>
 </div>
 {% endblock %}
-
-
 {% block additional_js %}
-{#
-<script src="{{ url_for('static', filename='node_modules/fomantic-ui-css/components/form.min.js') }}"></script>
-<script type="text/javascript">
-  function modal_picture(data) {
-    $('#picture').modal('show');
-    document.getElementById("pic").src = data ;
+<script>
+  function switchMonitor(url) {
+    if (url == "live_stream") {
+      document.getElementById("monitor").innerHTML = '<p><img src="{{ camera.get_streaming_url() }}" width="100%"></p>';
+    }
+    else {
+      document.getElementById("monitor").innerHTML = '<p><video width="1200px" controls> <source src="' + url + '" type="video/mp4"> </video></p>';
+    }
   }
 </script>
-#}
+
 {% endblock %}

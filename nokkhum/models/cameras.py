@@ -2,26 +2,42 @@ import mongoengine as me
 from flask import current_app
 
 
-class Camera(me.Document):
-    meta = {'collection': 'cameras'}
+class CameraModel(me.EmbeddedDocument):
+    name = me.StringField(required=True)
+    format_parameter = me.ListField(me.StringField)
+    rtsp_url = me.StringField(required=True)
 
+
+class Camera(me.Document):
+    meta = {"collection": "cameras"}
+    project = me.ReferenceField("Project", dbref=True)
     name = me.StringField(required=True)
     frame_rate = me.FloatField(required=True)
     width = me.IntField(required=True)
     height = me.IntField(required=True)
     location = me.GeoPointField()
     uri = me.StringField(required=True)
-    status = me.StringField(required=True, default='active')
+    status = me.StringField(required=True, default="active")
 
     def get_streaming_url(self):
         config = current_app.config
-        return '{}/cameras/{}/live'.format(config.get('NOKKHUM_STREAMING_URL'),
-                                           str(self.id))
+        return "{}/live/cameras/{}".format(
+            config.get("NOKKHUM_STREAMING_URL"), str(self.id)
+        )
 
     def get_processor(self):
         from . import processors
+
         return processors.Processor.objects.get(camera=self)
 
     def get_project(self):
         from . import projects
+
         return projects.Project.objects(cameras__contains=self).first()
+
+
+class CameraBrand(me.Document):
+    meta = {"collection": "camera_brands"}
+
+    name = me.StringField(required=True)
+    camera_models = me.ListField(me.EmbeddedDocumentField(CameraModel))

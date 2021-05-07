@@ -9,7 +9,7 @@ from flask import Flask, Blueprint
 from .. import models
 from . import views
 from . import acl
-from . import request_context
+from . import nats
 from . import oauth2
 
 
@@ -42,7 +42,7 @@ def create_app():
             static_url_path='/static/data')
     app.register_blueprint(static_bp)
 
-    request_context.init_request_context(app)
+    nats.init_nats(app)
 
     return app
 

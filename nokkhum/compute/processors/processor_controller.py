@@ -76,26 +76,77 @@ class ProcessorController:
                 return response
 
             logger.debug('Begin to start processor')
-            logger.debug('processor_id: %s' % processor_id)
+            logger.debug(f'processor_id: {processor_id}')
 
             processor_process = processors.Processor(processor_id)
 
-            logger.debug('start VS for processor id: %s', processor_id)
+            logger.debug(f'start VS for processor id: {processor_id}')
             processor_process.start(attributes)
             logger.debug(
-                'add process processor id: %s to process manager',
-                processor_id)
+                f'add process processor id: {processor_id} to process manager')
             self.processor_manager.add(processor_id, processor_process)
 
             response['success'] = True
 
-            logger.debug('Processor id: %s started' % (processor_id))
+            logger.debug(f'Processor id: {processor_id} started')
         except Exception as e:
             logger.exception(e)
             response['comment'] = 'Add Processor Error'
-            logger.debug('Processor name: %s started error' % (processor_id))
+            logger.debug(f'Processor name: {processor_id} started error')
 
         return response
+
+
+    def start_recorder(self, processor_id, attributes):
+        response = {'success': False,
+                    'action': 'start-recorder',
+                    'processor_id': processor_id}
+
+        processor = self.processor_manager.get(processor_id)
+        if processor is None:
+            response = self.start_processor(processor_id, attributes)
+            if not response['success']:
+                return response
+
+            processor = self.processor_manager.get(processor_id)
+        
+        try:
+            processor.start_recorder(attributes)
+            response['success'] = True
+        except Exception as e:
+            logger.exception(e)
+
+        return response
+
+    def start_streamer(self, processor_id, attributes):
+        response = {'success': False,
+                    'action': 'start-streamer',
+                    'processor_id': processor_id}
+
+        processor = self.processor_manager.get(processor_id)
+        if processor is None:
+            response = self.start_processor(processor_id, attributes)
+            if not response['success']:
+                return response
+
+            processor = self.processor_manager.get(processor_id)
+        
+        try:
+            processor.start_streamer(attributes)
+            response['success'] = True
+        except Exception as e:
+            logger.exception(e)
+
+        return response
+
+
+
+    def post_stop_operation(self, processor):
+        data = processor.get_status()
+        if data['video-streamer'] or data['video-recorder']:
+            return
+
+        self.stop_processor(str(processor.id))
 
     def stop_processor(self, processor_id):
         '''
@@ -123,17 +174,41 @@ class ProcessorController:
             for line in processor_process.process.stderr:
                 comment += line.decode('utf-8')
             if len(comment) > 0:
-                logger.debug(f'comment: \n{comment}')
+                logger.debug(f'comment: {comment}')
                 response['comment'] = comment
 
             response['success'] = True
             self.processor_manager.delete(processor_id)
-            logger.debug('Processor name: %s deleted' % (processor_id))
+            logger.debug(f'Processor id: {processor_id} deleted')
         except Exception as e:
             logger.exception(e)
             response['comment'] = 'Delete Processor Error'
 
         return response
+
+    def stop_recorder(self, processor_id):
+        processor = self.processor_manager.get(processor_id)
+        if processor:
+            processor.stop_recorder()
+            self.post_stop_operation(processor)
+        
+        response = {'success': True,
+                    'action': 'stop-recorder',
+                    'processor_id': processor_id}
+        return response
+
+
+    def stop_streamer(self, processor_id):
+        processor = self.processor_manager.get(processor_id)
+        if processor:
+            processor.stop_streamer()
+            self.post_stop_operation(processor)
+        
+        response = {'success': True,
+                    'action': 'stop-streamer',
+                    'processor_id': processor_id}
+        return response
+
 
     def stop_all(self):
 
@@ -143,3 +218,23 @@ class ProcessorController:
                 self.stop_processor(processor_id)
             except Exception as e:
                 logger.exception(e)
+
+
+    def get_status(self, processor_id):
+        response = {
+                'success': True,
+                'action': 'get_status',
+                'status': {},
+                'state': 'stop',
+                'processor_id': processor_id,
+                }
+
+        processor = self.processor_manager.get(processor_id)
+        if processor:
+            result = processor.get_status()
+            response['status'] = result
+            response['state'] = 'running'
+
+        return response
+
+

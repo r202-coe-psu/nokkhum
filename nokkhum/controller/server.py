@@ -3,6 +3,7 @@ import datetime
 import json
 import pathlib
 import logging
+
 logger = logging.getLogger(__name__)
 
 from nats.aio.client import Client as NATS
@@ -14,22 +15,30 @@ from . import processors
 from . import commands
 from . import results
 
+
 class ControllerServer:
     def __init__(self, settings):
         self.settings = settings
         models.init_mongoengine(settings)
 
+        
+        self.nc = NATS()
         self.cn_report_queue = asyncio.Queue()
         self.processor_command_queue = asyncio.Queue()
         self.running = False
         self.cn_resource = compute_nodes.ComputeNodeResource()
-        self.processor_controller = processors.ProcessorController()
-        self.command_controller = commands.CommandController(self.settings)
+        self.command_controller = commands.CommandController(
+                self.settings,
+                self.processor_command_queue,
+                )
+        self.processor_controller = processors.ProcessorController(
+                self.nc,
+                command_controller=self.command_controller,
+                )
         self.result_controller = results.ResultController(self.settings)
 
     async def register_compute_node(self, data):
-        response = self.cn_resource.update_machine_specification(
-                data['machine'])
+        response = self.cn_resource.update_machine_specification(data["machine"])
         return response
         # save compute node to database
 
@@ -42,7 +51,7 @@ class ControllerServer:
         #         subject=subject, reply=reply, data=data))
 
         data = json.loads(data)
-        if data['action'] == 'register':
+        if data["action"] == "register":
             response = await self.register_compute_node(data)
             await self.nc.publish(reply,
                             json.dumps(response).encode())
@@ -62,143 +71,102 @@ class ControllerServer:
         await self.processor_command_queue.put(data)
 
     async def process_expired_controller(self):
+        time_check = self.settings["DAIRY_TIME_TO_REMOVE"]
+        hour, minute = time_check.split(":")
+        process_time = datetime.time(int(hour), int(minute), 0)
+
         while self.running:
-            logger.debug('start process expired data')
-            time_check = self.settings['DAIRY_TIME_TO_REMOVE']
-            hour, minute = time_check.split(':')
+            logger.debug("start process expired data")
             date = datetime.date.today()
-            time = datetime.time(int(hour), int(minute), 0)
-            time_set = datetime.datetime.combine(date, time)
+            time_set = datetime.datetime.combine(date, process_time)
             time_to_check = time_set - datetime.datetime.now()
 
             # logger.debug(f'time to sleep {time_to_check.seconds}')
-            await asyncio.sleep(time_to_check.seconds)
-            self.command_controller.expired_processor_commands()
+            try:
+                await asyncio.sleep(time_to_check.seconds)
+                await self.command_controller.remove_expired_processor_commands()
 
-            await asyncio.sleep(1)
-            self.result_controller.expired_video_records()
+                await asyncio.sleep(1)
+                await self.result_controller.remove_expired_video_records()
+            except Exception as e:
+                logger.exception(e)
 
-    async def handle_controller(self):
+
+    async def monitor_processor(self):
+
+        time_to_sleep = 1800
         while self.running:
-            await asyncio.sleep(20)
-            await self.command_controller.handle_controller_after_restart(self.processor_command_queue)
+            try:
+                await self.command_controller.restart_processors()
+            except Exception as e:
+                logger.exception(e)
+
+            await asyncio.sleep(time_to_sleep)
+
     # async def handle_
     async def process_compute_node_report(self):
         while self.running:
             data = await self.cn_report_queue.get()
             # logger.debug(f'process compute node: {data}')
 
-            if data['action'] == 'update-resource':
-                self.cn_resource.update_machine_resources(
-                        data['compute_node_id'],
-                        data['resource']
-                        )
-                continue
-            elif data['action'] == 'report-fail-processor':
-                # logger.debug('pcnr: {}'.format(data))
-                # logger.debug('>>>>>>> {}'.format(data['fail_processor_data']))
-                await self.processor_controller.update_fail_processor(
-                        data['fail_processor_data'],
-                        data['compute_node_id'],
-                        self.processor_command_queue
-                        )
-                continue
-            elif data['action'] != 'report':
-                logger.debug('got unproccess report {}'.format(str(data)))
-                continue
+            try:
+                if data["action"] == "update-resource":
+                    self.cn_resource.update_machine_resources(
+                        data["compute_node_id"],
+                        data["resource"]
+                    )
+                elif data["action"] == "report-fail-processor":
+                    # logger.debug('pcnr: {}'.format(data))
+                    # logger.debug('>>>>>>> {}'.format(data['fail_processor_data']))
+                    await self.processor_controller.update_fail_processor(
+                        data["fail_processor_data"],
+                        data["compute_node_id"],
+                    )
+                elif data["action"] != "report":
+                    logger.debug("got unproccess report {}".format(str(data)))
+            except Exception as e:
+                logger.exception(e)
+
+
             # process report command
             # await self.manager.update(data)
 
     async def process_processor_command(self):
         while self.running:
             data = await self.processor_command_queue.get()
-            logger.debug('processor command: {}'.format(data))
-
-            # save infomation into database
-            # send command to compute node
-            
-            deadline_date = datetime.datetime.now() - datetime.timedelta(seconds=60)
-            compute_node = models.ComputeNode.objects(
-                    updated_date__gt=deadline_date
-                    ).first()
-            camera = models.Camera.objects(id=data['camera_id']).first()
-            # logger.debug('after query camera')
-            if compute_node is None:
-                logger.debug('compute node is None')
-                await asyncio.sleep(20)
-                await self.processor_command_queue.put(data)
-                continue
-            if camera is None:
-                logger.debug('camera is None')
-                continue
-            # logger.debug('before find processor')
-            processor = self.processor_controller.process_command(data)
-            processor.compute_node = compute_node
-
-            command = dict(processor_id=str(processor.id), action=data['action'])
-            if data['action'] == 'start':
-                command['attributes'] = dict(
-                        video_uri=camera.uri,
-                        fps=camera.frame_rate,
-                        size=(camera.width, camera.height),
-                        )
-
-            topic = 'nokkhum.compute.{}.rpc'.format(compute_node.mac)
-
-            if data['action'] == 'start':
-                processor.state = 'starting'
-            elif data['action'] == 'stop':
-                processor.state = 'stopping'
-            processor.save()
-
+            logger.debug(f"processor command: {data}")
+           
+            result = False
             try:
-                result = await self.nc.request(
-                        topic,
-                        json.dumps(command).encode(),
-                        timeout=120)
+                result = await self.processor_controller.process_command(data)
             except Exception as e:
                 logger.exception(e)
-                continue
-
-            result_data = json.loads(result.data.decode())
-            logger.debug('processor result {}'.format(result_data))
-
-            if result_data['success']:
-                if data['action'] == 'start':
-                    processor.state = 'running'
-                elif data['action'] == 'stop':
-                    processor.state = 'stop'
-            else:
-                if data['action'] == 'stop':
-                    processor.state = 'stop'
-            processor.save()
-
-            # save data into database
-
+            
+            # if not result:
+                # logger.debug(f"process command fail")
+                # if 'start-recorder' == data['action']:
+                #     await asyncio.sleep(20)
+                #     await self.processor_command_queue.put(data)
+                
 
     async def set_up(self, loop):
-        self.nc = NATS()
-        await self.nc.connect(self.settings['NOKKHUM_MESSAGE_NATS_HOST'], loop=loop)
+        await self.nc.connect(self.settings["NOKKHUM_MESSAGE_NATS_HOST"], loop=loop)
         logging.basicConfig(
-                format='%(asctime)s - %(name)s:%(levelname)s - %(message)s',
-                datefmt='%d-%b-%y %H:%M:%S',
-                level=logging.DEBUG,
-                )
+                format="%(asctime)s - %(name)s:%(lineno)d %(levelname)s - %(message)s",
+            datefmt="%d-%b-%y %H:%M:%S",
+            level=logging.DEBUG,
+        )
 
-
-        report_topic = 'nokkhum.compute.report'
-        command_topic = 'nokkhum.processor.command'
+        report_topic = "nokkhum.compute.report"
+        command_topic = "nokkhum.processor.command"
 
         cns_id = await self.nc.subscribe(
-                report_topic,
-                cb=self.handle_compute_node_report)
-        ps_id = await self.nc.subscribe(
-                command_topic,
-                cb=self.handle_processor_command)
-
+            report_topic, cb=self.handle_compute_node_report
+        )
+        ps_id = await self.nc.subscribe(command_topic, cb=self.handle_processor_command)
 
     def run(self):
-        
+
         self.running = True
         loop = asyncio.get_event_loop()
         # loop.set_debug(True)
@@ -206,7 +174,7 @@ class ControllerServer:
         cn_report_task = loop.create_task(self.process_compute_node_report())
         processor_command_task = loop.create_task(self.process_processor_command())
         handle_expired_data_task = loop.create_task(self.process_expired_controller())
-        handle_controller_task = loop.create_task(self.handle_controller())
+        monitor_processor_task = loop.create_task(self.monitor_processor())
 
         try:
             loop.run_forever()

@@ -117,12 +117,11 @@ def init_oauth(app):
                            fetch_token=fetch_token,
                            update_token=update_token)
     
-    oauth2_client.register('principal')
     oauth2_client.register('engpsu')
-    # oauth2_client.register('google')
+    backends = [loginpass.Google]
 
-    google_bp = loginpass.create_flask_blueprint(
-            loginpass.Google,
+    loginpass_bp = loginpass.create_flask_blueprint(
+            backends,
             oauth2_client,
             handle_authorize_google)
-    app.register_blueprint(google_bp, url_prefix='/google')
+    app.register_blueprint(loginpass_bp)

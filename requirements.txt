@@ -10,6 +10,7 @@ flask_restplus
 flask_marshmallow
 flask_jwt_extended
 loginpass
+email_validator
 
 Flask-uWSGI-WebSocket
 asyncio-nats-client
@@ -22,4 +23,10 @@ opencv-python
 pillow
 # sklearn
 
+# brython
+watchdog
+brython
 
+# streaming
+quart
+asyncio-nats-streaming

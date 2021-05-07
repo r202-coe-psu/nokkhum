@@ -14,6 +14,7 @@
     </h2>
     <div>
       <div class="ui large vertical buttons" >
+        {% if 'ENGPSU' in config['NOKKHUM_LOGGIN_SYSTEMS'] %}
         <div class="row" style="padding-top: 10px;">
           <div class="column header" style="text-align: left;">
             <h3>For PSU Engineering Faculty Member</h3>
@@ -25,6 +26,7 @@
             PSU Passport by Eng
           </a>
         </div>
+        {% elif 'GOOGLE' in config['NOKKHUM_LOGGIN_SYSTEMS'] %}
         <div class="row" style="padding-top: 20px;">
           <div class="column header" style="text-align: left;">
             <h3>Other</h3>
@@ -36,6 +38,7 @@
             Google
           </a>
         </div>
+      {% endif %}
       </div>
     </div>
   </div>

@@ -19,19 +19,19 @@ class ProcessPolling(threading.Thread):
         self.running = True
         self.daemon = True
 
-    def read_error(self):
-        while self.running:
-            if not self.processor.is_running():
-                break
+    # def read_error(self):
+    #     while self.running:
+    #         if not self.processor.is_running():
+    #             break
 
-            data = self.processor.process.stderr.readline().decode('utf-8')
-            logger.debug(f'error data: {data}')
+    #         data = self.processor.process.stderr.readline().decode('utf-8')
+    #         logger.debug(f'error data: {data}')
 
 
     def run(self):
-        error_reader = threading.Thread(target=self.read_error)
-        error_reader.daemon = True
-        error_reader.start()
+        # error_reader = threading.Thread(target=self.read_error)
+        # error_reader.daemon = True
+        # error_reader.start()
 
         while self.running:
             if not self.processor.is_running():
@@ -40,13 +40,18 @@ class ProcessPolling(threading.Thread):
                         self.processor.id))
                 break
 
-            data = self.processor.process.stdout.readline().decode('utf-8')
-            data = data.strip()
-            logger.debug(f'data: {data}')
+            # data = self.processor.process.stdout.readline().decode('utf-8')
+            # data = data.strip()
+            # logger.debug(f'data: {data}')
 
+            data = self.processor.process.stderr.readline().decode('utf-8')
+            data = data.strip()
+
+            logger.debug(f'processor {self.processor.id} data: {data}')
             if len(data) == 0 or data[0] != '{':
                 time.sleep(0.1)
                 continue
+
             json_data = ''
             try:
                 json_data = json.loads(data)
@@ -56,7 +61,7 @@ class ProcessPolling(threading.Thread):
 
             self.output_queue.put(json_data)
 
-        error_reader.join()
+        # error_reader.join()
 
 
 class ProcessorManager:

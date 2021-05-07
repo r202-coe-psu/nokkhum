@@ -9,7 +9,17 @@ import datetime
 
 PROCESSOR_OPERATING_STATE = [
         'start', 'starting', 'running', 'stopping', 'stop']
-PROCESSOR_USER_COMMANDS = ['stop', 'start', 'suspend']
+PROCESSOR_USER_COMMANDS = [
+        'start',
+        'start-recorder',
+        'start-motion-recorder',
+        'start-streamer',
+        'stop',
+        'stop-recorder',
+        'stop-motion-recorder',
+        'stop-streamer',
+        'suspend',
+        ]
 
 MAX_RECORE = 20
 
@@ -26,9 +36,19 @@ class ProcessorReport(me.EmbeddedDocument):
             default=datetime.datetime.now)
     compute_node = me.ReferenceField('ComputeNode', dbref=True)
 
+    processors = me.DictField()
+
+
+class UserProcessorCommand(me.EmbeddedDocument):
+    streamer = me.ReferenceField('ProcessorCommand', dbref=True)
+    recorder = me.ReferenceField('ProcessorCommand', dbref=True)
+
 
 class Processor(me.Document):
-    meta = {'collection': 'processors'}
+    meta = {
+            'collection': 'processors',
+            # 'strict': False,
+            }
 
     camera = me.ReferenceField('Camera', dbref=True)
     storage_period = me.IntField(required=True, default=30)  # in day
@@ -48,13 +68,17 @@ class Processor(me.Document):
     project = me.ReferenceField('Project', required=True, dbref=True)
     # owner = me.ReferenceField('User', required=True, dbref=True)
 
-    user_command = me.ReferenceField('ProcessorCommand', dbref=True)
+    user_command = me.EmbeddedDocumentField(
+            UserProcessorCommand,
+            default=UserProcessorCommand())
+    # last_command = me.ReferenceField('ProcessorCommand', dbref=True)
+    # reference_command = me.ReferenceField('ProcessorCommand', dbref=True)
+
     state = me.StringField(required=True,
                            default='stop',
                            choices=PROCESSOR_OPERATING_STATE)
 
     compute_node = me.ReferenceField('ComputeNode', dbref=True)
-    reference_command = me.ReferenceField('ProcessorCommand', dbref=True)
     report = me.ListField(me.EmbeddedDocumentField('ProcessorReport'))
 
     def push_processor_report(self, report):
@@ -62,6 +86,27 @@ class Processor(me.Document):
             self.report.pop(0)
 
         self.report.append(report)
+
+    def update_user_command(self, processor_command):
+        if processor_command.type != 'user':
+            return
+
+        if 'streamer' in processor_command.action:
+            self.user_command.streamer = processor_command
+        elif 'recorder' in processor_command.action:
+            self.user_command.recorder = processor_command
+
+    def count_system_start_recorder(self, seconds=10):
+        after_time = datetime.datetime.now() - datetime.timedelta(seconds)
+        
+        count = ProcessorCommand.objects(
+                processor=self,
+                action__in=['start-recorder', 'start-motion_recorder'],
+                type='system',
+                commanded_date__gt=after_time,
+                ).count()
+
+        return count
 
     @classmethod
     def pre_save(cls, sender, document, **kwargs):
@@ -93,8 +138,9 @@ class ProcessorCommand(me.Document):
         required=True, default=datetime.datetime.now)
     processed_date = me.DateTimeField(
         required=True, default=datetime.datetime.now)
-    completed_date = me.DateTimeField()
 
+    completed_date = me.DateTimeField()
+    completed = me.BooleanField(required=True, default=False)
     # updated_date = me.DateTimeField(
     #     required=True, default=datetime.datetime.now)
     owner = me.ReferenceField('User', dbref=True)

@@ -1,4 +1,4 @@
-MONGODB_DB = 'nokkumdb'
+MONGODB_DB = 'nokkhumdb'
 MONGODB_HOST = 'nokkhum-mongodb'
 SECRET_KEY = 'nokkhum-secretkey' # change it when deploy web
 

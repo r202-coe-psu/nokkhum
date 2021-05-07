@@ -1,25 +1,26 @@
-<div class="ui inverted vertical center aligned segment">
-    <div class="ui text container">
-      <div>
-        <img width="100px" src="{{ url_for('static', filename='images/nokkhum-white.png') }}">
-        <!-- <i class="ui icon car massive" ></i> -->
-      </div> 
-        <h1 class="ui huge inverted header" style="font-size:4em">{{ config.get('APP_TITLE') }} </h1>
-        {% if not current_user.is_authenticated %}
-          <h2>Please Login.</h2>
-          <div style="padding-top: 20px;">
-            <div class="ui huge buttons">
-              <a href="{{ url_for('accounts.login') }}" class="ui huge twitter button">Login</a>
-            </div>
-          </div>
-        {% else %}
-            <div style="padding-top: 20px;">
-              <a href="{{ url_for('accounts.login') }}" class="ui huge primary button"><i class="dashboard icon"></i>Dashboard</a>
-            </div>
-        {% endif %}
-      
-      <div style="padding: 5vh;">
-      </div>
+<div style="background: radial-gradient(85.76% 505.25% at 92.11% 21.93%, #01C6FD 22.4%, #00E9D9 55.21%, #60F5B6 100%);">
+  <div class="ui stackable two column grid" style="padding-top: 8rem;">
+    <div class="six wide column" style="padding-left: 8rem;">
+      <img src="/static/images/undraw_video_files_fu10.svg" alt="" width="80%">
     </div>
+    <div class="right floated six wide column">
+      <h1 class="ui header" style="color:white; font-size: 7rem; padding-bottom: 4rem;">
+        LOGO
+        <br>
+        <div class="content">
+          <div class="header" style="color: white;  font-size: 5rem;">{{ config.get('APP_TITLE') | upper }}</div>
+          <div class="sub header" style="color: white;  font-size: 3rem;">Surveillance Camera</div>
+        </div>
+      </h1>
+      {% if not current_user.is_authenticated %}
+      <a href="{{ url_for('accounts.login') }}" class="ui huge button" style="background-color: white; width: 50%;">
+        Login
+      </a>
+      {% else %}
+      <a href="{{ url_for('dashboard.index') }}" class="ui huge button" style="background-color: white; width: 50%;">
+        Dashboard
+      </a>
+      {% endif %}
+    </div>
+  </div>
 </div>
-
