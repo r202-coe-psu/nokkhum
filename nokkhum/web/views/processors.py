@@ -81,9 +81,9 @@ def get_resource_usage():
     for project in projects:
         for camera in project.cameras:
             if camera.status == "active":
-                resource = models.Processor.objects.get(camera=camera)
-                if resource.report:
-                    report = resource.report[-1]
+                processor = models.Processor.objects.get(camera=camera)
+                if processor.reports:
+                    report = processor.reports[-1]
                     result = dict(
                         project=dict(id=str(project.id), name=project.name),
                         camera=dict(id=str(camera.id), name=camera.name),
@@ -92,7 +92,7 @@ def get_resource_usage():
                             / report.compute_node.machine_specification.cpu_count
                         ),
                         memory=str(report.memory // 1000000),
-                        state=str(resource.state),
+                        state=str(processor.state),
                     )
                     results.append(result)
     return jsonify(results)

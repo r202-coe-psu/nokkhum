@@ -79,13 +79,14 @@ class Processor(me.Document):
                            choices=PROCESSOR_OPERATING_STATE)
 
     compute_node = me.ReferenceField('ComputeNode', dbref=True)
-    report = me.ListField(me.EmbeddedDocumentField('ProcessorReport'))
+    reports = me.ListField(me.EmbeddedDocumentField('ProcessorReport'))
+
 
     def push_processor_report(self, report):
-        if len(self.report) > MAX_RECORE:
-            self.report.pop(0)
+        if len(self.reports) > MAX_RECORE:
+            self.reports.pop(0)
 
-        self.report.append(report)
+        self.reports.append(report)
 
     def update_user_command(self, processor_command):
         if processor_command.type != 'user':
