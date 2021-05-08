@@ -25,15 +25,14 @@ class VideoCapture:
 
     def create_capture(self):
         uri = self.identifier
+        logger.debug(f'uri --> {uri}')
         if type(uri) is str and "rtsp" in uri:
             gstreamer_uri = (
-                "rtspsrc location={} latency=30 ! decodebin"
+                f"rtspsrc location={uri} latency=30 ! decodebin"
                 + " ! videoconvert ! appsink"
             )
-            capture = cv2.VideoCapture(uri)
-
-            # uri = f"rtspsrc location={uri} latency=30 ! decodebin ! videoconvert ! appsink"
-            # capture = cv2.VideoCapture(gstreamer_uri.format(uri), cv2.CAP_GSTREAMER)
+            logger.debug(f'new uri --> {gstreamer_uri}')
+            capture = cv2.VideoCapture(gstreamer_uri)
         else:
             capture = cv2.VideoCapture(uri)
 
