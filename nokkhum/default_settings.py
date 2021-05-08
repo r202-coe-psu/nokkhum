@@ -15,7 +15,7 @@ NOKKHUM_PROCESSOR_ACQUISITOR_DEFAULT_SIZE = (640, 480)
 
 # message config
 NOKKHUM_MESSAGE_NATS_HOST = "localhost:4222"
-NOKKHUM_TANS_CLUSTER = "tans-nokkhum-cluster"
+NOKKHUM_STAN_CLUSTER = "tans-nokkhum-cluster"
 
 # steaming config
 NOKKHUM_STREAMING_URL = "http://localhost:8081"

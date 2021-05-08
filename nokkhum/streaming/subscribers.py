@@ -105,7 +105,7 @@ class StreamingSubscriber:
         self.sc = STAN()
 
         await self.sc.connect(
-            self.settings["NOKKHUM_TANS_CLUSTER"],
+            self.settings["NOKKHUM_STAN_CLUSTER"],
             "streaming-sub",
             nats=self.nc,
         )

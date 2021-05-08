@@ -42,6 +42,8 @@ class ProcessorController:
             updated_date__gt=deadline_date
         ).first()
 
+        logger.debug(f'compute node {compute_node}')
+
         return compute_node
 
 
@@ -95,7 +97,7 @@ class ProcessorController:
                 processor.owner=user
        
         compute_node = None
-        if data['action'] in ['start-recorder', 'start-motion-recorder']:
+        if data['action'] in ['start-recorder', 'start-motion-recorder', 'start-streamer']:
             compute_node = await self.get_available_compute_node(processor.compute_node)
 
             if compute_node is None:

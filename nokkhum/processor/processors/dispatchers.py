@@ -61,7 +61,7 @@ class ImageDispatcher(threading.Thread):
         # Start session with NATS Streaming cluster.
         self.sc = STAN()
         await self.sc.connect(
-            self.settings["NOKKHUM_TANS_CLUSTER"],
+            self.settings["NOKKHUM_STAN_CLUSTER"],
             f"streaming-pub-{self.camera_id}",
             nats=self.nc,
         )

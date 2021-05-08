@@ -12,9 +12,9 @@ services:
         networks:
             - default
 
-    tans-server:
+    stan-server:
         image: nats-streaming
-        container_name: nokkhum-tans-server
+        container_name: nokkhum-stan-server
         volumes:
             - /etc/localtime:/etc/localtime:ro
         # restart: always
@@ -24,7 +24,7 @@ services:
             - 8222:8222
         networks:
             - default
-        command: -cid nokkhum-cluster
+        command: -cid nokkhum-stan-cluster
 
     web:
         build: .
@@ -38,9 +38,9 @@ services:
             - 8080:8080
         links:
             - mongodb
-            - tans-server
+            - stan-server
         depends_on:
-            - tans-server
+            - stan-server
             - mongodb
         networks:
             - default
@@ -64,14 +64,14 @@ services:
             - 8081:8081
         links:
             - mongodb
-            - tans-server
+            - stan-server
         depends_on:
-            - tans-server
+            - stan-server
             - mongodb
         networks:
             - default
         environment:
-            NOKKHUM_SETTINGS: /app/nokkhum-development.cfg
+            NOKKHUM_SETTINGS: /app/nokkhum-development-quart.cfg
             FLASK_ENV: development
             DEBUG: 1
         # restart: always
@@ -88,9 +88,9 @@ services:
             - /etc/localtime:/etc/localtime:ro
         links:
             - mongodb
-            - tans-server
+            - stan-server
         depends_on:
-            - tans-server
+            - stan-server
             - mongodb
         networks:
             - default
@@ -109,9 +109,9 @@ services:
             - ../deployment:/deployment
             - /etc/localtime:/etc/localtime:ro
         links:
-            - tans-server
+            - stan-server
         depends_on:
-            - tans-server
+            - stan-server
             - controller
         networks:
             - default
