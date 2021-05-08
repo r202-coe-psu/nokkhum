@@ -65,7 +65,6 @@ class ImageAcquisitor(threading.Thread):
         start_date = datetime.datetime.now()
         counter = 0
         drop_frame = -1
-        checker = 0
 
         while self.running:
             try:
@@ -78,30 +77,28 @@ class ImageAcquisitor(threading.Thread):
             current_date = datetime.datetime.now()
             counter += 1
 
-            if drop_frame > 0 and counter % drop_frame == 0:
-                # print('drop', counter)
-                continue
+            if drop_frame == 0 or counter % drop_frame != 0:
+                self.resize_image(image)
+                # logger.debug(f'qsize {len(self.queues)}')
+                for q in self.queues:
+                    q.put(image)
 
-            checker += 1
-
-            self.resize_image(image)
-            # logger.debug(f'qsize {len(self.queues)}')
-            for q in self.queues:
-                q.put(image)
+            # drop frame hear
+            # else:
+            #     logger.debug(f'df {drop_frame} counter {counter} fps {self.fps} drop')
 
             if (current_date - start_date).seconds >= 1:
                 # print('fps', self.fps)
                 # print('counter', counter)
-                # print('checker', checker)
-                if self.fps and checker != self.fps:
+                drop_frame = 0
+                if self.fps and counter >= self.fps:
                     result = counter - self.fps
                     # print('result', result)
                     if result > 0:
-                        drop_frame = int(counter / result)
+                        drop_frame = round(counter / result)
                         # print('reset drop frame', drop_frame)
 
                 start_date = current_date
                 counter = 0
-                checker = 0
 
         logger.debug("End ImageAcquisitor")
