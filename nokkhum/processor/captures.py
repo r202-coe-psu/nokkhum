@@ -39,7 +39,7 @@ class VideoCapture:
 
         # capture = cv2.VideoCapture(self.uri)
         if not capture.isOpened():
-            logger.debug(f"cloud not open uri: {uri}")
+            logger.debug(f"could not open uri: {uri}")
             return False
 
         self.capture = capture
@@ -84,7 +84,7 @@ class VideoCapture:
         # cv2.waitKey(1)
 
         if not ret:
-            raise Exception("cloud not get frame")
+            raise Exception("could not get frame")
 
         return Image(frame)
 
