@@ -33,6 +33,9 @@ class ResultController:
 
             logger.debug(f'start remove file {files_path}')
             for dir_file in files_path.iterdir():
+                if not dir_file.name.isdigit():
+                    continue
+
                 year = int(dir_file.name[0:4])
                 month = int(dir_file.name[4:6])
                 day = int(dir_file.name[6:8])

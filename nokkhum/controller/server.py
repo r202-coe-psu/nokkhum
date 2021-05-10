@@ -193,5 +193,5 @@ class ControllerServer:
         loop = asyncio.get_event_loop()
         # loop.set_debug(True)
         loop.run_until_complete(self.set_up(loop))
-        self.command_controller.expired_processor_commands()
-        self.result_controller.expired_video_records()
+        loop.run_until_complete(self.command_controller.remove_expired_video_records())
+        loop.run_until_complete(self.result_controller.remove_expired_video_records())

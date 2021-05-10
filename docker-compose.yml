@@ -9,6 +9,10 @@ services:
         restart: always
         networks:
             - default
+        logging:
+            options:
+                max-size: "10m"
+                max-file: "3"
 
     stan-server:
         image: nats-streaming
@@ -19,6 +23,10 @@ services:
         networks:
             - default
         command: -cid nokkhum-stan-cluster
+        logging:
+            options:
+                max-size: "10m"
+                max-file: "3"
 
     web:
         build: .
@@ -41,6 +49,10 @@ services:
         environment:
             NOKKHUM_SETTINGS: /app/nokkhum-production.cfg
         command: uwsgi --lazy-apps --ini /app/scripts/nokkhum-uwsgi-web.ini
+        logging:
+            options:
+                max-size: "10m"
+                max-file: "3"
 
     streaming:
         build: .
@@ -65,6 +77,10 @@ services:
         restart: always
         # command: uwsgi --lazy-apps --ini /app/scripts/nokkhum-uwsgi-streaming.ini
         command: nokkhum-streaming -d -H 0.0.0.0 -P 8081
+        logging:
+            options:
+                max-size: "10m"
+                max-file: "3"
 
     controller:
         build: .
@@ -85,6 +101,10 @@ services:
         environment:
             NOKKHUM_SETTINGS: /app/nokkhum-production.cfg
         command: nokkhum-controller
+        logging:
+            options:
+                max-size: "10m"
+                max-file: "3"
 
     compute:
         build: .
@@ -104,6 +124,11 @@ services:
         environment:
             NOKKHUM_SETTINGS: /app/nokkhum-production.cfg
         command: nokkhum-compute
+        logging:
+            options:
+                max-size: "10m"
+                max-file: "3"
+
 
 
 networks:
