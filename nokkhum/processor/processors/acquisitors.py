@@ -105,6 +105,6 @@ class ImageAcquisitor(threading.Thread):
                 for q in self.queues:
                     if q.full():
                         logger.debug("Queue is full try to sleep")
-                        time.sleep(0.01)
+                        time.sleep(0.1)
 
         logger.debug("End ImageAcquisitor")

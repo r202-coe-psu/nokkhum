@@ -94,30 +94,35 @@ class ProcessorController:
                     )
             if data.get('user_id'):
                 user = models.User.objects(id=data['user_id']).first()
-                processor.owner=user
-       
+                processor_command.owner=user
+        
+        processor.update_user_command(processor_command)
+        processor_command.save()
+        processor.save()
+
         compute_node = None
-        if data['action'] in ['start-recorder', 'start-motion-recorder', 'start-streamer']:
-            compute_node = await self.get_available_compute_node(processor.compute_node)
-
-            if compute_node is None:
-                logger.debug("compute node is not available for start")
-                return False
-
-            processor.compute_node = compute_node
-        else:
+        try:
             compute_node = processor.compute_node
+        except Exception as e:
+            logger.exception(e)
 
-            if compute_node and not compute_node.is_online():
-                logger.debug(f"compute node {compute_node.name} is not online")
-                processor.state = 'stop'
-                processor.save()
-                return False
+
+        if data['action'] in ['start-recorder', 'start-motion-recorder', 'start-streamer']:
+            compute_node = await self.get_available_compute_node(compute_node)
+            processor.compute_node = compute_node
+
+        if not compute_node or not compute_node.is_online():
+            if not compute_node:
+                logger.debug("compute node is not available for start")
+            elif not compute_node.is_online():
+                logger.debug("compute node {compute_node.name} is not online")
+
+            processor.state = 'stop'
+            processor.save()
+            return False
 
         # need to decision
-        processor_command.action = data['action']
         processor_command.save()
-        processor.update_user_command(processor_command)
         processor.save()
 
         # check starting process
