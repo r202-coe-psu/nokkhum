@@ -20,7 +20,7 @@
       <div class="ui segment">
         <a class="ui red label" href="#" onclick="switchMonitor('live_stream')">Live Streaming</a>
         <i class="big folder icon"></i> {{ date_dir.name }} <a
-          href="{{ url_for('storages.list_records_by_date', processor_id=camera.get_processor().id, date_dir=date_dir.name) }}">See
+          href="{{ url_for('storages.list_storage_by_processor', processor_id=camera.get_processor().id, date_dir=date_dir.name) }}">See
           all</a>
 
       </div>
