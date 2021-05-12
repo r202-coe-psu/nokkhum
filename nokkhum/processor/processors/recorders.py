@@ -209,10 +209,10 @@ class MotionVideoRecorder(VideoRecorder):
             writer.write(img)
             last_write_date = datetime.datetime.now()
 
-            cv2.imshow("test", img)
-            key = cv2.waitKey(10)
-            if key == ord("q"):
-                break
+            # cv2.imshow("test", img)
+            # key = cv2.waitKey(10)
+            # if key == ord("q"):
+            #     break
 
         if writer:
             writer.release()

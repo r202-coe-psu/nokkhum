@@ -45,7 +45,7 @@ class ImageDispatcher(threading.Thread):
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)
 
-        self.publish_queue = asyncio.queues.Queue()
+        self.publish_queue = asyncio.queues.Queue(maxsize=100)
 
     def stop(self):
         self.running = False
@@ -118,6 +118,11 @@ class ImageDispatcher(threading.Thread):
             #     continue
 
             # logger.debug(f"in dispatch {image.data}")
+            if self.publish_queue.full():
+                await self.publish_queue.get()
+                logger.debug('public queue is full drop image')
+                await asyncio.sleep(0.01)
+
             w, h = image.size()
 
             ratio = self.expected_frame_size[0] / w
@@ -130,7 +135,7 @@ class ImageDispatcher(threading.Thread):
                 camera_id=self.camera_id,
                 frame=image_frame,
             )
-
+        
             await self.publish_queue.put(data)
             await asyncio.sleep(0)
             # need to await on publish
