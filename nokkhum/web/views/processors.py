@@ -30,8 +30,19 @@ def get_state(project_id):
 @login_required
 def get_state_all_projects():
     data = []
-    project = models.Project.objects(owner=current_user._get_current_object())
-    processors = models.Processor.objects(project__in=project)
+    if "admin" in current_user._get_current_object().roles:
+        projects = models.Project.objects(status="active")
+    else:
+        projects = models.Project.objects(
+            # Q(name__icontains=search_keyword)
+            Q(status="active")
+            & (
+                Q(owner=current_user._get_current_object())
+                | Q(users__icontains=current_user._get_current_object())
+                | Q(assistant__icontains=current_user._get_current_object())
+            )
+        )
+    processors = models.Processor.objects(project__in=projects)
     for processor in processors:
         if processor.camera.status == "Inactive":
             continue

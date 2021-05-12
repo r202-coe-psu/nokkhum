@@ -25,6 +25,7 @@ def index_user(search_keyword):
         & (
             Q(owner=current_user._get_current_object())
             | Q(users__icontains=current_user._get_current_object())
+            | Q(assistant__icontains=current_user._get_current_object())
         )
     ).order_by("-id")
     return render_template("/dashboard/index.html", projects=projects)
@@ -37,7 +38,7 @@ def index():
     # print(project_search)
     # if project_search:
     #     return index_search(project_search)
-    user = current_user._get_current_object()
-    if "admin" in user.roles:
+    # user = current_user._get_current_object()
+    if "admin" in current_user._get_current_object().roles:
         return index_admin(project_search)
     return index_user(project_search)

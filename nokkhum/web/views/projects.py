@@ -8,6 +8,7 @@ from .. import forms
 
 # import asyncio
 import datetime
+from mongoengine import Q
 
 
 module = Blueprint("projects", __name__, url_prefix="/projects")
@@ -16,21 +17,36 @@ module = Blueprint("projects", __name__, url_prefix="/projects")
 @module.route("/")
 @login_required
 def index():
-    my_projects = list()
+    # my_projects = list()
     project_search = request.args.get("project_search", "")
     projects = models.Project.objects(
         status="active", name__icontains=project_search
     ).order_by("-id")
-    for project in projects:
-        if (
-            (project.is_member(current_user._get_current_object()) is True)
-            or (project.owner == current_user._get_current_object())
-            or ("admin" in current_user.roles)
-        ):
-            my_projects.append(project)
-        # Q(owner=current_user._get_current_object())).order_by('-id')
+
+    if "admin" in current_user._get_current_object().roles:
+        projects = models.Project.objects(
+            status="active", name__icontains=project_search
+        ).order_by("-id")
+    else:
+        projects = models.Project.objects(
+            Q(name__icontains=project_search)
+            & Q(status="active")
+            & (
+                Q(owner=current_user._get_current_object())
+                | Q(users__icontains=current_user._get_current_object())
+                | Q(assistant__icontains=current_user._get_current_object())
+            )
+        ).order_by("-id")
+    # for project in projects:
+    #     if (
+    #         (project.is_member(current_user._get_current_object()) is True)
+    #         or (project.owner == current_user._get_current_object())
+    #         or ("admin" in current_user.roles)
+    #     ):
+    #         my_projects.append(project)
+    # Q(owner=current_user._get_current_object())).order_by('-id')
     return render_template(
-        "/projects/index.html", projects=my_projects, now=datetime.datetime.now()
+        "/projects/index.html", projects=projects, now=datetime.datetime.now()
     )
 
 
