@@ -1,14 +1,15 @@
 flask
 flask-mongoengine
 flask-login
-flask-allows
+# flask-allows
+flask-principal
 authlib==0.15.3
 bcrypt
 blinker
 requests
-flask_restplus
-flask_marshmallow
-flask_jwt_extended
+# flask_restplus
+# flask_marshmallow
+# flask_jwt_extended
 loginpass
 email_validator
 
