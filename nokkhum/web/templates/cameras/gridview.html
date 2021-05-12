@@ -73,7 +73,7 @@
                             {% endif %}
                             {% for camera in project.cameras %}
                             <div id="{{camera.id}}-{{ camera.get_streaming_url() }}" class="item cameras"
-                                draggable="true" data-html="<img src='{{ camera.get_streaming_url() }}' width='100%'>">
+                                draggable="true">
                                 <i class="video icon"></i>
                                 <div class="content">
                                     {{ camera.name }}
