@@ -107,7 +107,7 @@ class ImageDispatcher(threading.Thread):
                     continue
             except Exception as e:
                 logger.exception(e)
-                pass
+                continue
 
             # if not self.active:
             #     await asyncio.sleep(0.001)
@@ -151,12 +151,14 @@ class ImageDispatcher(threading.Thread):
     def run(self):
         self.running = True
         logger.debug("Start Image Dispatcher")
+        
+        try:
+            self.loop.run_until_complete(self.set_up_message())
+            self.loop.create_task(self.publish_frame())
+            self.loop.run_until_complete(self.process_frame())
 
-        self.loop.run_until_complete(self.set_up_message())
-        self.loop.create_task(self.publish_frame())
-        self.loop.run_until_complete(self.process_frame())
-
-        self.loop.run_until_complete(self.tear_down_message())
-        # self.loop.close()
+            self.loop.run_until_complete(self.tear_down_message())
+        except Exception as e:
+            logger.exception(e)
 
         logger.debug("End Image Dispatcher")
