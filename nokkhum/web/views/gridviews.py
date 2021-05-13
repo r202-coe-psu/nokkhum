@@ -11,7 +11,7 @@ from flask import (
 from flask_login import login_required, current_user
 import json
 from nokkhum import models
-
+from mongoengine import Q
 from .. import forms
 from .storages import get_dir_by_processor, get_file_by_dir_date, get_video_path
 
@@ -22,8 +22,19 @@ module = Blueprint("gridviews", __name__, url_prefix="/gridviews")
 @login_required
 def index():
     num_grids = [4, 10, 13, 16, 32]
-    user = models.User.objects.get(id=current_user._get_current_object().id)
-    projects = models.Project.objects(status="active", users__contains=user)
+    # user = models.User.objects.get(id=current_user._get_current_object().id)
+    if "admin" in current_user._get_current_object().roles:
+        projects = models.Project.objects(status="active")
+    else:
+        projects = models.Project.objects(
+            # Q(name__icontains=project_search)
+            Q(status="active")
+            & (
+                Q(owner=current_user._get_current_object())
+                | Q(users__icontains=current_user._get_current_object())
+                | Q(assistant__icontains=current_user._get_current_object())
+            )
+        )
 
     return render_template(
         "/cameras/gridview.html", projects=projects, num_grids=num_grids

@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, jsonify, request
 from flask_login import login_required, current_user
 
 from nokkhum import models
-from mongoengine.queryset.visitor import Q
+from mongoengine import Q
 import datetime
 
 module = Blueprint("dashboard", __name__, url_prefix="/dashboard")
