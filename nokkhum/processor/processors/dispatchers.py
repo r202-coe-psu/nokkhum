@@ -58,6 +58,7 @@ class ImageDispatcher(threading.Thread):
             self.settings["NOKKHUM_MESSAGE_NATS_HOST"], io_loop=self.loop
         )
 
+        logger.debug('2')
         # Start session with NATS Streaming cluster.
         self.sc = STAN()
         await self.sc.connect(
@@ -65,6 +66,7 @@ class ImageDispatcher(threading.Thread):
             f"streaming-pub-{self.camera_id}",
             nats=self.nc,
         )
+
 
     async def tear_down_message(self):
         # await self.camera_topic_register.unsubscribe()
@@ -107,7 +109,7 @@ class ImageDispatcher(threading.Thread):
                     continue
             except Exception as e:
                 logger.exception(e)
-                pass
+                continue
 
             # if not self.active:
             #     await asyncio.sleep(0.001)
@@ -135,7 +137,7 @@ class ImageDispatcher(threading.Thread):
                 camera_id=self.camera_id,
                 frame=image_frame,
             )
-        
+            
             await self.publish_queue.put(data)
             await asyncio.sleep(0)
             # need to await on publish
@@ -151,12 +153,14 @@ class ImageDispatcher(threading.Thread):
     def run(self):
         self.running = True
         logger.debug("Start Image Dispatcher")
+        
+        try:
+            self.loop.run_until_complete(self.set_up_message())
+            self.loop.create_task(self.publish_frame())
+            self.loop.run_until_complete(self.process_frame())
 
-        self.loop.run_until_complete(self.set_up_message())
-        self.loop.create_task(self.publish_frame())
-        self.loop.run_until_complete(self.process_frame())
-
-        self.loop.run_until_complete(self.tear_down_message())
-        # self.loop.close()
+            self.loop.run_until_complete(self.tear_down_message())
+        except Exception as e:
+            logger.exception(e)
 
         logger.debug("End Image Dispatcher")

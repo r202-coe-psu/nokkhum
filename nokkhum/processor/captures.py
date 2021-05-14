@@ -33,6 +33,8 @@ class VideoCapture:
             )
             logger.debug(f'new uri --> {gstreamer_uri}')
             capture = cv2.VideoCapture(gstreamer_uri)
+            if not capture.isOpened():
+                capture = cv2.VideoCapture(uri)
         else:
             capture = cv2.VideoCapture(uri)
 
