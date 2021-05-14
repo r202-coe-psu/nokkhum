@@ -2,7 +2,8 @@
 {% import '/base/html-renderer.html' as renderer %}
 
 {% block dashboard_title %}
-<h2><a href="{{ url_for('projects.view', project_id=camera.project.id) }}">{{ camera.project.name | title }}</a>>
+<h2><a href="{{ url_for('projects.view', project_id=camera.project.id) }}">{{ camera.project.name |
+    title }}</a>>
   Camera: {{camera.name}} <a href="{{ url_for('cameras.edit', camera_id=camera.id, project_id=project.id) }}"><i
       class="edit icon"></i></a>
 </h2>
@@ -10,9 +11,12 @@
 
 {% endblock %}
 {% block content %}
-
-<div class="ui horizontal segments" style="margin-top: 2rem;">
-  <div id="monitor" class="ui segment">
+<a class="ui right labeled icon button" href="{{ url_for('projects.view', project_id=camera.project.id) }}">
+  <i class="left arrow icon"></i>
+  ย้อนกลับ
+</a>
+<div class="ui horizontal segments">
+  <div id="monitor" class="ui segment" style="width: 80rem;">
     <p><img src="{{ camera.get_streaming_url() }}" width="100%"></p>
   </div>
   <div class="ui segment">
