@@ -62,9 +62,9 @@ class ProcessorStatus:
             elif data["state"] in ["stop"]:
                 color = "grey"
                 s = html.SPAN(style={"color": "grey"})
-                if "video-recorder" in data["type"]:
-                    self.disable_button(document.select(".stop-recorder"), data_id)
-                    self.enable_button(document.select(".start-recorder"), data_id)
+                # if "video-recorder" in data["type"]:
+                self.disable_button(document.select(".stop-recorder"), data_id)
+                self.enable_button(document.select(".start-recorder"), data_id)
             elif data["state"] in ["stopping"]:
                 color = "red"
                 s = html.SPAN(style={"color": "red"})
@@ -83,6 +83,8 @@ class ProcessorStatus:
                 streamer_icon.class_name = "inverted grey chromecast icon big"
                 recorder_icon = html.I()
                 recorder_icon.class_name = "inverted grey record vinyl icon big"
+                acquisitor_icon = html.I()
+                acquisitor_icon.class_name = "inverted grey video icon big"
                 if self.type == "text":
                     document[f"state-{data['camera_id']}"] <= label
                     if "video-streamer" in data["type"]:
@@ -91,12 +93,15 @@ class ProcessorStatus:
                         recorder_icon.class_name = (
                             "inverted green record vinyl icon big"
                         )
+                    if "acquisitor" in data["type"]:
+                        acquisitor_icon.class_name = "inverted green video icon big"
                         # label_type = html.DIV(
                         #     processor_type.capitalize(), Class=f"ui {color} large label"
                         # )
                     document[f"type-{data['camera_id']}"] <= recorder_icon
-
                     document[f"type-{data['camera_id']}"] <= streamer_icon
+                    document[f"type-{data['camera_id']}"] <= acquisitor_icon
+
                 elif self.type == "circle":
                     document[f"state-{data['camera_id']}"] <= i + s
             except Exception:

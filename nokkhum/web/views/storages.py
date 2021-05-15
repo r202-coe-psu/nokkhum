@@ -9,12 +9,13 @@ from flask import (
     current_app,
     abort,
 )
+from flask.wrappers import Response
 
 from flask_login import login_required, current_user
 import pathlib
 
 from nokkhum import models
-
+from nokkhum.web import nats
 from .. import forms
 
 # import asyncio
@@ -106,9 +107,28 @@ def view_video(processor_id, date_dir, filename):
 def download(processor_id, date_dir, filename):
     if filename.startswith("_"):
         abort(404)
+
+    data = {
+        "processor_id": processor_id,
+        "date_dir": date_dir,
+        "filename": filename,
+    }
+
+    nats.nats_client.publish("nokkhum.storage.command", data)
+    return Response(200)
+    # media_path = get_video_path(processor_id, date_dir, filename)
+    # suffix = media_path.suffix[1:]
+    # if suffix in ["png"]:
+    #     return send_file(str(media_path), mimetype=f"image/{suffix}")
+    # else:
+    #     return send_file(str(media_path), mimetype=f"video/{suffix}")
+
+
+@module.route("/processors/<processor_id>/<date_dir>/thumbnails/<filename>")
+@login_required
+def get_thumbnail(processor_id, date_dir, filename):
+    if filename.startswith("_"):
+        abort(404)
     media_path = get_video_path(processor_id, date_dir, filename)
     suffix = media_path.suffix[1:]
-    if suffix in ["png"]:
-        return send_file(str(media_path), mimetype=f"image/{suffix}")
-    else:
-        return send_file(str(media_path), mimetype=f"video/{suffix}")
+    return send_file(str(media_path), mimetype=f"image/{suffix}")

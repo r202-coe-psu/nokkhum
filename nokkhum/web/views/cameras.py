@@ -1,4 +1,13 @@
-from flask import Blueprint, render_template, redirect, request, url_for, Response, g, current_app
+from flask import (
+    Blueprint,
+    render_template,
+    redirect,
+    request,
+    url_for,
+    Response,
+    g,
+    current_app,
+)
 
 from flask_login import login_required, current_user
 import json
@@ -61,7 +70,7 @@ def view():
         return render_template("/projects/project.html")
     processor = camera.get_processor()
     date_dirs = get_dir_by_processor(str(processor.id))
-    print(date_dirs)
+    # print(date_dirs)
     files_list = []
     videos_path = []
     date_dir = ""
@@ -161,11 +170,11 @@ def start_recorder(camera_id):
     # print(current_user._get_current_object().id)
     project_id = request.form.get("project_id")
     data = {
-            "action": "start-recorder",
-            "camera_id": camera_id,
-            "project_id": project_id,
-            "user_id": str(current_user._get_current_object().id),
-        }
+        "action": "start-recorder",
+        "camera_id": camera_id,
+        "project_id": project_id,
+        "user_id": str(current_user._get_current_object().id),
+    }
 
     nats.nats_client.publish("nokkhum.processor.command", data)
 
@@ -180,11 +189,11 @@ def stop_recorder(camera_id):
     # print(request.form.get('camera_id'))
     project_id = request.form.get("project_id")
     data = {
-            "action": "stop-recorder",
-            "camera_id": camera_id,
-            "project_id": project_id,
-            "user_id": str(current_user._get_current_object().id),
-        }
+        "action": "stop-recorder",
+        "camera_id": camera_id,
+        "project_id": project_id,
+        "user_id": str(current_user._get_current_object().id),
+    }
     nats.nats_client.publish("nokkhum.processor.command", data)
     response = Response()
     response.status_code = 200
