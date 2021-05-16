@@ -291,6 +291,8 @@ class ProcessorServer:
         while self.running:
             try:
                 time.sleep(1)
+                if self.processors["acquisitor"] and not self.processors["acquisitor"].running:
+                    self.running = False
             except KeyboardInterrupt as e:
                 logger.exception(e)
                 self.running = False

@@ -33,14 +33,21 @@ class ImageAcquisitor(threading.Thread):
             self.size = capture.get_size()
 
     def reconnect_camera(self):
-        self.capture.reconnect()
+        counter = 0
         while not self.capture.status():
-            self.capture.reconnect()
+            try:
+                self.capture.reconnect()
+            except Exception as e:
+                logger.excption(e)
+                counter += 1
+            
+            if counter > 10:
+                self.running = False
 
-            logger.error("waiting camera connect sleep 1s")
             if not self.running:
                 break
 
+            logger.debug("waiting camera connect sleep 1s")
             time.sleep(1)
 
     def resize_image(self, image):

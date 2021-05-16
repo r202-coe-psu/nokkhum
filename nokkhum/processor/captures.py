@@ -74,8 +74,9 @@ class VideoCapture:
 
         result = self.create_capture()
 
+        logger.debug(f'create capture result {result}')
         if not result:
-            raise Exception("camera cannot open {}".format(self.id))
+            raise Exception(f"camera cannot open {self.id}")
 
         logger.info("start capture camera: {}".format(self.id))
 
