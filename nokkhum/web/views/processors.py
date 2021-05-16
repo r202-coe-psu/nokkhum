@@ -24,7 +24,7 @@ def get_state(project_id):
         processor_state["state"] = processor.state
         processor_state["type"] = []
         if processor.reports and processor.state == "running":
-            del processor.reports[-1].processors["acquisitor"]
+            # del processor.reports[-1].processors["acquisitor"]
             processor_state["type"] = [
                 processor_type
                 for processor_type, value in processor.reports[-1].processors.items()
