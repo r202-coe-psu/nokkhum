@@ -74,11 +74,12 @@ class ProcessorStatus:
 
             i.class_name = f"ui {color} circle icon {self.icon_size}"
             label = html.DIV(
-                data["state"].capitalize(), Class=f"ui {color} large label"
+                data["state"].capitalize(), Class=f"ui {color} large label", styles={}
             )
+            label.style = {"width": "6rem",  "text-align": "center"}
             try:
                 document[f"state-{data['camera_id']}"].text = ""
-                document[f"type-{data['camera_id']}"].clear()
+                document[f"state-{data['camera_id']}"].clear()
                 streamer_icon = html.I()
                 streamer_icon.class_name = "inverted grey chromecast icon big"
                 recorder_icon = html.I()
@@ -98,9 +99,9 @@ class ProcessorStatus:
                         # label_type = html.DIV(
                         #     processor_type.capitalize(), Class=f"ui {color} large label"
                         # )
-                    document[f"type-{data['camera_id']}"] <= recorder_icon
-                    document[f"type-{data['camera_id']}"] <= streamer_icon
-                    document[f"type-{data['camera_id']}"] <= acquisitor_icon
+                    document[f"state-{data['camera_id']}"] <= recorder_icon
+                    document[f"state-{data['camera_id']}"] <= streamer_icon
+                    document[f"state-{data['camera_id']}"] <= acquisitor_icon
 
                 elif self.type == "circle":
                     document[f"state-{data['camera_id']}"] <= i + s
