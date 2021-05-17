@@ -9,7 +9,8 @@ Storage Camera: {{camera.name}}
 {{ super() }}
 <i class="right angle icon divider"></i>
 <a class="section"
-  href="{{ url_for('storages.list_records_by_date', processor_id=processor.id, date_dir=video_path.parent.name) }}">{{ video_path.parent.name }}</a>
+  href="{{ url_for('storages.list_records_by_date', processor_id=processor.id, date_dir=video_path.parent.name) }}">{{
+  video_path.parent.name }}</a>
 {% endblock %}
 
 {% block content %}
@@ -18,7 +19,7 @@ Storage Camera: {{camera.name}}
   <div class="ui placeholder segment">
     <div class="ui embed"
       data-url="{{ url_for('storages.download', processor_id=processor.id, date_dir=video_path.parent.name, filename=video_path.name) }}"
-      data-placeholder="{{ url_for('storages.download', processor_id=processor.id, date_dir=video_path.parent.name, filename='{}-thumbnail.png'.format(video_path.stem)) }}"
+      data-placeholder="{{ url_for('storages.get_thumbnail', processor_id=processor.id, date_dir=video_path.parent.name, filename='{}-thumbnail.png'.format(video_path.stem)) }}"
       data-icon="right play circle"></div>
     <div style="margin-top: 1em;">
       <a class="ui primary button"

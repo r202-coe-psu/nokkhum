@@ -42,7 +42,7 @@ def get_dir_by_processor(processor_id):
 def get_file_by_dir_date(processor_id, date_dir):
     root = get_storage_path()
     processor_path = root / processor_id / date_dir
-    file_list = [p for p in processor_path.iterdir() if p.suffix != ".png"]
+    file_list = [p for p in processor_path.iterdir() if p.suffix == ".tar.xz"]
     return file_list
 
 
