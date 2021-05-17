@@ -98,6 +98,12 @@ class ControllerServer:
             except Exception as e:
                 logger.exception(e)
 
+    async def process_compress_video_files(self):
+        while self.running:
+            logger.debug("start compress video file task")
+            await self.storage_controller.compress_video_files()
+            await asyncio.sleep(10)
+
     async def monitor_processor(self):
 
         time_to_sleep = 1800
@@ -108,7 +114,7 @@ class ControllerServer:
                 logger.exception(e)
 
             await asyncio.sleep(time_to_sleep)
-
+ 
     # async def handle_
     async def process_compute_node_report(self):
         while self.running:
@@ -156,7 +162,8 @@ class ControllerServer:
         time_to_sleep = 3600
         while self.running:
             data = await self.storage_command_queue.get()
-            print(data)
+            logger.debug(data)
+
             await asyncio.sleep(time_to_sleep)
 
     async def set_up(self, loop):
@@ -192,7 +199,8 @@ class ControllerServer:
         handle_expired_data_task = loop.create_task(self.process_expired_controller())
         monitor_processor_task = loop.create_task(self.monitor_processor())
         storage_command_task = loop.create_task(self.process_storage_command())
-
+        processor_compress_video_task = loop.create_task(self.process_compress_video_files())
+        
         try:
             loop.run_forever()
         except Exception as e:

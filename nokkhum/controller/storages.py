@@ -4,7 +4,8 @@ import datetime
 # import asyncio
 import logging
 import pathlib
-
+import tarfile
+import os
 logger = logging.getLogger(__name__)
 
 
@@ -56,3 +57,20 @@ class StorageController:
                     image_file.unlink()
 
                 dir_file.rmdir()
+
+    async def compress_video_files(self):
+        logger.debug("start compress file mkv")
+        for processor_dir in self.path.iterdir():
+            for date_dir in processor_dir.iterdir():
+                if not (date_dir.name).isdigit():
+                    continue
+                for video in date_dir.iterdir():
+                    if video.name.split(".")[1] != "mkv":
+                        continue
+                    if video.name[0] == "_":
+                        continue
+                    logger.debug(video)
+                    output_filename = f'{date_dir/pathlib.Path(video.name.split(".")[0])}.tar.{self.settings["TAR_TYPE"]}'
+                    with tarfile.open(output_filename, f"w:{self.settings['TAR_TYPE']}") as tar:
+                        tar.add(video, arcname=os.path.basename(video))
+                    
