@@ -1,6 +1,6 @@
 from nokkhum import models
-from mongoengine.queryset.visitor import Q
 import datetime
+
 # import asyncio
 import logging
 import pathlib
@@ -8,13 +8,13 @@ import pathlib
 logger = logging.getLogger(__name__)
 
 
-class ResultController:
+class StorageController:
     def __init__(self, settings):
         self.settings = settings
-        self.path = pathlib.Path(self.settings['NOKKHUM_PROCESSOR_RECORDER_PATH'])
+        self.path = pathlib.Path(self.settings["NOKKHUM_PROCESSOR_RECORDER_PATH"])
 
     async def remove_expired_video_records(self):
-        logger.debug('start remove expired records')
+        logger.debug("start remove expired records")
 
         processors = models.Processor.objects()
         for processor in processors:
@@ -22,16 +22,19 @@ class ResultController:
             storage_period = processor.storage_period
             if storage_period == 0:
                 continue
-            expired_date = datetime.date.today() - datetime.timedelta(days=storage_period)
+            expired_date = datetime.date.today() - datetime.timedelta(
+                days=storage_period
+            )
             # logger.debug(f'{expired_date}')
-            expired_date = datetime.datetime.combine(expired_date,
-                                                     datetime.time(0, 0, 0))
+            expired_date = datetime.datetime.combine(
+                expired_date, datetime.time(0, 0, 0)
+            )
 
             files_path = self.path / str(processor.id)
             if not files_path.exists() and not files_path.is_dir():
                 continue
 
-            logger.debug(f'start remove file {files_path}')
+            logger.debug(f"start remove file {files_path}")
             for dir_file in files_path.iterdir():
                 if not dir_file.name.isdigit():
                     continue
