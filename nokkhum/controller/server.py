@@ -13,7 +13,7 @@ from nokkhum import models
 from . import compute_nodes
 from . import processors
 from . import commands
-from . import results
+from . import storages
 
 
 class ControllerServer:
@@ -35,7 +35,7 @@ class ControllerServer:
             self.nc,
             command_controller=self.command_controller,
         )
-        self.result_controller = results.ResultController(self.settings)
+        self.storage_controller = storages.StorageController(self.settings)
 
     async def register_compute_node(self, data):
         response = self.cn_resource.update_machine_specification(data["machine"])
@@ -94,7 +94,7 @@ class ControllerServer:
                 await self.command_controller.remove_expired_processor_commands()
 
                 await asyncio.sleep(1)
-                await self.result_controller.remove_expired_video_records()
+                await self.storage_controller.remove_expired_video_records()
             except Exception as e:
                 logger.exception(e)
 
@@ -156,6 +156,7 @@ class ControllerServer:
         time_to_sleep = 3600
         while self.running:
             data = await self.storage_command_queue.get()
+            print(data)
             await asyncio.sleep(time_to_sleep)
 
     async def set_up(self, loop):
@@ -210,5 +211,7 @@ class ControllerServer:
         loop = asyncio.get_event_loop()
         # loop.set_debug(True)
         loop.run_until_complete(self.set_up(loop))
-        loop.run_until_complete(self.command_controller.remove_expired_video_records())
-        loop.run_until_complete(self.result_controller.remove_expired_video_records())
+        loop.run_until_complete(
+            self.command_controller.remove_expired_processor_commands()
+        )
+        loop.run_until_complete(self.storage_controller.remove_expired_video_records())
