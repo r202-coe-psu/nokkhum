@@ -34,11 +34,12 @@ class ImageAcquisitor(threading.Thread):
 
     def reconnect_camera(self):
         counter = 0
+        logger.debug('reconnect camera')
         while not self.capture.status():
             try:
                 self.capture.reconnect()
             except Exception as e:
-                logger.excption(e)
+                logger.exception(e)
                 counter += 1
             
             if counter > 10:

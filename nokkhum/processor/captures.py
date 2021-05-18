@@ -31,7 +31,7 @@ class VideoCapture:
                 f"rtspsrc location={uri} latency=30 ! decodebin"
                 + " ! videoconvert ! appsink"
             )
-            logger.debug(f'new uri --> {gstreamer_uri}')
+            logger.debug(f'gstreamer uri --> {gstreamer_uri}')
             capture = cv2.VideoCapture(gstreamer_uri)
             if not capture.isOpened():
                 capture = cv2.VideoCapture(uri)
