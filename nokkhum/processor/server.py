@@ -68,7 +68,7 @@ class ProcessorServer:
                 'midnight',
                 1,
                 backupCount=10)
-        formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s')
+        formatter = logging.Formatter('%(asctime)s %(name)s:%(lineno)d %(levelname)s - %(message)s')
         handler.setFormatter(formatter)
 
         root_logger = logging.getLogger()
