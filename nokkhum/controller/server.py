@@ -102,6 +102,7 @@ class ControllerServer:
         while self.running:
             logger.debug("start compress video file task")
             await self.storage_controller.compress_video_files()
+            await self.storage_controller.process_compression_result()
             await asyncio.sleep(10)
 
     async def monitor_processor(self):

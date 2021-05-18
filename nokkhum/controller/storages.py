@@ -1,11 +1,13 @@
 from nokkhum import models
 import datetime
 
-# import asyncio
+import asyncio
 import logging
 import pathlib
 import tarfile
 import os
+import concurrent.futures
+
 logger = logging.getLogger(__name__)
 
 
@@ -13,6 +15,10 @@ class StorageController:
     def __init__(self, settings):
         self.settings = settings
         self.path = pathlib.Path(self.settings["NOKKHUM_PROCESSOR_RECORDER_PATH"])
+        self.pool = concurrent.futures.ThreadPoolExecutor(
+            max_workers=settings.get("NOKKHUM_CONTROLLER_COMPRESSION_MAX_WORKER")
+        )
+        self.compression_queue = asyncio.queues.Queue(maxsize=100)
 
     async def remove_expired_video_records(self):
         logger.debug("start remove expired records")
@@ -58,6 +64,23 @@ class StorageController:
 
                 dir_file.rmdir()
 
+    def compress(self, output_filename, video):
+        with tarfile.open(output_filename, f"w:{self.settings['TAR_TYPE']}") as tar:
+            tar.add(video, arcname=os.path.basename(video))
+            return video
+
+    async def process_compression_result(self):
+        if self.image_queue.empty():
+            # await asyncio.sleep(0.1)
+            return
+
+        while not self.compression_queue.empty():
+            future_result = await self.compression_queue.get()
+            while not future_result.done():
+                await asyncio.sleep(0.001)
+            video = future_result.result()
+            # remove video
+
     async def compress_video_files(self):
         logger.debug("start compress file mkv")
         for processor_dir in self.path.iterdir():
@@ -71,6 +94,11 @@ class StorageController:
                         continue
                     logger.debug(video)
                     output_filename = f'{date_dir/pathlib.Path(video.name.split(".")[0])}.tar.{self.settings["TAR_TYPE"]}'
-                    with tarfile.open(output_filename, f"w:{self.settings['TAR_TYPE']}") as tar:
-                        tar.add(video, arcname=os.path.basename(video))
+                    result = self.loop.run_in_executor(
+                            self.pool, self.compress, output_filename, video
+                        )
+                    if not self.compression_queue.full():
+                        self.compression_queue.put(result)
+                    else:
+                        return
                     
