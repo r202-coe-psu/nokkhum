@@ -7,6 +7,9 @@ class CameraModel(me.EmbeddedDocument):
     format_parameter = me.ListField(me.StringField)
     rtsp_url = me.StringField(required=True)
 
+class MotionProperty(me.EmbeddedDocument):
+    active = me.BooleanField(default=False, required=True)
+    sensitivity = me.FloatField(min_value=0, max_value=100, default=50, required=True)
 
 class Camera(me.Document):
     meta = {"collection": "cameras"}
@@ -18,6 +21,7 @@ class Camera(me.Document):
     location = me.GeoPointField()
     uri = me.StringField(required=True)
     status = me.StringField(required=True, default="active")
+    motion_property = me.EmbeddedDocumentField(MotionProperty)
 
     def get_streaming_url(self):
         config = current_app.config

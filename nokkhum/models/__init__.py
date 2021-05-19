@@ -1,7 +1,7 @@
 from .users import User
 from .oauth2 import OAuth2Token
 from .projects import Project
-from .cameras import Camera, CameraBrand, CameraModel
+from .cameras import Camera, CameraBrand, CameraModel, MotionProperty
 from .compute_nodes import (
     MachineSpecification,
     CPUUsage,
@@ -37,6 +37,7 @@ __all__ = [
     "CameraBrand",
     "CameraModel",
     "GridView",
+    "MotionProperty",
 ]
 
 

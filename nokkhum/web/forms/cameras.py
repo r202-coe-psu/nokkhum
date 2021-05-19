@@ -1,3 +1,4 @@
+from collections import defaultdict
 from wtforms import fields
 from wtforms import validators
 from flask_wtf import FlaskForm
@@ -20,7 +21,9 @@ class CameraForm(FlaskForm):
     storage_period = fields.IntegerField(
         "Storage Period (day)", default=30, validators=[validators.NumberRange(min=0)]
     )
-
+    motion_detector = fields.BooleanField("Motion Detector", default=False)
+    sensitivity = fields.FloatField("Sensitivity",default=50, validators=[validators.NumberRange(min=0, max=100)])
+    
     # username = fields.StringField('Username')
     # password = fields.PasswordField('Password')
     # ip_address = fields.StringField('IP Address', validators=[validators.InputRequired()])

@@ -53,10 +53,18 @@ Add new camera
               </div>
             </div>
             <div class="one column row">
-              <div class="five wide column">
-                <div class="field">
-                  {{ renderer.render_field(form.storage_period) }}
-                  <div class="ui pointing  label"> 0 Day: Don't remove data.</div>
+              <div class="wide column">
+                <div class="three fields">
+                  <div class="field">
+                    {{ renderer.render_field(form.storage_period) }}
+                    <div class="ui pointing  label"> 0 Day: Don't remove data.</div>
+                  </div>
+                  <div class="field">
+                    {{ renderer.render_field(form.motion_detector) }}
+                  </div>
+                  <div class="field">
+                    {{ renderer.render_field(form.sensitivity) }}
+                  </div>
                 </div>
               </div>
             </div>

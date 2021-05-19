@@ -41,6 +41,7 @@ def add():
     if not form.validate_on_submit():
         return render_template("/cameras/add-camera.html", form=form, project=project)
     width, height = form.frame_size.data.split("*")
+    motion_property = models.MotionProperty()
     camera = models.Camera(
         name=form.name.data,
         frame_rate=form.frame_rate.data,
@@ -49,7 +50,10 @@ def add():
         location=[form.longitude.data, form.latitude.data],
         uri=form.uri.data,
         project=project,
+        motion_property=motion_property,
     )
+    camera.motion_property.active = form.motion_detector.data
+    camera.motion_property.sensitivity = form.sensitivity.data
     camera.save()
     processor = models.Processor(
         camera=camera, project=project, storage_period=form.storage_period.data
@@ -125,6 +129,9 @@ def edit():
         ("1280*720", "1280 x 720"),
         ("1920*1080", "1920 x 1080"),
     ]
+    if not camera.motion_property:
+        motion_property = models.MotionProperty()
+        camera.update(motion_property=motion_property)
     if not (
         "admin" in current_user.roles
         or current_user == project.owner
@@ -136,9 +143,14 @@ def edit():
         form.longitude.data = camera.location[0]
         form.latitude.data = camera.location[1]
         form.storage_period.data = processor.storage_period
+        form.motion_detector.data = camera.motion_property.active
+        form.sensitivity.data = camera.motion_property.sensitivity
         return render_template(
             "/cameras/add-camera.html", form=form, camera=camera, project=project
         )
+    
+
+    print(form.data)
     width, height = form.frame_size.data.split("*")
     processor.storage_period = form.storage_period.data
     processor.save()
@@ -146,6 +158,8 @@ def edit():
     form.populate_obj(camera)
     camera.width = width
     camera.height = height
+    camera.motion_property.active = form.motion_detector.data
+    camera.motion_property.sensitivity = form.sensitivity.data
     camera.save()
     return redirect(url_for("projects.view", project_id=project.id))
 
