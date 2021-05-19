@@ -58,6 +58,14 @@ def get_state_all_projects():
         processor_state["camera_id"] = str(processor.camera.id)
         processor_state["project_id"] = str(processor.project.id)
         processor_state["state"] = processor.state
+        processor_state["type"] = []
+        if processor.reports and processor.state == "running":
+            # del processor.reports[-1].processors["acquisitor"]
+            processor_state["type"] = [
+                processor_type
+                for processor_type, value in processor.reports[-1].processors.items()
+                if value
+            ]
         data.append(processor_state)
     return jsonify(data)
 

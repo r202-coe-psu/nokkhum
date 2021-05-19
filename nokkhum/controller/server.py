@@ -101,8 +101,15 @@ class ControllerServer:
     async def process_compress_video_files(self):
         while self.running:
             logger.debug("start compress video file task")
-            await self.storage_controller.compress_video_files()
+            # await self.storage_controller.compress_video_files()
             await self.storage_controller.process_compression_result()
+            await asyncio.sleep(10)
+
+    async def process_convert_video_files(self):
+        while self.running:
+            logger.debug("start convert video file task")
+            await self.storage_controller.convert_video_files()
+            await self.storage_controller.process_convertion_result()
             await asyncio.sleep(10)
 
     async def monitor_processor(self):
@@ -201,6 +208,7 @@ class ControllerServer:
         monitor_processor_task = loop.create_task(self.monitor_processor())
         storage_command_task = loop.create_task(self.process_storage_command())
         processor_compress_video_task = loop.create_task(self.process_compress_video_files())
+        process_convert_video_task = loop.create_task(self.process_convert_video_files())
         
         try:
             loop.run_forever()

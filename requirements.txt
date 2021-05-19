@@ -32,3 +32,6 @@ brython
 # streaming
 quart
 asyncio-nats-streaming
+
+# for compression
+ffmpeg-python
