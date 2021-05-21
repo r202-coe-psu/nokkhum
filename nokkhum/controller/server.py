@@ -122,7 +122,7 @@ class ControllerServer:
                 logger.exception(e)
 
             await asyncio.sleep(time_to_sleep)
- 
+
     # async def handle_
     async def process_compute_node_report(self):
         while self.running:
@@ -207,9 +207,13 @@ class ControllerServer:
         handle_expired_data_task = loop.create_task(self.process_expired_controller())
         monitor_processor_task = loop.create_task(self.monitor_processor())
         storage_command_task = loop.create_task(self.process_storage_command())
-        processor_compress_video_task = loop.create_task(self.process_compress_video_files())
-        process_convert_video_task = loop.create_task(self.process_convert_video_files())
-        
+        processor_compress_video_task = loop.create_task(
+            self.process_compress_video_files()
+        )
+        process_convert_video_task = loop.create_task(
+            self.process_convert_video_files()
+        )
+
         try:
             loop.run_forever()
         except Exception as e:
