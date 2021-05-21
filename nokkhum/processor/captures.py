@@ -68,9 +68,14 @@ class VideoCapture:
 
         return self.capture.isOpened()
 
-    def reconnect(self):
+    def close(self):
         if self.capture:
             self.capture.release()
+
+        self.capture = None
+
+    def reconnect(self):
+        self.close()
 
         result = self.create_capture()
 

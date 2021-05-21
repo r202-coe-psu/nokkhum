@@ -34,6 +34,7 @@ class ImageAcquisitor(threading.Thread):
 
     def reconnect_camera(self):
         counter = 0
+        self.capture.close()
         logger.debug('reconnect camera')
         while not self.capture.status():
             try:
