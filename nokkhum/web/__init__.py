@@ -36,10 +36,10 @@ def create_app():
     views.register_blueprint(app)
 
     static_bp = Blueprint(
-            'static.data',
-            __name__,
-            static_folder=app.config.get('NOKKHUM_PROCESSOR_RECORDER_PATH'),
-            static_url_path='/static/data')
+        'static-data',
+        __name__,
+        static_folder=app.config.get('NOKKHUM_PROCESSOR_RECORDER_PATH'),
+        static_url_path='/static/data')
     app.register_blueprint(static_bp)
 
     nats.init_nats(app)

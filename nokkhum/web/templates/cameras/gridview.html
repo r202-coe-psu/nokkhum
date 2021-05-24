@@ -4,108 +4,104 @@
 {% block additional_head %}
 <script type="text/javascript" src="{{ url_for('static', filename='brython/gridviews.brython.js') }}"></script>
 <style>
-    div .displays {
-        position: relative;
-    }
+  div .displays {
+    display: flex !important;
+    position: relative;
+  }
 
-    .displays img {
-        position: absolute;
-        left: 0px;
-    }
+  .displays img {
+    margin: auto;
+    width: 100%;
+  }
 
-    .displays a {
-        position: absolute;
-        z-index: 1;
-        left: 0px;
+  .displays a {
+    position: absolute;
+    z-index: 1;
+    left: 0px;
 
-    }
+  }
 </style>
 {% endblock %}
 {% block body %}
 <div style="padding-top: 1rem; padding-left: 1rem;">
-    <a class="ui button" href="{{ url_for('dashboard.index') }}">
-        <i class="left chevron icon"></i>
-        Dashboard
-    </a>
+  <a class="ui button" href="{{ url_for('dashboard.index') }}">
+    <i class="left chevron icon"></i>
+    Dashboard
+  </a>
 </div>
-<div class="ui stackable grid container" style="width: 100%; padding-top: 0;">
-    <div class="two wide column" style="padding-right: 0rem;">
-        <div class="ui form" style="padding-top: 1rem;">
-            <form method="GET" name="grids-selector">
-                <div class="fields">
-                    <div class="twelve wide field">
-                        <select name="grid" id="grid" onclick="this.form.submit()">
-                            {% for num in num_grids %}
-                            {% if num == request.args.get('grid', 4) | int %}
-                            <option selected="selected">{{num}} Grids</option>
-                            {% else%}
-                            <option value="{{num}}">{{num}} Grids</option>
-                            {% endif %}
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <a id="save-grid" class="ui right green button">
-                        Save
-                    </a>
-                </div>
-            </form>
+<div class="ui stackable grid container-fluid">
+  <div class="two wide column" style="padding-right: 0rem;">
+    <div class="ui form" style="padding-top: 1rem;">
+      <form method="GET" name="grids-selector">
+        <div class="fields">
+          <div class="twelve wide field">
+            <select name="grid" id="grid" onclick="this.form.submit()">
+              {% for num in num_grids %}
+              {% if num == request.args.get('grid', 4) | int %}
+              <option selected="selected">{{num}} Grids</option>
+              {% else%}
+              <option value="{{num}}">{{num}} Grids</option>
+              {% endif %}
+              {% endfor %}
+            </select>
+          </div>
+          <a id="save-grid" class="ui right green button">
+            Save
+          </a>
         </div>
-        <div class="ui segment">
-            <div class="ui list">
-                {% if not projects %}
-                <div class="item">
-                    <div class="content">
-                        No any projects
-                    </div>
-                </div>
-                {% endif %}
-                {% for project in projects %}
-                <div class="item">
-                    <i class="folder icon"></i>
-                    <div class="content">
-                        <div class="header">{{project.name | title}}</div>
-                        <div class="list">
-                            {% if not project.cameras %}
-                            <div class="item ">
-                                <div class="content">
-                                    No any camera.
-                                </div>
-                            </div>
-                            {% endif %}
-                            {% for camera in project.cameras %}
-                            <div id="{{camera.id}}-{{ camera.get_streaming_url() }}" class="item cameras"
-                                draggable="true">
-                                <i class="video icon"></i>
-                                <div class="content">
-                                    {{ camera.name }}
-                                </div>
-                            </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
+      </form>
     </div>
-    <div class="fourteen wide column" style="padding-left: 1rem;">
-        <div class="ui segment" style="height: 60rem;">
-            <div class="ui grid" style="position: relative;">
-                {% set grid=request.args.get("grid", 4) | int%}
-                {% if grid == 10 %}
-                {% include "/base/grids/ten_grids.html" %}
-                {% elif grid == 13 %}
-                {% include "/base/grids/thirteen_grids.html" %}
-                {% elif grid == 16 %}
-                {% include "/base/grids/sixteen_grids.html" %}
-                {% elif grid == 32 %}
-                {% include "/base/grids/thirty-two_grids.html" %}
-                {% else %}
-                {% include "/base/grids/four_grids.html" %}
-                {% endif %}
-            </div>
+    <div class="ui segment">
+      <div class="ui list">
+        {% if not projects %}
+        <div class="item">
+          <div class="content">
+            No any projects
+          </div>
         </div>
+        {% endif %}
+        {% for project in projects %}
+        <div class="item">
+          <i class="folder icon"></i>
+          <div class="content">
+            <div class="header">{{project.name | title}}</div>
+            <div class="list">
+              {% if not project.cameras %}
+              <div class="item ">
+                <div class="content">
+                  No any camera.
+                </div>
+              </div>
+              {% endif %}
+              {% for camera in project.cameras %}
+              <div id="{{camera.id}}-{{ camera.get_streaming_url() }}" class="item cameras" draggable="true">
+                <i class="video icon"></i>
+                <div class="content">
+                  {{ camera.name }}
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
     </div>
+  </div>
+  <div class="fourteen wide column" style="padding-left: 1rem;">
+    {% set grid=request.args.get("grid", 4) | int%}
+    {% if grid == 10 %}
+    {% include "/base/grids/ten_grids.html" %}
+    {% elif grid == 13 %}
+    {% include "/base/grids/thirteen_grids.html" %}
+    {% elif grid == 16 %}
+    {% include "/base/grids/sixteen_grids.html" %}
+    {% elif grid == 32 %}
+    {% include "/base/grids/thirty-two_grids.html" %}
+    {% else %}
+    {% include "/base/grids/four_grids.html" %}
+    {% endif %}
+  </div>
 </div>
 <script type="text/python">
 from gridviews import controllers
@@ -117,9 +113,9 @@ gridview.start()
 
 {% block additional_js %}
 <script>
-    $('.item')
-        .popup()
-        ;
+  $('.item')
+    .popup()
+    ;
     // $('.select.dropdown')
     //     .dropdown()
     //     ;
