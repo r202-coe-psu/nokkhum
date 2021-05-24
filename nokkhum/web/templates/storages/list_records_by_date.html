@@ -23,15 +23,17 @@ Storage Camera: {{camera.name}}
     {%- endif %}
     <div class="column">
       <div class="ui medium image{{ image_style }}">
+
+        {%- if f.name.startswith('_') %}
+        <img
+          src="{{ url_for('storages.get_thumbnail', processor_id=processor.id, date_dir=date_dir, filename='{}-thumbnail.png'.format(f.stem[1:])) }}">
+        {% else %}
         <a href="{{ url_for('storages.view_video', processor_id=processor.id, date_dir=date_dir, filename=f.name) }}">
-          {%- if not f.name.startswith('_') %}
           <img
-            src="{{ url_for('storages.get_thumbnail', processor_id=processor.id, date_dir=date_dir, filename='{}-thumbnail.png'.format(f.stem.split('.')[0])) }}">
-          {% else %}
-          <img
-            src="{{ url_for('storages.get_thumbnail', processor_id=processor.id, date_dir=date_dir, filename='{}-thumbnail.png'.format(f.stem.split('.')[0][1:])) }} ">
-          {%- endif %}
+            src="{{ url_for('storages.get_thumbnail', processor_id=processor.id, date_dir=date_dir, filename='{}-thumbnail.png'.format(f.stem.split('.')[0])) }} ">
         </a>
+
+        {%- endif %}
 
       </div>
       {% set name = f.name[f.name.find('-')+1: f.name.rfind('-')] %}

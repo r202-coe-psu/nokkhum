@@ -76,7 +76,7 @@ class ProcessorStatus:
             label = html.DIV(
                 data["state"].capitalize(), Class=f"ui {color} large label", styles={}
             )
-            label.style = {"width": "6rem",  "text-align": "center"}
+            label.style = {"width": "6rem", "text-align": "center"}
             try:
                 document[f"state-{data['camera_id']}"].text = ""
                 document[f"state-{data['camera_id']}"].clear()
