@@ -28,6 +28,13 @@ WORKDIR /app
 
 RUN python3 setup.py develop
 RUN npm install --prefix nokkhum/web/static
-RUN cd /app/nokkhum/web/static/brython; for i in $(ls -d */); do python3 -m brython --make_package ${i%%/}; done
+RUN cd /app/nokkhum/web/static/brython; \
+    for i in $(ls -d */); \
+    do \
+    cd $i; \
+    python3 -m brython --make_package ${i%%/}; \
+    mv *.brython.js ..; \
+    cd ..; \
+    done
 
 ENV NOKKHUM_SETTINGS=/app/nokkhum-production.cfg
