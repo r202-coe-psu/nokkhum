@@ -12,8 +12,8 @@ class GridViewController:
         ev.target.style.cursor = "pointer"
 
     def dragstart_img(self, ev):
+        ev.target.attrs["drop-active"] = False
         data = ev.target.id[4:]
-        print(data)
         ev.dataTransfer.setData("text", data)
         ev.dataTransfer.effectAllowed = "move"
 
@@ -22,8 +22,12 @@ class GridViewController:
         ev.dataTransfer.effectAllowed = "move"
 
     def dragover(self, ev):
+        ev.target.attrs["drop-active"] = True
         ev.dataTransfer.dropEffect = "move"
         ev.preventDefault()
+
+    def dragleave(self, ev):
+        ev.target.attrs["drop-active"] = False
 
     def clear_display(self, ev):
         ev.target.unbind("click")
@@ -40,6 +44,7 @@ class GridViewController:
         camera = document[src]
         camera_id, url = src.split("-")
         display = document[ev.target.id]
+        display.attrs["drop-active"] = False
         try:
             document[f"img-{src}"].unbind("dragstart")
             document[f"img-{src}"].parent.clear()
@@ -52,7 +57,7 @@ class GridViewController:
         )
         btn = html.A(
             "Clear",
-            Class="clear-btn ui button",
+            Class="clear-btn ui button rightbottom",
         )
         display.clear()
         display <= img
@@ -90,7 +95,7 @@ class GridViewController:
         for id, img_html in displays_data.items():
             if not img_html:
                 continue
-            print(img_html)
+            # print(img_html)
             # document[id].clear()
             document[id].innerHTML = img_html
             for child in document[id].children:
@@ -99,13 +104,14 @@ class GridViewController:
             clear_btn.bind("click", self.clear_display)
 
     def start(self):
-        print("start")
+        # print("start")
         for camera in document.select(".cameras"):
             camera.bind("mouseover", self.mouseover)
             camera.bind("dragstart", self.dragstart)
 
         for display in document.select(".displays"):
             display.bind("dragover", self.dragover)
+            display.bind("dragleave", self.dragleave)
             display.bind("drop", self.drop)
 
         document["save-grid"].bind("click", self.save_grid)
