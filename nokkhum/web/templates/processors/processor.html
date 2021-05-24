@@ -12,7 +12,7 @@ Resource Usage
 {% endblock %}
 
 {% block content %}
-<script type="text/python" id="test1" src="{{ url_for('static', filename='brython/resource_usage.py') }}"></script>
+<script type="text/python" id="test1" src="{{ url_for('static', filename='brython/resources/resource_usage.py') }}"></script>
 <br>
 <div class="ui grid row">
   <form action="{{ url_for('processor.processor_search') }}" method="GET">
