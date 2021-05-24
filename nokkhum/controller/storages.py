@@ -83,6 +83,38 @@ class StorageController:
 
                 dir_file.rmdir()
 
+    async def remove_mp4_file(self):
+        logger.debug("start remove mp4")
+        for processor_dir in self.path.iterdir():
+            for date_dir in processor_dir.iterdir():
+                if not (date_dir.name).isdigit():
+                    continue
+                for video in date_dir.iterdir():
+                    if video.suffix != ".mp4":
+                        continue
+                    if video.name[0] == "_":
+                        continue
+                    tar_file = (
+                        video.parents[0]
+                        / f"_{video.name}.tar.{self.settings['TAR_TYPE']}"
+                    )
+
+                    if not tar_file.exists():
+                        video.unlink()
+
+                    last_update = datetime.datetime.fromtimestamp(
+                        tar_file.stat().st_mtime
+                    )
+                    if (datetime.datetime.now() - last_update).seconds > 3600:
+
+                        result = self.loop.run_in_executor(
+                            self.compression_pool, self.compress, tar_file, video
+                        )
+                        if not self.compression_queue.full():
+                            await self.compression_queue.put(result)
+                        else:
+                            continue
+
     def compress(self, output_filename, video):
         # try:
         #     logger.debug("converting")
@@ -168,11 +200,11 @@ class StorageController:
                     if video.name[0] == "_":
                         self.check_video_file_name(video)
                         continue
-                    if not video.name in data:
-                        data[video.name] = 0
-                    data[video.name] += 1
+                    # if not video.name in data:
+                    #     data[video.name] = 0
+                    # data[video.name] += 1
                     # output_filename = f'{date_dir/pathlib.Path(video.name.split(".")[0])}.tar.{self.settings["TAR_TYPE"]}'
-                    logger.debug(f"dataaaaaaaaaaa {data}")
+                    # logger.debug(f"dataaaaaaaaaaa {data}")
                     result = self.loop.run_in_executor(
                         self.convertion_pool, self.convert, video
                     )
@@ -191,7 +223,9 @@ class StorageController:
                 return
             # logger.debug(f">>>>>>> {with_mp4}")
             result = (
-                ffmpeg.input(video).output(with_mp4).run_async(overwrite_output=True)
+                ffmpeg.input(video)
+                .output(with_mp4)
+                .run_async(overwrite_output=True, quiet=True)
             )
             logger.debug("waiting")
             result.wait()
