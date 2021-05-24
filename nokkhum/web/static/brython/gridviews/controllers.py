@@ -49,7 +49,6 @@ class GridViewController:
         img = html.IMG(
             id=f"img-{src}",
             src=url,
-            height="100%",
         )
         btn = html.A(
             "Clear",
