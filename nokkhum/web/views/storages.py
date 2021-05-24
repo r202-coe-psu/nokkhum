@@ -42,10 +42,11 @@ def get_dir_by_processor(processor_id):
 def get_file_by_dir_date(processor_id, date_dir):
     root = get_storage_path()
     processor_path = root / processor_id / date_dir
-    print(processor_path)
+    # print(processor_path)
+    file_list = []
     for p in processor_path.iterdir():
-        print(p.suffix)
-    file_list = [p for p in processor_path.iterdir() if p.suffix == ".xz"]
+        if p.suffix == f".{current_app.config.get('TAR_TYPE')}" or p.suffix == ".mkv":
+            file_list.append(p)
     return file_list
 
 
@@ -82,7 +83,7 @@ def list_records_by_date(processor_id, date_dir):
     file_list = get_file_by_dir_date(processor_id, date_dir)
     file_list.sort(reverse=True)
     processor = models.Processor.objects.get(id=processor_id)
-    print(file_list)
+    # print(file_list)
     return render_template(
         "/storages/list_records_by_date.html",
         file_list=file_list,
@@ -116,6 +117,7 @@ def download(processor_id, date_dir, filename):
         "processor_id": processor_id,
         "date_dir": date_dir,
         "filename": filename,
+        "action": "extract",
     }
 
     nats.nats_client.publish("nokkhum.storage.command", data)

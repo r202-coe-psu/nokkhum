@@ -68,7 +68,9 @@ def save():
 def get_grid():
     # data = request.form
     displays_data = {}
-    num_grids, _ = request.args.get("grid", 4).split("?")
+    num_grids, _ = request.args.get("grid", 4)
+    if "?" in num_grids:
+        num_grids, _ = num_grids.split("?")
 
     gridview = models.GridView.objects(
         user=current_user._get_current_object(), type=f"grid-{num_grids}"

@@ -22,10 +22,20 @@ def when_file_changed(filename, path):
 
     packagename = pathlib.Path(filename[len(path) :]).parts[1]
 
+    module_file = pathlib.Path(path) / f"{packagename}.brython.js"
+    if module_file.exists():
+        module_file.unlink()
+
     subprocess.run(
         ["python", "-m", "brython", "--make_package", packagename],
-        cwd=pathlib.Path(path).resolve(),
+        cwd=(pathlib.Path(path) / packagename).resolve(),
     )
+
+    new_module_file = pathlib.Path(path) / packagename / f"{packagename}.brython.js"
+
+    if new_module_file.exists():
+        new_module_file.rename(module_file)
+        print(f"Build Success {new_module_file}")
 
 
 class ModifiedHandler(PatternMatchingEventHandler):
@@ -58,10 +68,9 @@ if __name__ == "__main__":
     observer = Observer()
     observer.schedule(event_handler, path, recursive=True)
     observer.start()
-
     try:
         while True:
-            time.sleep(10)
+            time.sleep(1)
     except KeyboardInterrupt:
         observer.stop()
     observer.join()
