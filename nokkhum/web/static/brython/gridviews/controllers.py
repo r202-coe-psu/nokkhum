@@ -56,9 +56,14 @@ class GridViewController:
             src=url,
         )
         btn = html.A(
-            "Clear",
-            Class="clear-btn ui button rightbottom",
+            "",
+            Class="ui clear-btn icon rightbottom negative button",
         )
+        trash_icon = html.I(
+            "",
+            Class="trash icon"
+        )
+        btn <= trash_icon
         display.clear()
         display <= img
         display <= btn
