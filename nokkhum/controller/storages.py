@@ -31,7 +31,7 @@ class StorageController:
             if len(log.name.split(".")) < 3:
                 continue
             date = log.name.split(".")[-1]
-            log_date = datetime.strptime(date, "%Y-%m-%d")
+            log_date = datetime.datetime.strptime(date, "%Y-%m-%d")
             if (
                 datetime.datetime.now() - datetime.timedelta(days=7)
             ).date() >= log_date.date():
@@ -96,11 +96,12 @@ class StorageController:
                         continue
                     tar_file = (
                         video.parents[0]
-                        / f"_{video.name}.tar.{self.settings['TAR_TYPE']}"
+                        / f"_{video.stem}.tar.{self.settings['TAR_TYPE']}"
                     )
 
                     if not tar_file.exists():
                         video.unlink()
+                        continue
 
                     last_update = datetime.datetime.fromtimestamp(
                         tar_file.stat().st_mtime
@@ -114,6 +115,7 @@ class StorageController:
                             await self.compression_queue.put(result)
                         else:
                             continue
+        logger.debug("remove mp4 finish")
 
     def compress(self, output_filename, video):
         # try:
