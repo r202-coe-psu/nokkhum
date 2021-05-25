@@ -20,7 +20,6 @@ class CommandController:
         processor_commands.delete()
 
     async def restart_processors(self):
-        await asyncio.sleep(60)
         logger.debug('check and restart processor' )
         accepted_date = datetime.datetime.now() - datetime.timedelta(seconds=120)
         pipeline = [

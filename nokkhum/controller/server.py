@@ -117,7 +117,7 @@ class ControllerServer:
 
     async def monitor_processor(self):
 
-        time_to_sleep = 1800
+        time_to_sleep = 600
         while self.running:
             try:
                 await self.command_controller.restart_processors()
