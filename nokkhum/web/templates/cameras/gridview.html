@@ -37,14 +37,12 @@
 </style>
 {% endblock %}
 {% block body %}
-<div style="padding-top: 1rem; padding-left: 1rem;">
-  <a class="ui button" href="{{ url_for('dashboard.index') }}">
-    <i class="left chevron icon"></i>
-    Dashboard
-  </a>
-</div>
-<div class="ui stackable grid container-fluid">
-  <div class="two wide column" style="padding-right: 0rem;">
+<div class="ui stackable equal width two column grid container-fluid">
+  <div class="three wide computer sixteen wide tablet column" style="margin: 1rem;">
+    <a class="ui button fluid" href="{{ url_for('dashboard.index') }}">
+      <i class="left chevron icon"></i>
+      Dashboard
+    </a>
     <div class="ui form" style="padding-top: 1rem;">
       <form method="GET" name="grids-selector">
         <div class="fields">
@@ -102,7 +100,7 @@
       </div>
     </div>
   </div>
-  <div class="fourteen wide column" style="padding-left: 1rem;">
+  <div class="column">
     {% set grid=request.args.get("grid", 4) | int%}
     {% if grid == 10 %}
     {% include "/base/grids/ten_grids.html" %}
