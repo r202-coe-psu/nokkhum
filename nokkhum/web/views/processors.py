@@ -73,12 +73,18 @@ def get_state_all_projects():
 @module.route("/", methods=["GET"])
 @login_required
 def view():
-    if "admin" in current_user.roles:
-        projects = models.Project.objects()
+    if "admin" in current_user._get_current_object().roles:
+        projects = models.Project.objects(status="active")
     else:
         projects = models.Project.objects(
-            owner=current_user._get_current_object()
-        ).order_by("+id")
+            # Q(name__icontains=search_keyword)
+            Q(status="active")
+            & (
+                Q(owner=current_user._get_current_object())
+                | Q(users__icontains=current_user._get_current_object())
+                | Q(assistant__icontains=current_user._get_current_object())
+            )
+        )
     return render_template("/processors/processor.html", projects=projects)
 
 
@@ -86,11 +92,17 @@ def view():
 @login_required
 def processor_search():
     search = request.args.get("search")
-    if "admin" in current_user.roles:
-        projects = models.Project.objects(Q(name__icontains=search))
+    if "admin" in current_user._get_current_object().roles:
+        projects = models.Project.objects(status="active")
     else:
         projects = models.Project.objects(
-            Q(name__icontains=search) & Q(owner=current_user._get_current_object())
+            Q(name__icontains=search)
+            & Q(status="active")
+            & (
+                Q(owner=current_user._get_current_object())
+                | Q(users__icontains=current_user._get_current_object())
+                | Q(assistant__icontains=current_user._get_current_object())
+            )
         )
     return render_template("/processors/processor.html", projects=projects)
 
@@ -98,12 +110,17 @@ def processor_search():
 @module.route("/resource_usage")
 @login_required
 def get_resource_usage():
-    if "admin" in current_user.roles:
-        projects = models.Project.objects()
+    if "admin" in current_user._get_current_object().roles:
+        projects = models.Project.objects(status="active")
     else:
         projects = models.Project.objects(
-            owner=current_user._get_current_object()
-        ).order_by("+id")
+            Q(status="active")
+            & (
+                Q(owner=current_user._get_current_object())
+                | Q(users__icontains=current_user._get_current_object())
+                | Q(assistant__icontains=current_user._get_current_object())
+            )
+        )
     results = []
     for project in projects:
         for camera in project.cameras:
