@@ -32,6 +32,8 @@ class GridViewController:
     def clear_display(self, ev):
         ev.target.unbind("click")
         ev.target.parent.unbind("dragstart")
+        if ev.target.tagName == "I":
+            ev.target.parent.parent.clear()
         ev.target.parent.clear()
 
     def drop(self, ev):
@@ -56,9 +58,12 @@ class GridViewController:
             src=url,
         )
         btn = html.A(
-            "Clear",
-            Class="clear-btn ui button rightbottom",
+            Class="clear-btn icon rightbottom ui inverted red button circular",
         )
+        trash_icon = html.I(
+            Class="trash icon"
+        )
+        btn <= trash_icon
         display.clear()
         display <= img
         display <= btn

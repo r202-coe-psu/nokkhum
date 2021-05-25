@@ -24,17 +24,38 @@
   .displays[drop-active=true] {
     background: grey !important;
   }
+
+  .rightbottom {
+    position: absolute !important;
+    right: 0px;
+    top: 0px;
+    left: auto !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+  }
+
+  #cameras_grid:fullscreen {
+    overflow: scroll !important;
+  }
+  #cameras_grid:-ms-fullscreen {
+    overflow: scroll !important;
+  }
+  #cameras_grid:-webkit-full-screen {
+    overflow: scroll !important;
+  }
+  #cameras_grid:-moz-full-screen {
+    overflow: scroll !important;
+  }
 </style>
 {% endblock %}
 {% block body %}
-<div style="padding-top: 1rem; padding-left: 1rem;">
-  <a class="ui button" href="{{ url_for('dashboard.index') }}">
-    <i class="left chevron icon"></i>
-    Dashboard
-  </a>
-</div>
-<div class="ui stackable grid container-fluid">
-  <div class="two wide column" style="padding-right: 0rem;">
+<div class="ui stackable equal width two column grid container-fluid">
+  <div id="control_panel" class="three wide computer sixteen wide tablet column" style="margin: 1rem;">
+    <a class="ui button fluid" href="{{ url_for('dashboard.index') }}">
+      <i class="left chevron icon"></i>
+      Dashboard
+    </a>
+    <button type="button" id="fullscreen_btn">เต็มจอ</button>
     <div class="ui form" style="padding-top: 1rem;">
       <form method="GET" name="grids-selector">
         <div class="fields">
@@ -92,7 +113,7 @@
       </div>
     </div>
   </div>
-  <div class="fourteen wide column" style="padding-left: 1rem;">
+  <div id="cameras_grid" class="column">
     {% set grid=request.args.get("grid", 4) | int%}
     {% if grid == 10 %}
     {% include "/base/grids/ten_grids.html" %}
@@ -120,8 +141,58 @@ gridview.start()
   $('.item')
     .popup()
     ;
-    // $('.select.dropdown')
-    //     .dropdown()
-    //     ;
+
+
+  /* Get into full screen */
+  function GoInFullscreen(element) {
+    if (element.requestFullscreen)
+      element.requestFullscreen();
+    else if (element.mozRequestFullScreen)
+      element.mozRequestFullScreen();
+    else if (element.webkitRequestFullscreen)
+      element.webkitRequestFullscreen();
+    else if (element.msRequestFullscreen)
+      element.msRequestFullscreen();
+  }
+
+  /* Get out of full screen */
+  function GoOutFullscreen() {
+    if (document.exitFullscreen)
+      document.exitFullscreen();
+    else if (document.mozCancelFullScreen)
+      document.mozCancelFullScreen();
+    else if (document.webkitExitFullscreen)
+      document.webkitExitFullscreen();
+    else if (document.msExitFullscreen)
+      document.msExitFullscreen();
+  }
+
+  /* Is currently in full screen or not */
+  function IsFullScreenCurrently() {
+    var full_screen_element = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement || null;
+
+    // If no element is in full-screen
+    if (full_screen_element === null)
+      return false;
+    else
+      return true;
+  }
+
+  $("#fullscreen_btn").on('click', function () {
+    if (IsFullScreenCurrently())
+      GoOutFullscreen();
+    else
+      GoInFullscreen($("#cameras_grid").get(0));
+  });
+
+  $(document).on('fullscreenchange webkitfullscreenchange mozfullscreenchange MSFullscreenChange', function () {
+    if (IsFullScreenCurrently()) {
+      // $(".displays").css("height", "auto")
+    }
+    else {
+      // $(".displays").css("height", "100%")
+
+    }
+  });
 </script>
 {% endblock %}
