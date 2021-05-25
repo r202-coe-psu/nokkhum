@@ -170,12 +170,16 @@ class ControllerServer:
             #     await self.processor_command_queue.put(data)
 
     async def process_storage_command(self):
-        time_to_sleep = 3600
         while self.running:
             data = await self.storage_command_queue.get()
             logger.debug(data)
+            if data["action"] != "extract":
+                await asyncio.sleep(0.1)
+                continue
+            await self.storage_controller.extract_tar_file(data)
+            # tar_path = pathlib.Path()
 
-            await asyncio.sleep(time_to_sleep)
+            await asyncio.sleep(0.1)
 
     async def set_up(self, loop):
         await self.nc.connect(self.settings["NOKKHUM_MESSAGE_NATS_HOST"], loop=loop)

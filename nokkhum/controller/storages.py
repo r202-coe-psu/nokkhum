@@ -151,6 +151,28 @@ class StorageController:
             except Exception as e:
                 logger.exception(e)
 
+    async def extract_tar_file(self, data):
+        mp4_path = (
+            self.path
+            / data["processor_id"]
+            / data["date_dir"]
+            / f'{(data["filename"]).split(".")[0]}.mp4'
+        )
+        # logger.debug(f"{mp4_path}>>>>>{mp4_path.exists()}")
+
+        if mp4_path.exists():
+            return
+
+        try:
+            source_file = (
+                self.path / data["processor_id"] / data["date_dir"] / data["filename"]
+            )
+            tar = tarfile.open(source_file, f"r:{self.settings['TAR_TYPE']}")
+            tar.extractall(path=source_file.parents[0])
+            tar.close()
+        except Exception as e:
+            logger.exception(e)
+
     # async def compress_video_files(self):
     #     logger.debug("start compress file mp4")
     #     for processor_dir in self.path.iterdir():
