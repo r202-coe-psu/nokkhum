@@ -1,5 +1,6 @@
 {% extends '/projects/index.html' %}
 {% import '/base/html-renderer.html' as renderer %}
+{% block title %}Projects: {{project.name}}{% endblock %}
 
 {% block dashboard_title %}
 Project: {{project.name}}

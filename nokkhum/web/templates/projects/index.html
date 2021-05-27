@@ -1,4 +1,5 @@
 {% extends '/base/default-dashboard.html' %}
+{% block title %}My Projects{% endblock %}
 
 {% block dashboard_title %}
 My Projects
@@ -7,7 +8,7 @@ My Projects
 {% block content %}
 <div class="row">
   <div class="column">
-    {% if projects  %}
+    {% if projects %}
     <table class="ui celled table">
       <thead>
         <tr>
@@ -28,7 +29,8 @@ My Projects
             <div>
               <a class="ui primary button" href="{{ url_for('projects.view', project_id=project.id) }}"
                 data-tooltip="View Project"><i class="eye icon"></i>View</a>
-              {% if current_user == project.owner or 'admin' in current_user.roles or current_user in project.assistant %}
+              {% if current_user == project.owner or 'admin' in current_user.roles or current_user in project.assistant
+              %}
               <a class="ui primary button green"
                 href="{{ url_for('projects.add_contributor_page', project_id=project.id)}}"
                 data-tooltip="Add contributor"><i class="user icon"></i>Add contributor</a>

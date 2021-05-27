@@ -256,9 +256,6 @@ class StorageController:
             return result
         except Exception as e:
             logger.exception(e)
-        # with tarfile.open(output_filename, f"w:{self.settings['TAR_TYPE']}") as tar:
-        #     tar.add(video, arcname=os.path.basename(video))
-        #     return video
 
     async def process_convertion_result(self):
         if self.convertion_queue.empty():

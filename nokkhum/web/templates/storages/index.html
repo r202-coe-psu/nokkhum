@@ -1,19 +1,21 @@
 {% extends '/dashboard/index-admin.html' %}
+{% block title %}Storages{% endblock %}
 
 {% block dashboard_title %}
-  Projects
+Projects
 {% endblock %}
 
 
 {% block breadcrumbs %}
-  {{ super() }}
-  {% set project = camera.get_project() %}
-  <i class="right angle icon divider"></i>
-  <a class="section" href="{{ url_for('projects.index') }}">Projects</a>
-  <i class="right angle icon divider"></i>
-  <a class="section" href="{{ url_for('projects.view', project_id=project.id) }}">{{ project.name }}</a>
-  <i class="right angle icon divider"></i>
-  <a class="section" href="{{ url_for('cameras.view', camera_id=camera.id, project_id=project.id) }}">{{ camera.name }}</a>
+{{ super() }}
+{% set project = camera.get_project() %}
+<i class="right angle icon divider"></i>
+<a class="section" href="{{ url_for('projects.index') }}">Projects</a>
+<i class="right angle icon divider"></i>
+<a class="section" href="{{ url_for('projects.view', project_id=project.id) }}">{{ project.name }}</a>
+<i class="right angle icon divider"></i>
+<a class="section" href="{{ url_for('cameras.view', camera_id=camera.id, project_id=project.id) }}">{{ camera.name
+  }}</a>
 {% endblock %}
 
 {% block content %}
@@ -25,5 +27,3 @@
   </div>
 </div>
 {% endblock %}
-
-

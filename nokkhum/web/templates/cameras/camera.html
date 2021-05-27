@@ -1,5 +1,6 @@
 {% extends '/projects/project.html' %}
 {% import '/base/html-renderer.html' as renderer %}
+{% block title %}Camera: {{camera.name}}{% endblock %}
 
 {% block dashboard_title %}
 <h2><a href="{{ url_for('projects.view', project_id=camera.project.id) }}">{{ camera.project.name |
