@@ -1,14 +1,15 @@
 {% extends '/projects/index.html' %}
 {% import '/base/html-renderer.html' as renderer %}
+{% block title %}Edit Projects{% endblock %}
 
 {% block dashboard_title %}
-  Edit Project
+Edit Project
 {% endblock %}
 
 {% block breadcrumbs %}
-  {{ super() }}
-  <i class="right angle icon divider"></i>
-  <a class="section" href="{{ url_for('projects.edit',project_id=project.id) }}">Edit Project</a>
+{{ super() }}
+<i class="right angle icon divider"></i>
+<a class="section" href="{{ url_for('projects.edit',project_id=project.id) }}">Edit Project</a>
 {% endblock %}
 
 {% block content %}
@@ -22,7 +23,7 @@
           {{ renderer.render_field(form.name) }}
         </div>
         <div class="field">
-          <div class="ui checkbox" onclick="showLineNotifyToken()" >
+          <div class="ui checkbox" onclick="showLineNotifyToken()">
             <div class="ui large green label">
               {{ form.has_token }}
               {{ form.has_token.label }}
@@ -30,18 +31,20 @@
           </div>
         </div>
         {% if project.has_token %}
-          <div id="line_notify_token" style="display:block">
-            {{ renderer.render_field(form.line_notify_token) }}
-            <div class="field">
-              <h5>Get Line Token: <a href="https://notify-bot.line.me/en/" target="_blank">https://notify-bot.line.me/en/</a></h5>
-            </div>
-            <br>
+        <div id="line_notify_token" style="display:block">
+          {{ renderer.render_field(form.line_notify_token) }}
+          <div class="field">
+            <h5>Get Line Token: <a href="https://notify-bot.line.me/en/"
+                target="_blank">https://notify-bot.line.me/en/</a></h5>
           </div>
+          <br>
+        </div>
         {% endif %}
         <div id="line_notify_token" style="display:none">
           {{ renderer.render_field(form.line_notify_token) }}
           <div class="field">
-            <h5>Get Line Token: <a href="https://notify-bot.line.me/en/" target="_blank">https://notify-bot.line.me/en/</a></h5>
+            <h5>Get Line Token: <a href="https://notify-bot.line.me/en/"
+                target="_blank">https://notify-bot.line.me/en/</a></h5>
           </div>
           <br>
         </div>
@@ -50,7 +53,7 @@
             var checkBox = document.getElementById("has_token");
             var text = document.getElementById("line_notify_token");
             console.log(checkBox.checked)
-            if (checkBox.checked == true){
+            if (checkBox.checked == true) {
               text.style.display = "block";
             } else {
               text.style.display = "none";
@@ -62,15 +65,15 @@
       </div>
     </div>
     <div class="ui grid">
-        <div class="seven wide computer twelve wide tablet column">
+      <div class="seven wide computer twelve wide tablet column">
         {% if form.errors | count > 0 %}
-          <div class="ui error">{{ form.errors }}</div>
+        <div class="ui error">{{ form.errors }}</div>
         {% endif %}
         <div class="ui error message"></div>
       </div>
     </div>
   </form>
-</br>
+  </br>
 </div>
 
 {% endblock %}
@@ -78,22 +81,22 @@
 {% block additional_js %}
 <script src="{{ url_for('static', filename='node_modules/fomantic-ui-css/components/form.min.js') }}"></script>
 <script type="text/javascript">
-$('.ui.form')
-  .form({
-    fields: {
-      name: {
-        rules: [
-          {
-            type   : "empty",
-            prompt : "Please enter project name"
-          },
-          {
-            type   : "maxLength[35]",
-            prompt : "Project name is too long (maximum is 35 characters). "
-          }
-        ]
+  $('.ui.form')
+    .form({
+      fields: {
+        name: {
+          rules: [
+            {
+              type: "empty",
+              prompt: "Please enter project name"
+            },
+            {
+              type: "maxLength[35]",
+              prompt: "Project name is too long (maximum is 35 characters). "
+            }
+          ]
+        }
       }
-    }
-  });
+    });
 </script>
 {% endblock %}
