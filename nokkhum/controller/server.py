@@ -74,7 +74,7 @@ class ControllerServer:
         reply = msg.reply
         data = msg.data.decode()
         data = json.loads(data)
-        logger.debug(data)
+        # logger.debug(data)
         await self.storage_command_queue.put(data)
 
     async def process_expired_controller(self):
