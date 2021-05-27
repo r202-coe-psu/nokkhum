@@ -56,11 +56,15 @@
 {% block body %}
 <div class="ui stackable equal width two column grid container-fluid">
   <div id="control_panel" class="three wide computer sixteen wide tablet column" style="margin: 1rem;">
-    <a class="ui button fluid" href="{{ url_for('dashboard.index') }}">
+    <a class="ui button icon fluid" href="{{ url_for('dashboard.index') }}">
       <i class="left chevron icon"></i>
       Dashboard
     </a>
-    <button type="button" id="fullscreen_btn">เต็มจอ</button>
+    <button class="ui icon primary button fluid" style="margin-top: 1rem;" type="button"
+      id="fullscreen_btn">
+      <i class="expand icon"></i>
+      เต็มจอ
+    </button>
     <div class="ui form" style="padding-top: 1rem;">
       <form method="GET" name="grids-selector">
         <div class="fields">
@@ -146,8 +150,6 @@ gridview.start()
   $('.item')
     .popup()
     ;
-
-
   /* Get into full screen */
   function GoInFullscreen(element) {
     if (element.requestFullscreen)
@@ -188,16 +190,6 @@ gridview.start()
       GoOutFullscreen();
     else
       GoInFullscreen($("#cameras_grid").get(0));
-  });
-
-  $(document).on('fullscreenchange webkitfullscreenchange mozfullscreenchange MSFullscreenChange', function () {
-    if (IsFullScreenCurrently()) {
-      // $(".displays").css("height", "auto")
-    }
-    else {
-      // $(".displays").css("height", "100%")
-
-    }
   });
 </script>
 {% endblock %}
