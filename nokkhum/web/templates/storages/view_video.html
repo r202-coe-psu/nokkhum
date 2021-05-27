@@ -1,11 +1,20 @@
 {% extends '/storages/index.html' %}
 {% import '/base/html-renderer.html' as renderer %}
-{% block title %}View Video{% endblock %}
+{% block title %}{{camera.name}} Video Storage{% endblock %}
 
 {% block dashboard_title %}
-Storage Camera: {{camera.name}}
+Video Storage: {{camera.name}}
 {% endblock %}
-
+{% block additional_head %}
+<style>
+  .icon-centered {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+</style>
+{% endblock %}
 {% block breadcrumbs %}
 {{ super() }}
 <i class="right angle icon divider"></i>
@@ -17,8 +26,19 @@ Storage Camera: {{camera.name}}
 {% block content %}
 <div class="ui container">
   <h3 class="ui header">{{ video_path.name }}</h3>
-  <div class="ui placeholder segment">
-    <div class="ui embed"
+  <div class="ui center segment">
+    <div class="ui special cards">
+      <div class="centered card" style="width: 100%;">
+        <div class="dimmable image">
+          <img
+            src="{{ url_for('storages.get_thumbnail', processor_id=processor.id, date_dir=video_path.parent.name, filename='{}-thumbnail.png'.format(video_path.stem.split('.')[0])) }}">
+          <div class="icon-centered"><a id="video-player"><i class="huge play icon"></i></a></div>
+
+        </div>
+      </div>
+    </div>
+    {#
+    <div class="ui embed " id="video-player"
       data-url="{{ url_for('storages.download', processor_id=processor.id, date_dir=video_path.parent.name, filename=video_path.name) }}"
       data-placeholder="{{ url_for('storages.get_thumbnail', processor_id=processor.id, date_dir=video_path.parent.name, filename='{}-thumbnail.png'.format(video_path.stem.split('.')[0])) }}"
       data-icon="right play circle"></div>
@@ -26,12 +46,17 @@ Storage Camera: {{camera.name}}
       <a class="ui primary button"
         href="{{ url_for('storages.download', processor_id=processor.id, date_dir=video_path.parent.name, filename=video_path.name) }}">Download</a>
     </div>
+    #}
   </div>
 </div>
+<script type="text/python">
+  from videos import controllers
+  video_controller = controllers.VideoController()
+  video_controller.start()
+</script>
 {% endblock %}
 
 {% block additional_js %}
-<script type="text/javascript">
-  $('.ui.embed').embed();
-</script>
+<script type="text/javascript" src="{{ url_for('static', filename='brython/videos.brython.js') }}"></script>
+
 {% endblock %}
