@@ -58,10 +58,17 @@ My Projects
               </div>
               <div class="image content">
                 <div class="description">
-                  Are you sure you want to delete project: "{{ project.name }}"
+                  <div class="ui negative message">
+                    <div class="header">
+                      Are you sure you want to delete project: "{{ project.name }}"
+                    </div>
+                  </div>
                   {% for came in project.cameras %}
                   {% if came.status=='active' %}
-                  <div><i class="camera icon"></i>{{came.name}}</div>
+                  <div class="ui big label basic">
+                    <i class="camera icon"></i>
+                    {{came.name}}
+                  </div>
                   {% endif %}
                   {% endfor %}
                 </div>
