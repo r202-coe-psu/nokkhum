@@ -56,7 +56,6 @@
     padding-bottom: 10px !important;
   }
 
-
   @media only screen and (max-width: 1050px) {
     .toc {
       display: none !important;
@@ -94,7 +93,6 @@
     })
     ;
 </script>
-
 {% endblock default_head %}
 
 
@@ -121,7 +119,6 @@
 
 <div class="pusher">
   <div class="full height">
-
     {# begin default left side toc #}
     <div class="toc">
       <div class="ui vertical inverted large menu" style="background-color: #236495;">
@@ -131,37 +128,39 @@
     {# end default left side toc #}
 
     {# begin main article #}
-    <div class="article" style="background-color: #FAFAFA;">
+    <div class="article">
       <header>
-        <div class="ui vertical dividing segment">
+        <div class="ui vertical segment">
           <div class="introduction">
-            <div class="ui grid">
-              <div class="three column row">
-                <div class="left floated column">
-                  <h1 class="ui header">
-                    {{ self.dashboard_title() }}
-                  </h1>
-                </div>
-                {% if 'dashboard' in request.path or '/projects/' == request.path%}
-                <div class="ui grid right aligned" style="color: #236495; padding-right: 2rem; padding-top: 1rem;">
-                  <form class="ui form" style="padding-right: 0;" method="GET">
-                    <div class="ui small left icon input">
-                      <input type="text" id="project_search" name="project_search" placeholder="Search ...">
+            <div class="ui stackable equal width grid">
+              <div class="column">
+                <h1 class="ui header">
+                  {{ self.dashboard_title() }}
+                </h1>
+              </div>
+              {% if 'dashboard' in request.path or '/projects/' == request.path%}
+              <div class="right aligned column" style="padding-right: 2rem;">
+                <form method="GET">
+                  <div class="ui right aligned search category">
+                    <a id="create-project-btn" class="ui button right labeled icon primary">
+                      Add New Project
+                      <i class=" add icon" style="margin-left: 1rem;"></i>
+                    </a>
+                    <div class="ui icon input">
+                      <input class="prompt" id="project_search" name="project_search" type="text"
+                        placeholder="Search Projects..." style="display: block !important;">
                       <i class="search icon"></i>
                     </div>
-                  </form>
-                  <div><a id="create-project-btn" class="ui button right labeled icon primary">Add New Project<i class=" add icon"
-                        style="margin-left: 1rem;"></i></a></div>
-                </div>
-                {% endif %}
+                  </div>
+                </form>
               </div>
+              {% endif %}
             </div>
           </div>
         </div>
       </header>
 
       <main class="main-content">
-
         {% block content %}{% endblock %}
       </main>
 

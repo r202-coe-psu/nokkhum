@@ -1,19 +1,32 @@
 {% extends '/storages/index.html' %}
 {% import '/base/html-renderer.html' as renderer %}
 {% block title %}Video Storage: {{camera.name}}{% endblock %}
+
 {% block dashboard_title %}
-Video Storage: {{camera.name}}
+<h2>
+  <a href="{{ url_for('projects.view', project_id=camera.project.id) }}">
+    {{ camera.project.name | title }}
+  </a>
+  >
+  <a href="{{ url_for('cameras.view', camera_id=camera.id, project_id=camera.project.id) }}">
+    {{camera.name}}
+  </a>
+  >
+  {{camera.name}}
+</h2>
 {% endblock %}
+
 
 {% block content %}
 
-<div class="ui segment">
+<div class="ui vertical segment">
   <div class="ui stackable five column grid">
     {% if file_list | length == 0%}
     <p style="padding-top: 1rem; padding-bottom: 1rem;"><span class="ui medium grey text">Don't have any video file in
         this
-        Directory.</span></p>
-
+        Directory.
+      </span>
+    </p>
     {% endif %}
     {% for f in file_list %}
     {%- if f.name.startswith('_') %}

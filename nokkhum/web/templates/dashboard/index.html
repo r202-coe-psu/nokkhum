@@ -6,47 +6,49 @@
   <p>No any project. Do you want to <a id="create-project-a" href="#">add new project?</a></p>
 </div>
 {% else %}
-<div class="ui stackable four column grid">
+<div class="ui stackable three column grid">
   <!-- <div class="ui stackable two tablet four computer column grid"> -->
   {% for project in projects %}
   <div class="column">
-    <div class="ui centered cards">
-      <div class="card">
-        <div class="content">
-          <!-- <img class="right floated mini ui image" src="/images/avatar/large/elliot.jpg"> -->
-          <div class="header">
-            {{ project.name | upper }}
-          </div>
-          <div class="meta">
-          </div>
-          <div class="ui divider"></div>
-          <div class="description ">
-            <div class="ui two column centered grid">
-              <div class="column">Camera Name</div>
-              <div class="column">Status</div>
-              {% if not project.cameras %}
-              <div class="column" style="padding-top: 0;">No camera</div>
-              <div class="column" style="padding-top: 0;">-</div>
-              {% else %}
-              {% for camera in project.cameras[:5] %}
-              <div class="column" style="padding-top: 0;">{{ camera.name }}</div>
-              <div class="column" style="padding-top: 0;" class="processor-state" id="state-{{camera.id}}"><i
-                  class="circle icon"></i></div>
-              {% endfor %}
-              {% endif %}
+    <div class="ui card fluid" style="height: 100%;">
+      <div class="content">
+        <!-- <img class="right floated mini ui image" src="/images/avatar/large/elliot.jpg"> -->
+        <div class="header">
+          {{ project.name | upper }}
+        </div>
+        <div class="meta">
+        </div>
+        <div class="ui divider"></div>
+        <div class="description ">
+          <div class="ui two column centered grid">
+            <div class="column">
+              Camera Name
             </div>
-
+            <div class="column">Status</div>
+            {% if not project.cameras %}
+            <div class="column" style="padding-top: 0;">No camera</div>
+            <div class="column" style="padding-top: 0;">-</div>
+            {% else %}
+            {% for camera in project.cameras[:5] %}
+            <div class="column truncate" style="padding-top: 0;">
+              <span data-tooltip="{{ camera.name }}">
+                {{ camera.name }}
+              </span>
+            </div>
+            <div class="column" style="padding-top: 0;" class="processor-state" id="state-{{camera.id}}"><i
+                class="circle icon"></i></div>
+            {% endfor %}
+            {% endif %}
           </div>
         </div>
-        <div class="extra content">
-          <div class="ui two buttons">
-            <a class="ui basic blue button" href="{{ url_for('projects.view', project_id=project.id) }}">See more...</a>
-          </div>
+      </div>
+      <div class="extra content">
+        <div class="ui two buttons">
+          <a class="ui basic blue button" href="{{ url_for('projects.view', project_id=project.id) }}">See more...</a>
         </div>
       </div>
     </div>
   </div>
-
   {% endfor %}
 </div>
 {% endif %}

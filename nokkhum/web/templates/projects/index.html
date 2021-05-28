@@ -33,8 +33,7 @@ My Projects
             <div>
               <a class="ui primary icon labeled button" href="{{ url_for('projects.view', project_id=project.id) }}"
                 data-tooltip="View Project"><i class="eye icon"></i>View</a>
-              {% if current_user == project.owner or 'admin' in current_user.roles or current_user in project.assistant
-              %}
+              {% if current_user == project.owner or 'admin' in current_user.roles or current_user in project.assistant %}
               <a class="ui primary icon labeled button secondary"
                 href="{{ url_for('projects.add_contributor_page', project_id=project.id)}}"
                 data-tooltip="Add contributor"><i class="user plus icon"></i>Add contributor</a>
@@ -74,8 +73,8 @@ My Projects
                 </div>
               </div>
               <div class="actions">
-                <div class="ui red cancel basic button"><i class="remove icon"></i>No</div>
-                <a class="ui green ok button" href="{{ url_for('projects.delete',project_id=project.id) }}"><i
+                <div class="ui red cancel button"><i class="remove icon"></i>No</div>
+                <a class="ui green ok tertiary button" href="{{ url_for('projects.delete',project_id=project.id) }}"><i
                     class="checkmark icon"></i>Yes</a>
               </div>
             </div>

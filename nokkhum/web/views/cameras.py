@@ -39,7 +39,7 @@ def add():
     ):
         return redirect(url_for("projects.view", project_id=project_id))
     if not form.validate_on_submit():
-        return render_template("/cameras/add-camera.html", form=form, project=project)
+        return render_template("/cameras/add-edit-camera.html", form=form, project=project)
     width, height = form.frame_size.data.split("*")
     motion_property = models.MotionProperty()
     camera = models.Camera(
@@ -146,7 +146,7 @@ def edit():
         form.motion_detector.data = camera.motion_property.active
         form.sensitivity.data = camera.motion_property.sensitivity
         return render_template(
-            "/cameras/add-camera.html", form=form, camera=camera, project=project
+            "/cameras/add-edit-camera.html", form=form, camera=camera, project=project
         )
     
 
