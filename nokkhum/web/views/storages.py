@@ -8,8 +8,8 @@ from flask import (
     make_response,
     current_app,
     abort,
+    Response,
 )
-from flask.wrappers import Response
 
 from flask_login import login_required, current_user
 import pathlib
@@ -109,25 +109,25 @@ def view_video(processor_id, date_dir, filename):
 
 @module.route("/processors/<processor_id>/<date_dir>/<filename>")
 @login_required
-def download(processor_id, date_dir, filename):
+def download_tar(processor_id, date_dir, filename):
     if filename.startswith("_"):
         abort(404)
 
-    data = {
-        "processor_id": processor_id,
-        "date_dir": date_dir,
-        "filename": filename,
-        "action": "extract",
-    }
+    # data = {
+    #     "processor_id": processor_id,
+    #     "date_dir": date_dir,
+    #     "filename": filename,
+    #     "action": "extract",
+    # }
 
-    nats.nats_client.publish("nokkhum.storage.command", data)
-    return Response(200)
-    # media_path = get_video_path(processor_id, date_dir, filename)
+    # nats.nats_client.publish("nokkhum.storage.command", data)
+    # return Response(200)
+    media_path = get_video_path(processor_id, date_dir, filename)
     # suffix = media_path.suffix[1:]
     # if suffix in ["png"]:
     #     return send_file(str(media_path), mimetype=f"image/{suffix}")
     # else:
-    #     return send_file(str(media_path), mimetype=f"video/{suffix}")
+    return send_file(str(media_path), mimetype="application/x-xz")
 
 
 @module.route("/processors/<processor_id>/<date_dir>/thumbnails/<filename>")

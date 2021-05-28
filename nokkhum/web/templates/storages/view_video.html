@@ -29,29 +29,29 @@ Video Storage: {{camera.name}}
   <div class="ui center segment">
     <div class="ui special cards">
       <div class="centered card" style="width: 100%;">
-        <div class="dimmable image">
+        <div id="video-player" class="image">
           <img
             src="{{ url_for('storages.get_thumbnail', processor_id=processor.id, date_dir=video_path.parent.name, filename='{}-thumbnail.png'.format(video_path.stem.split('.')[0])) }}">
-          <div class="icon-centered"><a id="video-player"><i class="huge play icon"></i></a></div>
+          <div class="icon-centered"><a id="video-play-icon"><i class="huge play icon"></i></a></div>
 
         </div>
       </div>
     </div>
-    {#
-    <div class="ui embed " id="video-player"
-      data-url="{{ url_for('storages.download', processor_id=processor.id, date_dir=video_path.parent.name, filename=video_path.name) }}"
-      data-placeholder="{{ url_for('storages.get_thumbnail', processor_id=processor.id, date_dir=video_path.parent.name, filename='{}-thumbnail.png'.format(video_path.stem.split('.')[0])) }}"
-      data-icon="right play circle"></div>
     <div style="margin-top: 1em;">
       <a class="ui primary button"
-        href="{{ url_for('storages.download', processor_id=processor.id, date_dir=video_path.parent.name, filename=video_path.name) }}">Download</a>
+        href="{{ url_for('storages.download_tar', processor_id=processor.id, date_dir=video_path.parent.name, filename=video_path.name) }}">Download
+        TAR file</a>
+      <a id="download-mp4" download class="ui primary button">Download MP4 file</a>
     </div>
-    #}
   </div>
 </div>
 <script type="text/python">
   from videos import controllers
-  video_controller = controllers.VideoController()
+  {% set filename="{}/{}/{}.mp4".format(processor.id, video_path.parent.name, video_path.name.split('.')[0]) %}
+  video_controller = controllers.VideoController(
+    get_video_url="{{ url_for('api.get_video', processor_id=processor.id, date_dir=video_path.parent.name, filename=video_path.name) }}",
+    video_path="{{ url_for('static-data.static', filename=filename) }}",
+  )
   video_controller.start()
 </script>
 {% endblock %}

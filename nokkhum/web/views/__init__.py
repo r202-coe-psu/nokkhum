@@ -9,6 +9,7 @@ from . import processors
 from . import maps
 from . import storages
 from . import gridviews
+from . import api
 
 
 def add_date_url(url):
@@ -41,6 +42,7 @@ def register_blueprint(app):
             maps,
             storages,
             gridviews,
+            api,
         ]
     )
 
