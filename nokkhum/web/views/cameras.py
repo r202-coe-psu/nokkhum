@@ -8,7 +8,7 @@ from flask import (
     g,
     current_app,
 )
-
+import datetime
 from flask_login import login_required, current_user
 import json
 from nokkhum import models
@@ -39,7 +39,9 @@ def add():
     ):
         return redirect(url_for("projects.view", project_id=project_id))
     if not form.validate_on_submit():
-        return render_template("/cameras/add-edit-camera.html", form=form, project=project)
+        return render_template(
+            "/cameras/add-edit-camera.html", form=form, project=project
+        )
     width, height = form.frame_size.data.split("*")
     motion_property = models.MotionProperty()
     camera = models.Camera(
@@ -77,17 +79,17 @@ def view():
     # print(date_dirs)
     files_list = []
     videos_path = []
-    date_dir = ""
-    if date_dirs:
-        files_list = get_file_by_dir_date(str(processor.id), date_dirs[0].name)
+    date_dir = datetime.datetime.now().strftime("%Y%m%d")
+    # if date_dirs:
+    files_list = get_file_by_dir_date(str(processor.id), date_dir)
+    if files_list:
         files_list.sort(reverse=True)
         files_list = files_list[:5]
 
-        for file in files_list:
-            videos_path.append(
-                get_video_path(str(processor.id), date_dirs[0].name, file.name)
-            )
-        date_dir = date_dirs[0]
+    for file in files_list:
+        videos_path.append(
+            get_video_path(str(processor.id), date_dirs[0].name, file.name)
+        )
     # print(videos_path)
     return render_template(
         "/cameras/camera.html",
@@ -148,7 +150,6 @@ def edit():
         return render_template(
             "/cameras/add-edit-camera.html", form=form, camera=camera, project=project
         )
-    
 
     print(form.data)
     width, height = form.frame_size.data.split("*")
