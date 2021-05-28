@@ -16,6 +16,7 @@
       {% block header %}
       {% if request.path == '/' %}
       {% include "/base/banner.html" %}
+      {% elif request.path == '/login' %}
       {% else %}
       <div style="padding-top:50px;"></div>
       {% endif %}
