@@ -32,16 +32,16 @@ Video Storage: {{camera.name}}
         <div id="video-player" class="image">
           <img
             src="{{ url_for('storages.get_thumbnail', processor_id=processor.id, date_dir=video_path.parent.name, filename='{}-thumbnail.png'.format(video_path.stem.split('.')[0])) }}">
-          <div class="icon-centered"><a id="video-play-icon"><i class="huge play icon"></i></a></div>
+          <div class="icon-centered"><a><i id="video-play-icon" class="huge play icon"></i></a></div>
 
         </div>
       </div>
     </div>
     <div style="margin-top: 1em;">
       <a class="ui primary button"
-        href="{{ url_for('storages.download_tar', processor_id=processor.id, date_dir=video_path.parent.name, filename=video_path.name) }}">Download
-        TAR file</a>
-      <a id="download-mp4" download class="ui primary button">Download MP4 file</a>
+        href="{{ url_for('storages.download_tar', processor_id=processor.id, date_dir=video_path.parent.name, filename=video_path.name) }}">
+        <i class="download icon"></i>TAR</a>
+      <a id="download-mp4" download class="ui primary button"> <i class="download icon"></i>MP4</a>
     </div>
   </div>
 </div>
