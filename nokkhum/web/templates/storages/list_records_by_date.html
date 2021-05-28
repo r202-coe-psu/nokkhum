@@ -35,28 +35,31 @@
     {% set image_style = '' %}
     {%- endif %}
     <div class="column">
-      <div class="ui medium image{{ image_style }}">
-
-        {%- if f.name.startswith('_') %}
-        <img
-          src="{{ url_for('storages.get_thumbnail', processor_id=processor.id, date_dir=date_dir, filename='{}-thumbnail.png'.format(f.stem[1:])) }}">
-        {% else %}
-        <a href="{{ url_for('storages.view_video', processor_id=processor.id, date_dir=date_dir, filename=f.name) }}">
+      <div class="ui card">
+        <div class="ui medium image{{ image_style }}">
+          {%- if f.name.startswith('_') %}
           <img
-            src="{{ url_for('storages.get_thumbnail', processor_id=processor.id, date_dir=date_dir, filename='{}-thumbnail.png'.format(f.stem.split('.')[0])) }} ">
-        </a>
-
-        {%- endif %}
-
+            src="{{ url_for('storages.get_thumbnail', processor_id=processor.id, date_dir=date_dir, filename='{}-thumbnail.png'.format(f.stem[1:])) }}">
+          {% else %}
+          <a href="{{ url_for('storages.view_video', processor_id=processor.id, date_dir=date_dir, filename=f.name) }}">
+            <img
+              src="{{ url_for('storages.get_thumbnail', processor_id=processor.id, date_dir=date_dir, filename='{}-thumbnail.png'.format(f.stem.split('.')[0])) }} ">
+          </a>
+          {%- endif %}
+        </div>
+        {% set name = f.name[f.name.find('-')+1: f.name.rfind('-')] %}
+        <div class="content">
+          {%- if not f.name.startswith('_') %}
+          <a href="{{ url_for('storages.view_video', processor_id=processor.id, date_dir=date_dir, filename=f.name) }}">
+            <i class="file video icon"></i>
+            {{ name }}
+          </a>
+          {% else %}
+          <div class="header">{{ name }}</div>
+          <div class="description">Recording</div>
+          {%- endif %}
+        </div>
       </div>
-      {% set name = f.name[f.name.find('-')+1: f.name.rfind('-')] %}
-      {%- if not f.name.startswith('_') %}
-      <a href="{{ url_for('storages.view_video', processor_id=processor.id, date_dir=date_dir, filename=f.name) }}"><i
-          class="file video icon"></i><span class="ui medium grey text"> {{ name }}</span></a>
-      {% else %}
-      <div class="header">{{ name }}</div>
-      <div class="description">Recording</div>
-      {%- endif %}
     </div>
     {% endfor %}
   </div>
