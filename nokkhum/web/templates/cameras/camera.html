@@ -3,59 +3,70 @@
 {% block title %}Camera: {{camera.name}}{% endblock %}
 
 {% block dashboard_title %}
-<h2><a href="{{ url_for('projects.view', project_id=camera.project.id) }}">{{ camera.project.name |
-    title }}</a>>
-  Camera: {{camera.name}} <a href="{{ url_for('cameras.edit', camera_id=camera.id, project_id=project.id) }}"><i
-      class="edit icon"></i></a>
+<h2>
+  <a href="{{ url_for('projects.view', project_id=camera.project.id) }}">
+    {{ camera.project.name | title }}
+  </a>>
+  Camera: {{camera.name}}
+  <a href="{{ url_for('cameras.edit', camera_id=camera.id, project_id=project.id) }}">
+    <i class="edit icon"></i>
+  </a>
 </h2>
 
 
 {% endblock %}
 {% block content %}
-<a class="ui right labeled icon button" href="{{ url_for('projects.view', project_id=camera.project.id) }}">
+<a class="ui left labeled icon button" href="{{ url_for('projects.view', project_id=camera.project.id) }}">
   <i class="left arrow icon"></i>
   ย้อนกลับ
 </a>
-<div class="ui horizontal segments">
-  <div id="monitor" class="ui segment" style="width: 80rem;">
-    <p><img src="{{ camera.get_streaming_url() }}" width="100%"></p>
+<div class="ui stackable two column grid" style="margin-top: 1rem;">
+  <div class="ten wide column">
+    <div id="monitor" class="ui vertical segment">
+      <img src="{{ camera.get_streaming_url() }}" width="100%">
+    </div>
   </div>
-  <div class="ui segment">
-    <div class="ui basic segments">
-      <div class="ui segment">
-        <a class="ui red label" href="#" onclick="switchMonitor('live_stream')">Live Streaming</a>
-        <i class="big folder icon"></i> {{ date_dir.name }} <a
-          href="{{ url_for('storages.list_storage_by_processor', processor_id=camera.get_processor().id, date_dir=date_dir.name) }}">See
-          all</a>
-
-      </div>
-      {% for f in files_list %}
-      {%- if f.name.startswith('_') %}
-      {% set image_style = ' disabled' %}
-      {% else %}
-      {% set image_style = '' %}
-      {%- endif %}
-      <div class="ui segment">
-
-        <div class="ui small image{{ image_style }}">
-          {%- if not f.name.startswith('_') %}
-          <img
-            src="{{ url_for('storages.get_thumbnail', processor_id=processor.id, date_dir=date_dir.name, filename='{}-thumbnail.png'.format(f.stem.split('.')[0])) }}">
-          {% else %}
-          <img
-            src="{{ url_for('storages.get_thumbnail', processor_id=processor.id, date_dir=date_dir.name, filename='{}-thumbnail.png'.format(f.stem.split('.')[0][1:])) }} ">
-          {%- endif %}
+  <div class="six wide column">
+    <div class="ui segment">
+      <div class="ui basic segments">
+        <div class="ui segment">
+          <a class="ui red label" href="#" onclick="switchMonitor('live_stream')">Live Streaming</a>
+          <i class="big folder icon"></i>
+          {{ date_dir.name }}
+          <a
+            href="{{ url_for('storages.list_storage_by_processor', processor_id=camera.get_processor().id, date_dir=date_dir.name) }}">
+            See all
+          </a>
         </div>
-        {% set name = f.name[f.name.find('-')+1: f.name.rfind('-')] %}
-        {%- if not f.name.startswith('_') %}
-        {% set path_url = url_for('storages.download', processor_id=processor.id, date_dir=date_dir.name,
-        filename=f.name) %}
-        <a class="header" href="#" onclick="switchMonitor('{{path_url}}')">{{ name }}</a>
+        {% for f in files_list %}
+        {%- if f.name.startswith('_') %}
+        {% set image_style = ' disabled' %}
         {% else %}
-        <a class="ui grey label" href="#">Recording</a>
+        {% set image_style = '' %}
         {%- endif %}
+        <div class="ui horizontal card fluid">
+          <div class="image image{{ image_style }}">
+            {%- if not f.name.startswith('_') %}
+            <img
+              src="{{ url_for('storages.get_thumbnail', processor_id=processor.id, date_dir=date_dir.name, filename='{}-thumbnail.png'.format(f.stem.split('.')[0])) }}">
+            {% else %}
+            <img
+              src="{{ url_for('storages.get_thumbnail', processor_id=processor.id, date_dir=date_dir.name, filename='{}-thumbnail.png'.format(f.stem.split('.')[0][1:])) }} ">
+            {%- endif %}
+          </div>
+          <div class="content">
+            {% set name = f.name[f.name.find('-')+1: f.name.rfind('-')] %}
+            {%- if not f.name.startswith('_') %}
+            {% set path_url = url_for('storages.download', processor_id=processor.id, date_dir=date_dir.name,
+            filename=f.name) %}
+            <a class="header" href="#" onclick="switchMonitor('{{path_url}}')">{{ name }}</a>
+            {% else %}
+            <a class="ui grey label" href="#">Recording</a>
+            {%- endif %}
+          </div>
+        </div>
+        {% endfor %}
       </div>
-      {% endfor %}
     </div>
   </div>
 </div>
