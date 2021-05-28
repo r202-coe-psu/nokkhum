@@ -9,7 +9,7 @@ My Projects
 <div class="row">
   <div class="column">
     {% if projects %}
-    <table class="ui celled table">
+    <table class="ui very basic celled table">
       <thead>
         <tr>
           <th>Project Name</th>
@@ -22,27 +22,34 @@ My Projects
         {% for project in projects -%}
         {% if project.status=="active" %}
         <tr>
-          <td data-label="Name"><a href="{{ url_for('projects.view', project_id=project.id) }}"
-              data-tooltip="View Project" style="color:black">{{ project.name}}</a></td>
+          <td data-label="Name">
+            <a href="{{ url_for('projects.view', project_id=project.id) }}" data-tooltip="View Project"
+              style="color:black; font-weight: bold; font-size: 1.5rem">
+              {{ project.name }}
+            </a>
+          </td>
           <td data-label="Date">{{ project.created_date.strftime('%d/%m/%Y %H:%M') }}</td>
           <td data-label="View">
             <div>
-              <a class="ui primary button" href="{{ url_for('projects.view', project_id=project.id) }}"
+              <a class="ui primary icon labeled button" href="{{ url_for('projects.view', project_id=project.id) }}"
                 data-tooltip="View Project"><i class="eye icon"></i>View</a>
-              {% if current_user == project.owner or 'admin' in current_user.roles or current_user in project.assistant
-              %}
-              <a class="ui primary button green"
+              {% if current_user == project.owner or 'admin' in current_user.roles or current_user in project.assistant %}
+              <a class="ui primary icon labeled button secondary"
                 href="{{ url_for('projects.add_contributor_page', project_id=project.id)}}"
-                data-tooltip="Add contributor"><i class="user icon"></i>Add contributor</a>
+                data-tooltip="Add contributor"><i class="user plus icon"></i>Add contributor</a>
               {% endif %}
             </div>
           </td>
           <td data-label="Delete">
             {% if current_user == project.owner or 'admin' in current_user.roles %}
-            <a class="ui circular primary icon button" href="{{url_for('projects.edit',project_id=project.id)}}"
-              data-tooltip="Edit"><i class="edit icon"></i></a>
-            <a id="btn-modal-{{project.id}}" class="ui red circular primary icon button" data-tooltip="Delete"><i
-                class="trash icon"></i></a>
+            <a class="ui primary circular labeled icon button" href="{{url_for('projects.edit',project_id=project.id)}}"
+              data-tooltip="Edit Project">
+              <i class="edit icon"></i>
+              Edit
+            </a>
+            <a id="btn-modal-{{project.id}}" class="ui red circular basic icon button" data-tooltip="Delete Project">
+              <i class="trash icon"></i>
+            </a>
             <div class="ui modal" id="delete-notification-{{project.id}}">
               <i class="close icon"></i>
               <div class="header">
@@ -50,17 +57,24 @@ My Projects
               </div>
               <div class="image content">
                 <div class="description">
-                  Are you sure you want to delete project: "{{ project.name }}"
+                  <div class="ui negative message">
+                    <div class="header">
+                      Are you sure you want to delete project: "{{ project.name }}"
+                    </div>
+                  </div>
                   {% for came in project.cameras %}
                   {% if came.status=='active' %}
-                  <div><i class="camera icon"></i>{{came.name}}</div>
+                  <div class="ui big label basic">
+                    <i class="camera icon"></i>
+                    {{came.name}}
+                  </div>
                   {% endif %}
                   {% endfor %}
                 </div>
               </div>
               <div class="actions">
-                <div class="ui red  cancel  button"><i class="remove icon"></i>No</div>
-                <a class="ui green ok button" href="{{ url_for('projects.delete',project_id=project.id) }}"><i
+                <div class="ui red cancel button"><i class="remove icon"></i>No</div>
+                <a class="ui green ok tertiary button" href="{{ url_for('projects.delete',project_id=project.id) }}"><i
                     class="checkmark icon"></i>Yes</a>
               </div>
             </div>
@@ -80,16 +94,6 @@ My Projects
     {% endif %}
   </div>
 </div>
-
-<div class="row">
-  <div class="col s12">
-  </div>
-</div>
-
-<div class="row">
-  <div class="col s12">
-  </div>
-</div>
 <style>
   .ui.button {
     margin-bottom: 5px;
@@ -99,7 +103,6 @@ My Projects
 
 
 {% block additional_js %}
-
 <script src="{{ url_for('static', filename='node_modules/fomantic-ui-css/components/form.min.js') }}"></script>
 <script type="text/javascript">
   {% for project in projects %}
@@ -109,8 +112,6 @@ My Projects
   });
   {% endif %}
   {% endfor %}
-
-
   $(function () {
     $("#create-project-btn").click(function () {
       $(".ui.modal.create").modal('show');
@@ -119,6 +120,5 @@ My Projects
       closable: true
     });
   });
-
 </script>
 {% endblock %}

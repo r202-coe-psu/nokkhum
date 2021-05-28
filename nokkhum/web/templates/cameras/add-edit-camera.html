@@ -3,13 +3,17 @@
 {% block title %}Add new camera{% endblock %}
 
 {% block dashboard_title %}
+{% if "add" in request.path %}
 Add new camera
+{% else %}
+Edit Camera {{ camera.name }}
+{% endif %}
 {% endblock %}
 
 {% block content %}
-<div class="ui two column grid">
+<div class="ui stackable one column grid">
   <div class="column">
-    <div class="ui segment">
+    <div class="ui vertical segment">
       <form class="ui big form" method="POST">
         {{ form.csrf_token }}
         <div class="left floated column">
@@ -61,18 +65,18 @@ Add new camera
                     <div class="ui pointing  label"> 0 Day: Don't remove data.</div>
                   </div>
                   <div class="field">
-                    {{ renderer.render_field(form.motion_detector) }}
+                    {{ renderer.render_field(form.sensitivity) }}
                   </div>
                   <div class="field">
-                    {{ renderer.render_field(form.sensitivity) }}
+                    {{ renderer.render_checkbox(form.motion_detector) }}
                   </div>
                 </div>
               </div>
             </div>
             <div class="one column row">
-              <div class="column">
-                <button class="ui submit primary button" type="submit">Confirm</button>
+              <div class="right aligned column">
                 <a class="ui button" href="{{ url_for('projects.view',project_id=project.id) }}">Back</a>
+                <button class="ui submit primary button" type="submit">Confirm</button>
               </div>
             </div>
           </div>

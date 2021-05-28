@@ -14,7 +14,6 @@ Edit Project
 
 {% block content %}
 <div>
-  </br>
   <form class="ui big form" method="POST">
     {{ form.csrf_token }}
     <div class="ui grid">
@@ -23,10 +22,13 @@ Edit Project
           {{ renderer.render_field(form.name) }}
         </div>
         <div class="field">
-          <div class="ui checkbox" onclick="showLineNotifyToken()">
-            <div class="ui large green label">
+          <div class="ui basic button">
+            <div class="ui checkbox" onclick="showLineNotifyToken()">
               {{ form.has_token }}
-              {{ form.has_token.label }}
+              <label for="has_token" style="font-size: 1.5rem;">
+                <i class="linechat icon" style="color: #06c755;"></i>
+                Notify
+              </label>
             </div>
           </div>
         </div>
@@ -73,7 +75,6 @@ Edit Project
       </div>
     </div>
   </form>
-  </br>
 </div>
 
 {% endblock %}
