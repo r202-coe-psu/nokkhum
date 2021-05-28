@@ -33,8 +33,8 @@ class VideoController:
 
     def render_video(self, ev):
         print("Play video")
-        document["video-play-icon"].unbind()
-        ev.target.className = "notched huge circle loading icon"
+        document["video-player"].unbind()
+        document["video-play-icon"].className = "notched huge circle loading icon"
         self.video_finder()
         self.wait_video_timer = timer.set_interval(self.video_finder, 5000)
 
@@ -60,6 +60,6 @@ class VideoController:
         self.wait_btn_timer = timer.set_interval(self.prepare_btn_for_download, 5000)
 
     def start(self):
-        document["video-play-icon"].bind("click", self.render_video)
+        document["video-player"].bind("click", self.render_video)
         document["download-mp4"].bind("click", self.check_download_btn)
         print("Run")
