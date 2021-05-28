@@ -33,7 +33,6 @@
         <i class="big folder icon"></i> {{ date_dir }} <a
           href="{{ url_for('storages.list_storage_by_processor', processor_id=camera.get_processor().id, date_dir=date_dir) }}">See
           all</a>
-
       </div>
       {% for f in files_list %}
       {%- if f.name.startswith('_') %}
@@ -41,48 +40,28 @@
       {% else %}
       {% set image_style = '' %}
       {%- endif %}
-      <div class="ui segment">
-
-        <div class="ui small image{{ image_style }}">
+      <a class="ui horizontal raised card fluid" onclick="switchMonitor('{{path_url}}')">
+        <div class="image image{{ image_style }}">
           {%- if not f.name.startswith('_') %}
           <img
-            src="{{ url_for('storages.get_thumbnail', processor_id=processor.id, date_dir=date_dir.name, filename='{}-thumbnail.png'.format(f.stem.split('.')[0])) }}">
+            src="{{ url_for('storages.get_thumbnail', processor_id=processor.id, date_dir=date_dir, filename='{}-thumbnail.png'.format(f.stem.split('.')[0])) }}">
           {% else %}
           <img
-            src="{{ url_for('storages.get_thumbnail', processor_id=processor.id, date_dir=date_dir.name, filename='{}-thumbnail.png'.format(f.stem.split('.')[0][1:])) }} ">
+            src="{{ url_for('storages.get_thumbnail', processor_id=processor.id, date_dir=date_dir, filename='{}-thumbnail.png'.format(f.stem.split('.')[0][1:])) }} ">
           {%- endif %}
         </div>
-        {% set name = f.name[f.name.find('-')+1: f.name.rfind('-')] %}
-        {%- if not f.name.startswith('_') %}
-        {% set path_url = url_for('storages.download_tar', processor_id=processor.id, date_dir=date_dir.name,
-        filename=f.name) %}
-        <a class="header" href="#" onclick="switchMonitor('{{path_url}}')">{{ name }}</a>
-        {% else %}
-        {% set image_style = '' %}
-        {%- endif %}
-        <div class="ui horizontal card fluid">
-          <div class="image image{{ image_style }}">
-            {%- if not f.name.startswith('_') %}
-            <img
-              src="{{ url_for('storages.get_thumbnail', processor_id=processor.id, date_dir=date_dir.name, filename='{}-thumbnail.png'.format(f.stem.split('.')[0])) }}">
-            {% else %}
-            <img
-              src="{{ url_for('storages.get_thumbnail', processor_id=processor.id, date_dir=date_dir.name, filename='{}-thumbnail.png'.format(f.stem.split('.')[0][1:])) }} ">
-            {%- endif %}
-          </div>
-          <div class="content">
-            {% set name = f.name[f.name.find('-')+1: f.name.rfind('-')] %}
-            {%- if not f.name.startswith('_') %}
-            {% set path_url = url_for('storages.download', processor_id=processor.id, date_dir=date_dir.name,
-            filename=f.name) %}
-            <a class="header" href="#" onclick="switchMonitor('{{path_url}}')">{{ name }}</a>
-            {% else %}
-            <a class="ui grey label" href="#">Recording</a>
-            {%- endif %}
-          </div>
+        <div class="content">
+          {% set name = f.name[f.name.find('-')+1: f.name.rfind('-')] %}
+          {%- if not f.name.startswith('_') %}
+          {% set path_url = url_for('storages.download_tar', processor_id=processor.id, date_dir=date_dir.name,
+          filename=f.name) %}
+          <div class="header">{{ name }}</div>
+          {% else %}
+          <div class="ui grey label">Recording</div>
+          {%- endif %}
         </div>
-        {% endfor %}
-      </div>
+      </a>
+      {% endfor %}
     </div>
   </div>
 </div>
@@ -94,7 +73,7 @@
       document.getElementById("monitor").innerHTML = '<p><img src="{{ camera.get_streaming_url() }}" width="100%"></p>';
     }
     else {
-      document.getElementById("monitor").innerHTML = '<p><video width="1200px" controls> <source src="' + url + '" type="video/mp4"> </video></p>';
+      document.getElementById("monitor").innerHTML = '<p><video width="100%" controls> <source src="' + url + '" type="video/mp4"> </video></p>';
     }
   }
 </script>
