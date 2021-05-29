@@ -1,7 +1,16 @@
 {% extends '/projects/project.html' %}
 {% import '/base/html-renderer.html' as renderer %}
 {% block title %}Camera: {{camera.name}}{% endblock %}
-
+{% block additional_head %}
+<style>
+  .icon-centered {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+</style>
+{% endblock %}
 {% block dashboard_title %}
 <h2>
   <a href="{{ url_for('projects.view', project_id=camera.project.id) }}">
@@ -29,7 +38,7 @@
   <div class="six wide column">
     <div class="ui basic segments">
       <div class="ui segment">
-        <a class="ui red label" href="#" onclick="switchMonitor('live_stream')">Live Streaming</a>
+        <a id="view-live" class="ui red label" href="#">Live Streaming</a>
         <i class="big folder icon"></i> {{ date_dir }} <a
           href="{{ url_for('storages.list_storage_by_processor', processor_id=camera.get_processor().id, date_dir=date_dir) }}">See
           all</a>
@@ -40,7 +49,10 @@
       {% else %}
       {% set image_style = '' %}
       {%- endif %}
-      <a class="ui horizontal raised card fluid" onclick="switchMonitor('{{path_url}}')">
+      {% set path_url = url_for('storages.get_thumbnail', processor_id=processor.id, date_dir=date_dir,
+      filename='{}-thumbnail.png'.format(f.stem.split('.')[0])) %}
+      <a id="video-{{f.name.split('.')[0]}}" class="view-video ui horizontal raised card fluid"
+        onclick="switchMonitor('{{path_url}}')">
         <div class="image image{{ image_style }}">
           {%- if not f.name.startswith('_') %}
           <img
@@ -53,8 +65,7 @@
         <div class="content">
           {% set name = f.name[f.name.find('-')+1: f.name.rfind('-')] %}
           {%- if not f.name.startswith('_') %}
-          {% set path_url = url_for('storages.download_tar', processor_id=processor.id, date_dir=date_dir.name,
-          filename=f.name) %}
+
           <div class="header">{{ name }}</div>
           {% else %}
           <div class="ui grey label">Recording</div>
@@ -65,16 +76,30 @@
     </div>
   </div>
 </div>
+
+<script type="text/python">
+  from videos import monitors
+  print("{{ url_for('static-data.static', filename='') }}")
+  video_monitor = monitors.VideoMonitor(
+    streaming_url="{{ camera.get_streaming_url() }}",
+    get_video_url="{{ url_for('api.index_video')}}",
+    static_url = "{{ url_for('static-data.static', filename='') }}",
+  )
+  video_monitor.start()
+</script>
 {% endblock %}
 {% block additional_js %}
+<script type="text/javascript" src="{{ url_for('static', filename='brython/videos.brython.js') }}"></script>
+
 <script>
   function switchMonitor(url) {
-    if (url == "live_stream") {
-      document.getElementById("monitor").innerHTML = '<p><img src="{{ camera.get_streaming_url() }}" width="100%"></p>';
-    }
-    else {
-      document.getElementById("monitor").innerHTML = '<p><video width="100%" controls> <source src="' + url + '" type="video/mp4"> </video></p>';
-    }
+    // console.log(url)
+    // if (url == "live_stream") {
+    //   document.getElementById("monitor").innerHTML = '<img src="{{ camera.get_streaming_url() }}" width="100%">';
+    // }
+    // else {
+    document.getElementById("monitor").innerHTML = '<img src="' + url + '"  width="100%"> <div class="icon-centered"><a><i id="video-play-icon" class="huge play icon"></i></a></div>';
+    // }
   }
 </script>
 
