@@ -32,7 +32,6 @@ class VideoController:
         ajax.get(self.get_video_url, oncomplete=self.check_video_response)
 
     def render_video(self, ev):
-        print("Play video")
         document["video-player"].unbind()
         document["video-play-icon"].className = "notched huge circle loading icon"
         self.video_finder()
@@ -40,9 +39,7 @@ class VideoController:
 
     def update_download_btn(self, req):
         if req.status != 200:
-            print("not foundd")
             return
-        print("foundd")
         timer.clear_interval(self.wait_btn_timer)
         # print(document["download-mp4"].__dict__)
         document["download-mp4"].href = self.video_path
@@ -53,7 +50,10 @@ class VideoController:
         ajax.get(self.get_video_url, oncomplete=self.update_download_btn)
 
     def check_download_btn(self, ev):
-        ev.target.className = "ui loading button"
+        if ev.target.tagName == "I":
+            ev.target.parent.className = "ui loading button"
+        else:
+            ev.target.className = "ui loading button"
         document["download-mp4"].unbind()
 
         self.prepare_btn_for_download()

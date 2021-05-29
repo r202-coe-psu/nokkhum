@@ -25,17 +25,22 @@ from nokkhum.web import nats
 module = Blueprint("api", __name__, url_prefix="/api/v1")
 
 
+@module.route("/videos")
+def index_video():
+    return Response(200)
+
+
 @module.route("/videos/<processor_id>/<date_dir>/<filename>")
+@module.route("/videos/<processor_id>/<date_dir>/<filename>?")
 @login_required
 def get_video(processor_id, date_dir, filename):
     if filename.startswith("_"):
         abort(404)
-
     video_path = (
         pathlib.Path(current_app.config.get("NOKKHUM_PROCESSOR_RECORDER_PATH"))
         / processor_id
         / date_dir
-        / f"{filename.split('.')[0]}.mp4"
+        / f"{filename}.mp4"
     )
     if video_path.exists():
         return Response(200)

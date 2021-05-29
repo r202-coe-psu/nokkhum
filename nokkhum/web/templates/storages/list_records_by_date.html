@@ -41,7 +41,8 @@
           <img
             src="{{ url_for('storages.get_thumbnail', processor_id=processor.id, date_dir=date_dir, filename='{}-thumbnail.png'.format(f.stem[1:])) }}">
           {% else %}
-          <a href="{{ url_for('storages.view_video', processor_id=processor.id, date_dir=date_dir, filename=f.name) }}">
+          <a
+            href="{{ url_for('storages.view_video', processor_id=processor.id, date_dir=date_dir, filename=f.name.split('.')[0]) }}">
             <img
               src="{{ url_for('storages.get_thumbnail', processor_id=processor.id, date_dir=date_dir, filename='{}-thumbnail.png'.format(f.stem.split('.')[0])) }} ">
           </a>
@@ -50,7 +51,8 @@
         {% set name = f.name[f.name.find('-')+1: f.name.rfind('-')] %}
         <div class="content">
           {%- if not f.name.startswith('_') %}
-          <a href="{{ url_for('storages.view_video', processor_id=processor.id, date_dir=date_dir, filename=f.name) }}">
+          <a
+            href="{{ url_for('storages.view_video', processor_id=processor.id, date_dir=date_dir, filename=f.name.split('.')[0]) }}">
             <i class="file video icon"></i>
             {{ name }}
           </a>
