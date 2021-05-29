@@ -25,7 +25,12 @@ Video Storage: {{camera.name}}
 
 {% block content %}
 <div class="ui container">
-  <h3 class="ui header">{{ video_path.name }}</h3>
+  {% set date=video_path.name.split('-')[1] %}
+  {% set time=video_path.name.split('-')[2] %}
+  {% set file_date = "{}/{}/{}".format(date[6:8], date[4:6], date[:4]) %}
+  {% set file_time = "{}:{}:{}".format(time[:2], time[2:4], time[4:6]) %}
+
+  <h3 class="ui header">Video: {{ file_time }} on {{ file_date }}</h3>
   <div class="ui center segment">
     <div class="ui special cards">
       <div class="centered card" style="width: 100%;">
