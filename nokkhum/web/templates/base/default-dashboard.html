@@ -46,7 +46,6 @@
 
   .main-content {
     margin: 20px !important;
-    margin-top: 20px;
     min-height: 68vh;
   }
 
@@ -71,6 +70,12 @@
 
     .introduction {
       display: none !important;
+    }
+
+    .main-content {
+      margin: 20px !important;
+      margin-top: 40px !important;
+      min-height: 68vh;
     }
 
     .fixed.menu>.container {
@@ -104,12 +109,11 @@
 {# end slide menu #}
 
 {# begin top bar mobile #}
-<div class="ui fixed inverted main menu" style="background-color: #236495;">
+<div class="ui fixed borderless main menu">
   <div class="ui container">
     <a class="launch icon item">
       <i class="content icon"></i>
     </a>
-
     <div class="item">
       {% block dashboard_title %}Dashboard{% endblock %}
     </div>
