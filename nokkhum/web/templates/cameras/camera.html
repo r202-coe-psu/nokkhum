@@ -12,17 +12,13 @@
 </style>
 {% endblock %}
 {% block dashboard_title %}
-<h2>
-  <a href="{{ url_for('projects.view', project_id=camera.project.id) }}">
-    {{ camera.project.name | title }}
-  </a>>
-  Camera: {{camera.name}}
-  <a href="{{ url_for('cameras.edit', camera_id=camera.id, project_id=project.id) }}">
-    <i class="edit icon"></i>
-  </a>
-</h2>
-
-
+<a href="{{ url_for('projects.view', project_id=camera.project.id) }}">
+  {{ camera.project.name | title }}
+</a>>
+Camera: {{camera.name}}
+<a href="{{ url_for('cameras.edit', camera_id=camera.id, project_id=project.id) }}">
+  <i class="edit icon"></i>
+</a>
 {% endblock %}
 {% block content %}
 <a class="ui left labeled icon button" href="{{ url_for('projects.view', project_id=camera.project.id) }}">
