@@ -1,6 +1,12 @@
 {% extends '/projects/project.html' %}
 {% import '/base/html-renderer.html' as renderer %}
-{% block title %}Add new camera{% endblock %}
+{% block title %}
+{% if "add" in request.path %}
+Add new camera
+{% else %}
+Edit Camera {{ camera.name }}
+{% endif %}
+{% endblock %}
 
 {% block dashboard_title %}
 {% if "add" in request.path %}
