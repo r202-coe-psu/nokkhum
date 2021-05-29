@@ -11,25 +11,42 @@ class ProcessorStatus:
     def disable_button(self, docs, cam_id):
         for doc in docs:
             if doc.id == cam_id:
+                # doc.className = ""
+                if "loading" in doc.className:
+                    doc.className = doc.className.replace("loading", "")
                 doc.disabled = True
 
     def enable_button(self, docs, cam_id):
         for doc in docs:
             if doc.id == cam_id:
+                if "loading" in doc.className:
+                    doc.className = doc.className.replace("loading", "")
                 doc.disabled = False
 
     @bind("button.stop-recorder", "click")
     def stop_lpr(ev):
-        # print(ev.target.id)
-        camera_id, project_id = (ev.target.id).split("/")
+        target_id = ev.target.id
+        if ev.target.tagName == "I":
+            target_id = ev.target.parent.id
+            ev.target.parent.className = "ui loading icon button stop-recorder"
+        else:
+            ev.target.className = "ui loading icon button stop-recorder"
+        camera_id, project_id = target_id.split("/")
         ajax.post(
             f"/cameras/{camera_id}/stop-recorder", data={"project_id": project_id}
         )
 
     @bind("button.start-recorder", "click")
     def start_lpr(ev):
-        # print('start', ev.target.id)
-        camera_id, project_id = (ev.target.id).split("/")
+        print(ev.target.className)
+        target_id = ev.target.id
+        if ev.target.tagName == "I":
+            target_id = ev.target.parent.id
+            ev.target.parent.className = "ui loading icon button start-recorder"
+        else:
+            ev.target.className = "ui loading icon button start-recorder"
+        camera_id, project_id = target_id.split("/")
+        # ev.target.className = "ui loading button"
         ajax.post(
             f"/cameras/{camera_id}/start-recorder", data={"project_id": project_id}
         )
@@ -63,6 +80,9 @@ class ProcessorStatus:
                 color = "grey"
                 s = html.SPAN(style={"color": "grey"})
                 # if "video-recorder" in data["type"]:
+                # document.select(".stop-recorder")[
+                #     0
+                # ].className = "ui button stop-recorder"
                 self.disable_button(document.select(".stop-recorder"), data_id)
                 self.enable_button(document.select(".start-recorder"), data_id)
             elif data["state"] in ["stopping"]:

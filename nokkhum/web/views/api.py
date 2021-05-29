@@ -31,11 +31,11 @@ def index_video():
 
 
 @module.route("/videos/<processor_id>/<date_dir>/<filename>")
+@module.route("/videos/<processor_id>/<date_dir>/<filename>?")
 @login_required
 def get_video(processor_id, date_dir, filename):
     if filename.startswith("_"):
         abort(404)
-
     video_path = (
         pathlib.Path(current_app.config.get("NOKKHUM_PROCESSOR_RECORDER_PATH"))
         / processor_id

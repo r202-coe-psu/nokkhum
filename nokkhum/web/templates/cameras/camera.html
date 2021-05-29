@@ -46,32 +46,38 @@
       {% for f in files_list %}
       {%- if f.name.startswith('_') %}
       {% set image_style = ' disabled' %}
+      {% set path_url = url_for('storages.get_thumbnail', processor_id=processor.id, date_dir=date_dir,
+      filename='{}-thumbnail.png'.format(f.stem.split('.')[0][1:])) %}
+      <a id="video-{{f.name.split('.')[0]}}" class="view-video ui horizontal raised card fluid">
+        <div class="image image{{ image_style }}">
+          <img
+            src="{{ url_for('storages.get_thumbnail', processor_id=processor.id, date_dir=date_dir, filename='{}-thumbnail.png'.format(f.stem.split('.')[0][1:])) }} ">
+        </div>
+        <div class="content">
+          {% set name = f.name[f.name.find('-')+1: f.name.rfind('-')] %}
+
+          <div class="ui grey label">Recording</div>
+        </div>
+      </a>
       {% else %}
       {% set image_style = '' %}
-      {%- endif %}
       {% set path_url = url_for('storages.get_thumbnail', processor_id=processor.id, date_dir=date_dir,
       filename='{}-thumbnail.png'.format(f.stem.split('.')[0])) %}
       <a id="video-{{f.name.split('.')[0]}}" class="view-video ui horizontal raised card fluid"
         onclick="switchMonitor('{{path_url}}')">
         <div class="image image{{ image_style }}">
-          {%- if not f.name.startswith('_') %}
           <img
             src="{{ url_for('storages.get_thumbnail', processor_id=processor.id, date_dir=date_dir, filename='{}-thumbnail.png'.format(f.stem.split('.')[0])) }}">
-          {% else %}
-          <img
-            src="{{ url_for('storages.get_thumbnail', processor_id=processor.id, date_dir=date_dir, filename='{}-thumbnail.png'.format(f.stem.split('.')[0][1:])) }} ">
-          {%- endif %}
+
         </div>
         <div class="content">
           {% set name = f.name[f.name.find('-')+1: f.name.rfind('-')] %}
-          {%- if not f.name.startswith('_') %}
 
           <div class="header">{{ name }}</div>
-          {% else %}
-          <div class="ui grey label">Recording</div>
-          {%- endif %}
+
         </div>
       </a>
+      {%- endif %}
       {% endfor %}
     </div>
   </div>
