@@ -156,7 +156,7 @@ class StorageController:
             self.path
             / data["processor_id"]
             / data["date_dir"]
-            / f'{(data["filename"]).split(".")[0]}.mp4'
+            / f'{data["filename"]}.mp4'
         )
         # logger.debug(f"{mp4_path}>>>>>{mp4_path.exists()}")
 
@@ -165,7 +165,10 @@ class StorageController:
 
         try:
             source_file = (
-                self.path / data["processor_id"] / data["date_dir"] / data["filename"]
+                self.path
+                / data["processor_id"]
+                / data["date_dir"]
+                / f"{data['filename']}.tar.{self.settings['TAR_TYPE']}"
             )
             tar = tarfile.open(source_file, f"r:{self.settings['TAR_TYPE']}")
             tar.extractall(path=source_file.parents[0])
