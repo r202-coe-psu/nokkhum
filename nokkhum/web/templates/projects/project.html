@@ -13,6 +13,11 @@ Project: {{project.name}}
 {% endblock %}
 
 {% block content %}
+<style>
+  .ui.button {
+    margin: 0.25rem;
+  }
+</style>
 <input id="project-id" type="hidden" value="{{project.id}}">
 <div>
   <div class="field">
@@ -73,9 +78,10 @@ Project: {{project.name}}
             <td>
               {% if 'admin' in current_user.roles or current_user == project.owner or current_user in project.assistant
               %}
-              <a class="ui circular primary icon labeled button"
-                href="{{ url_for('cameras.edit', project_id=project.id, camera_id=camera.id) }}"><i
-                  class="settings icon"></i>Setting</a>
+              <a class="ui circular primary icon button"
+                href="{{ url_for('cameras.edit', project_id=project.id, camera_id=camera.id) }}">
+                <i class="settings icon"></i>
+              </a>
               {% endif %}
               {% if 'admin' in current_user.roles or current_user == project.owner %}
               <button id="btn-modal-{{camera.id}}" class="ui red basic circular primary icon button"><i
