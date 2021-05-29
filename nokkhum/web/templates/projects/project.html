@@ -13,15 +13,22 @@ Project: {{project.name}}
 {% endblock %}
 
 {% block content %}
+<style>
+  .ui.button {
+    margin: 0.25rem;
+  }
+</style>
 <input id="project-id" type="hidden" value="{{project.id}}">
 <div>
   <div class="field">
     {% if 'admin' in current_user.roles or current_user == project.owner or current_user in project.assistant%}
     <a class="ui primary button" href="{{ url_for('cameras.add', project_id=project.id) }}"><i class="plus icon"></i>Add
       Camera</a>
-    <a class="ui primary icon labeled button secondary"
-      href="{{ url_for('projects.add_contributor_page', project_id=project.id)}}" data-tooltip="Add contributor"><i
-        class="user plus icon"></i>Add contributor</a>
+    <a class="ui primary icon teal labeled button"
+      href="{{ url_for('projects.add_contributor_page', project_id=project.id)}}">
+      <i class="user plus icon"></i>
+      Add contributor
+    </a>
     {% endif %}
     <a class="ui icon labeled button" href="{{ url_for('maps.view', project_id=project.id)}}" target="_blank"><i
         class="world icon"></i>Map</a>
@@ -48,12 +55,12 @@ Project: {{project.name}}
             <td data-label="Name"><a href="{{ url_for('cameras.view', project_id=project.id, camera_id=camera.id) }}"
                 style=" color:black">{{ camera.name }}</a></td>
             <td data-label="Camera">
-              <a class="ui circular labeled primary icon button"
+              <a class="ui labeled primary icon button"
                 href="{{ url_for('cameras.view', project_id=project.id, camera_id=camera.id) }}"><i
                   class="eye icon"></i>
                 View
               </a>
-              <a class="ui circular labeled secondary icon button"
+              <a class="ui labeled icon teal button"
                 href="{{ url_for('storages.list_storage_by_processor', processor_id=camera.get_processor().id) }}">
                 <i class="folder icon"></i>
                 Video Gallery
@@ -73,9 +80,10 @@ Project: {{project.name}}
             <td>
               {% if 'admin' in current_user.roles or current_user == project.owner or current_user in project.assistant
               %}
-              <a class="ui circular primary icon labeled button"
-                href="{{ url_for('cameras.edit', project_id=project.id, camera_id=camera.id) }}"><i
-                  class="settings icon"></i>Setting</a>
+              <a class="ui circular primary icon button"
+                href="{{ url_for('cameras.edit', project_id=project.id, camera_id=camera.id) }}">
+                <i class="settings icon"></i>
+              </a>
               {% endif %}
               {% if 'admin' in current_user.roles or current_user == project.owner %}
               <button id="btn-modal-{{camera.id}}" class="ui red basic circular primary icon button"><i
