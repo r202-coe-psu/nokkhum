@@ -131,11 +131,13 @@ def get_resource_usage():
                     result = dict(
                         project=dict(id=str(project.id), name=project.name),
                         camera=dict(id=str(camera.id), name=camera.name),
-                        cpu=str(
+                        cpu=float(
                             report.cpu
                             / report.compute_node.machine_specification.cpu_count
                         ),
+                        total_memory=str(report.compute_node.machine_specification.total_memory // 1000000),
                         memory=str(report.memory // 1000000),
+                        memory_percentage=int(report.memory*100/report.compute_node.machine_specification.total_memory),
                         state=str(processor.state),
                     )
                     results.append(result)
