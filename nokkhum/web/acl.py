@@ -1,11 +1,17 @@
-from flask import redirect, url_for, request, redirect
+from flask import (
+    redirect,
+    url_for,
+    request,
+    redirect,
+)
 from flask_login import LoginManager, current_user, login_url
-from flask_principal import (Principal,
-                             Permission,
-                             UserNeed,
-                             RoleNeed,
-                             identity_loaded
-                             )
+from flask_principal import (
+    Principal,
+    Permission,
+    UserNeed,
+    RoleNeed,
+    identity_loaded,
+)
 
 from . import models
 
@@ -13,9 +19,13 @@ from . import models
 login_manager = LoginManager()
 principals = Principal()
 
+admin = RoleNeed("admin")
+officer = RoleNeed("officer")
+# volunteer = RoleNeed("volunteer")
 
 # permissions
-admin_permission = Permission(RoleNeed('admin'))
+admin_permission = Permission(admin)
+officer_permission = Permission(admin, officer)
 # lecturer_permission = Permission(RoleNeed('lecturer'))
 
 
@@ -34,12 +44,11 @@ def load_user(user_id):
 
 @login_manager.unauthorized_handler
 def unauthorized_callback():
-    if request.method == 'GET':
-        response = redirect(
-                login_url('accounts.login', request.url))
+    if request.method == "GET":
+        response = redirect(login_url("accounts.login", request.url))
         return response
 
-    return redirect(url_for('accounts.login'))
+    return redirect(url_for("accounts.login"))
 
 
 @identity_loaded.connect
@@ -48,11 +57,11 @@ def on_identity_loaded(sender, identity):
     identity.user = current_user
 
     # Add the UserNeed to the identity
-    if hasattr(current_user, 'id'):
+    if hasattr(current_user, "id"):
         identity.provides.add(UserNeed(current_user.id))
 
     # Assuming the User model has a list of roles, update the
     # identity with the roles that the user provides
-    if hasattr(current_user, 'roles'):
+    if hasattr(current_user, "roles"):
         for role in current_user.roles:
             identity.provides.add(RoleNeed(role))
