@@ -31,6 +31,16 @@ class Project(me.Document):
         return count
 
     def is_member(self, user):
-        if user in self.users or user in self.assistant or user is owner:
+        if user in self.users or user in self.assistant or self.owner.id == user.id:
+            return True
+        return False
+
+    def is_assistant_or_owner(self, user):
+        if user in self.assistant or self.owner.id == user.id:
+            return True
+        return False
+
+    def is_owner(self, user):
+        if self.owner.id == user.id:
             return True
         return False

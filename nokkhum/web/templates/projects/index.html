@@ -1,8 +1,18 @@
 {% extends '/base/default-dashboard.html' %}
-{% block title %}My Projects{% endblock %}
+{% block title %}
+{% if "administration" in request.path %}
+All Projects
+{% else %}
+My Projects
+{% endif %}
+{% endblock %}
 
 {% block dashboard_title %}
+{% if "administration" in request.path %}
+All Projects
+{% else %}
 My Projects
+{% endif %}
 {% endblock %}
 
 {% block content %}
@@ -33,7 +43,8 @@ My Projects
             <div>
               <a class="ui primary icon labeled button" href="{{ url_for('projects.view', project_id=project.id) }}"
                 data-tooltip="View Project"><i class="eye icon"></i>View</a>
-              {% if current_user == project.owner or 'admin' in current_user.roles or current_user in project.assistant %}
+              {% if current_user == project.owner or 'admin' in current_user.roles or current_user in project.assistant
+              %}
               <a class="ui primary icon labeled button teal"
                 href="{{ url_for('projects.add_contributor_page', project_id=project.id)}}"
                 data-tooltip="Add contributor"><i class="user plus icon"></i>Add contributor</a>

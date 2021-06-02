@@ -20,23 +20,14 @@ def index():
     # my_projects = list()
     project_search = request.args.get("project_search", "")
     projects = models.Project.objects(
-        status="active", name__icontains=project_search
+        Q(name__icontains=project_search)
+        & Q(status="active")
+        & (
+            Q(owner=current_user._get_current_object())
+            | Q(users__icontains=current_user._get_current_object())
+            | Q(assistant__icontains=current_user._get_current_object())
+        )
     ).order_by("-id")
-
-    if "admin" in current_user._get_current_object().roles:
-        projects = models.Project.objects(
-            status="active", name__icontains=project_search
-        ).order_by("-id")
-    else:
-        projects = models.Project.objects(
-            Q(name__icontains=project_search)
-            & Q(status="active")
-            & (
-                Q(owner=current_user._get_current_object())
-                | Q(users__icontains=current_user._get_current_object())
-                | Q(assistant__icontains=current_user._get_current_object())
-            )
-        ).order_by("-id")
     # for project in projects:
     #     if (
     #         (project.is_member(current_user._get_current_object()) is True)
@@ -74,6 +65,8 @@ def create():
 @login_required
 def edit(project_id):
     project = models.Project.objects.get(id=project_id)
+    if project.is_member(current_user._get_current_object()) is False:
+        return redirect(url_for("dashboard.index"))
     form = forms.projects.ProjectForm(obj=project)
     if not form.validate_on_submit():
         return render_template(
@@ -93,10 +86,7 @@ def view(project_id):
     else:
         project = models.Project.objects.get(id=project_id)
         if project.is_member(current_user._get_current_object()) is False:
-            project = None
-
-    if project is None:
-        return redirect("dashboard.index")
+            return redirect(url_for("dashboard.index"))
 
     processors = models.Processor.objects(project=project)
     return render_template(
@@ -107,15 +97,9 @@ def view(project_id):
 @module.route("/<project_id>/delete", methods=["GET", "POST"])
 @login_required
 def delete(project_id):
-    project = None
-    if "admin" in current_user.roles:
-        project = models.Project.objects.get(id=project_id)
-    else:
-        project = models.Project.objects.get(
-            id=project_id, owner=current_user._get_current_object()
-        )
-    if project is None:
-        return redirect("dashboard.index")
+    project = models.Project.objects.get(id=project_id)
+    if not project.is_owner(current_user._get_current_object()):
+        return redirect(url_for("dashboard.index"))
     for camera in project.cameras:
         camera.status = "Inactive"
         camera.save()
@@ -127,8 +111,12 @@ def delete(project_id):
 @module.route("/<project_id>/add_contributor_page")
 @login_required
 def add_contributor_page(project_id):
-    users = models.User.objects()
     project = models.Project.objects.get(id=project_id)
+    if not project.is_assistant_or_owner(current_user._get_current_object()):
+        return redirect(url_for("dashboard.index"))
+    users = models.User.objects()
+    # if project.is_member(current_user._get_current_object()) is False:
+    #     return redirect(url_for("dashboard.index"))
     return render_template(
         "/projects/add-contributor.html", project=project, users=users
     )
@@ -137,8 +125,10 @@ def add_contributor_page(project_id):
 @module.route("/<project_id>/add_contributor", methods=["GET"])
 @login_required
 def add_contributor(project_id):
-    users = models.User.objects()
     project = models.Project.objects.get(id=project_id)
+    if not project.is_assistant_or_owner(current_user._get_current_object()):
+        return redirect(url_for("dashboard.index"))
+    users = models.User.objects()
     added_user_id = request.args.get("add-user")
     if added_user_id:
         added_user = models.User.objects.get(id=added_user_id)
@@ -153,14 +143,10 @@ def add_contributor(project_id):
 @module.route("/<project_id>/delete_contributor/<user_id>", methods=["GET"])
 @login_required
 def delete_contributor(project_id, user_id):
+    project = models.Project.objects.get(id=project_id)
+    if not project.is_owner(current_user._get_current_object()):
+        return redirect(url_for("dashboard.index"))
     users = models.User.objects()
-    project = None
-    if "admin" in current_user.roles:
-        project = models.Project.objects.get(id=project_id)
-    else:
-        project = models.Project.objects.get(
-            id=project_id, owner=current_user._get_current_object()
-        )
     delete_user = models.User.objects.get(id=user_id)
     if delete_user in project.users:
         project.users.remove(delete_user)
@@ -177,6 +163,8 @@ def delete_contributor(project_id, user_id):
 def add_assistant(project_id, user_id):
     users = models.User.objects()
     project = models.Project.objects.get(id=project_id)
+    if not project.is_owner(current_user._get_current_object()):
+        return redirect(url_for("dashboard.index"))
     assistant = models.User.objects.get(id=user_id)
     if assistant not in project.assistant:
         project.assistant.append(assistant)

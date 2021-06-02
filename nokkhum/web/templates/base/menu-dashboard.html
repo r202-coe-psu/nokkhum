@@ -6,7 +6,17 @@
 
 <a class="item" href="{{ url_for('dashboard.index') }}"><i class="icon dashboard"></i>Dashboard</a>
 <a class="item" href="{{ url_for('gridviews.index') }}"><i class="icon th"></i>Grid View</a>
-<a class="item" href="{{ url_for('projects.index') }}"><i class="icon folder"></i>Projects</a>
+<a class="item" href="{{ url_for('projects.index') }}"><i class="icon folder"></i>My Projects</a>
+{% if "admin" in current_user.roles%}
+<div class="item">
+  <b>Administration Menu</b>
+  <div class="menu">
+    <a class="item" href="{{ url_for('administration.projects.index') }}"><i class="icon folder"></i>All projects on
+      System</a>
+  </div>
+</div>
+
+{% endif %}
 <a class="item" href="{{ url_for('processor.view')}}"><i class="icon cogs"></i>Resource Usage</a>
 <a class="item" href="{{ url_for('accounts.index') }}"><i class="icon user"></i>Account</a>
 <a class="item" href="{{ url_for('accounts.logout') }}"><i class="icon sign out"></i>Logout</a>
