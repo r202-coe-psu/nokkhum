@@ -97,6 +97,8 @@ class ControllerServer:
                 await self.storage_controller.remove_expired_video_records()
                 await asyncio.sleep(1)
                 await self.storage_controller.remove_mp4_file()
+                await asyncio.sleep(1)
+                await self.storage_controller.remove_web_log_file()
 
             except Exception as e:
                 logger.exception(e)

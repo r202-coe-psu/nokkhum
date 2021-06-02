@@ -83,6 +83,19 @@ class StorageController:
 
                 dir_file.rmdir()
 
+    async def remove_web_log_file(self):
+        logger.debug("start remove web log")
+        log_path = self.path / "web" / "log"
+        if not log_path.exists():
+            return
+        for log in self.path.iterdir():
+            date = log.name.replace("uwsgi-", "")
+            log_date = datetime.datetime.strptime(date, "%Y-%m-%d")
+            if (
+                datetime.datetime.now() - datetime.timedelta(days=7)
+            ).date() >= log_date.date():
+                log.unlink()
+
     async def remove_mp4_file(self):
         logger.debug("start remove mp4")
         for processor_dir in self.path.iterdir():
