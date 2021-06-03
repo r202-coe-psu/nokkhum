@@ -1,3 +1,4 @@
+from nokkhum.models import projects
 from flask import (
     Blueprint,
     render_template,
@@ -32,12 +33,8 @@ def add():
         ("1920*1080", "1920 x 1080"),
     ]
     project = models.Project.objects.get(id=project_id)
-    if not (
-        "admin" in current_user.roles
-        or current_user == project.owner
-        or current_user in project.assistant
-    ):
-        return redirect(url_for("projects.view", project_id=project_id))
+    if not project.is_assistant_or_owner(current_user._get_current_object()):
+        return redirect(url_for("dashboard.index"))
     if not form.validate_on_submit():
         return render_template(
             "/cameras/add-edit-camera.html", form=form, project=project
@@ -71,6 +68,8 @@ def view():
     project_id = request.args.get("project_id")
     camera_id = request.args.get("camera_id")
     project = models.Project.objects(id=project_id).first()
+    if not project.is_member(current_user._get_current_object()):
+        return redirect(url_for("dashboard.index"))
     camera = models.Camera.objects(id=camera_id).first()
     if camera is None:
         return render_template("/projects/project.html")
@@ -134,11 +133,7 @@ def edit():
     if not camera.motion_property:
         motion_property = models.MotionProperty()
         camera.update(motion_property=motion_property)
-    if not (
-        "admin" in current_user.roles
-        or current_user == project.owner
-        or current_user in project.assistant
-    ):
+    if not project.is_assistant_or_owner(current_user._get_current_object()):
         return redirect(url_for("projects.view", project_id=project_id))
     if not form.validate_on_submit():
         form.frame_size.data = f"{camera.width}*{camera.height}"
@@ -151,7 +146,6 @@ def edit():
             "/cameras/add-edit-camera.html", form=form, camera=camera, project=project
         )
 
-    print(form.data)
     width, height = form.frame_size.data.split("*")
     processor.storage_period = form.storage_period.data
     processor.save()
@@ -172,18 +166,23 @@ def delete():
     camera_id = request.args.get("camera_id")
     project = models.Project.objects.get(id=project_id)
     camera = models.Camera.objects.get(id=camera_id)
-    if "admin" in current_user.roles or current_user == project.owner:
-        camera.status = "Inactive"
-        camera.save()
+    if not project.is_owner(current_user._get_current_object()):
+        return redirect(url_for("projects.view", project_id=project_id))
+    camera.status = "Inactive"
+    camera.save()
     return redirect(url_for("projects.view", project_id=project.id))
 
 
 @module.route("/<camera_id>/start-recorder", methods=["POST"])
 @login_required
 def start_recorder(camera_id):
+
     # print(request.form.get('camera_id'))
     # print(current_user._get_current_object().id)
     project_id = request.form.get("project_id")
+    project = models.Project.objects.get(id=project_id)
+    if not project.is_assistant_or_owner(current_user._get_current_object()):
+        return Response(403)
     data = {
         "action": "start-recorder",
         "camera_id": camera_id,
@@ -203,6 +202,9 @@ def start_recorder(camera_id):
 def stop_recorder(camera_id):
     # print(request.form.get('camera_id'))
     project_id = request.form.get("project_id")
+    project = models.Project.objects.get(id=project_id)
+    if not project.is_assistant_or_owner(current_user._get_current_object()):
+        return Response(403)
     data = {
         "action": "stop-recorder",
         "camera_id": camera_id,

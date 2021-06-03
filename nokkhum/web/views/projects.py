@@ -172,3 +172,19 @@ def add_assistant(project_id, user_id):
     return render_template(
         "/projects/add-contributor.html", project=project, users=users
     )
+
+
+@module.route("/<project_id>/demote_assistant/<user_id>", methods=["GET"])
+@login_required
+def demote_assistant(project_id, user_id):
+    users = models.User.objects()
+    project = models.Project.objects.get(id=project_id)
+    if not project.is_owner(current_user._get_current_object()):
+        return redirect(url_for("dashboard.index"))
+    assistant = models.User.objects.get(id=user_id)
+    if assistant in project.assistant:
+        project.assistant.remove(assistant)
+        project.save()
+    return render_template(
+        "/projects/add-contributor.html", project=project, users=users
+    )

@@ -45,7 +45,7 @@ def edit_profile():
     user = current_user._get_current_object()
     user.first_name = form.first_name.data
     user.last_name = form.last_name.data
-    user.organization = form.organization
+    user.organization = form.organization.data
 
     user.save()
 

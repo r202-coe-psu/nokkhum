@@ -19,10 +19,8 @@ Add Contributor: {{project.name}}
 <form action="{{ url_for('projects.add_contributor', project_id=project.id) }}" method="GET">
   <select class="ui search dropdown fluid" id="add-user" name="add-user" placeholder="Email">
     {% for user in users %}
-    {% if not 'admin' in user.roles %}
     {% if not user in project.users %}
     <option value="{{ user.id }}">{{ user.email }}</option>
-    {% endif %}
     {% endif %}
     {% endfor %}
   </select>
@@ -41,7 +39,9 @@ Add Contributor: {{project.name}}
           <th>Lastname</th>
           <th>Organization</th>
           <th>Role</th>
+          {% if current_user == project.owner %}
           <th>Manage</th>
+          {% endif %}
         </tr>
       </thead>
       <tbody>
@@ -69,14 +69,19 @@ Add Contributor: {{project.name}}
             {% endif %}
             {% endif %}
           </td>
+          {% if current_user == project.owner%}
           <td data-label="Manage">
             {% if user != project.owner %}
             {% if user not in project.assistant %}
             <a class="ui green circular primary icon button" data-tooltip="Grant to project assistant"
               href="{{ url_for('projects.add_assistant',project_id=project.id, user_id=user.id) }}"><i
                 class="sort amount up icon"></i></a>
+            {% elif user in project.assistant %}
+            <a class="ui orange circular primary icon button" data-tooltip="Demote from project assistant"
+              href="{{ url_for('projects.demote_assistant',project_id=project.id, user_id=user.id) }}"><i
+                class="sort amount down icon"></i></a>
             {% endif %}
-            <!-- {% if current_user == project.owner or 'admin' in current_user.roles %} -->
+            {% if current_user == project.owner%}
             <a id="btn-modal-{{user.id}}" class="ui red circular primary icon button" data-tooltip="Delete"><i
                 class="trash icon"></i></a>
             <div class="ui modal" id="delete-notification-{{user.id}}">
@@ -96,9 +101,10 @@ Add Contributor: {{project.name}}
                     class="checkmark icon"></i>Yes</a>
               </div>
             </div>
-            <!-- {% endif %} -->
+            {% endif %}
             {% endif %}
           </td>
+          {% endif %}
         </tr>
         {% endfor %}
       </tbody>

@@ -44,8 +44,10 @@ Project: {{project.name}}
             <th>Camera Name</th>
             <th>View Camera</th>
             <th>Processor State</th>
+            {% if current_user == project.owner or current_user in project.assistant %}
             <th>Recorder Controller</th>
             <th>Manage</th>
+            {% endif %}
           </tr>
         </thead>
         <tbody>
@@ -67,6 +69,7 @@ Project: {{project.name}}
               </a>
             </td>
             <td data-label="ProcessorState" class="processor-state" id="state-{{camera.id}}"></td>
+            {% if current_user == project.owner or current_user in project.assistant %}
             <td>
               <button class="ui icon button start-recorder" id="{{camera.id}}/{{project.id}}" style="width: 8rem;">
                 <i class="play icon"></i>
@@ -109,6 +112,8 @@ Project: {{project.name}}
                 </div>
               </div>
             </td>
+            {% endif %}
+
           </tr>
           {% endif %}
           {%- endfor %}

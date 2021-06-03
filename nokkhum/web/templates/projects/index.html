@@ -23,6 +23,9 @@ My Projects
       <thead>
         <tr>
           <th>Project Name</th>
+          {% if "administration" in request.path and 'admin' in current_user.roles %}
+          <th>Owner</th>
+          {% endif %}
           <th>Created Date</th>
           <th>View Project</th>
           <th>Manage</th>
@@ -38,13 +41,15 @@ My Projects
               {{ project.name }}
             </a>
           </td>
+          {% if "administration" in request.path and 'admin' in current_user.roles %}
+          <td data-label="Owner">{{ project.owner.get_fullname() }}</td>
+          {% endif %}
           <td data-label="Date">{{ project.created_date.strftime('%d/%m/%Y %H:%M') }}</td>
           <td data-label="View">
             <div>
               <a class="ui primary icon labeled button" href="{{ url_for('projects.view', project_id=project.id) }}"
                 data-tooltip="View Project"><i class="eye icon"></i>View</a>
-              {% if current_user == project.owner or 'admin' in current_user.roles or current_user in project.assistant
-              %}
+              {% if current_user == project.owner or current_user in project.assistant %}
               <a class="ui primary icon labeled button teal"
                 href="{{ url_for('projects.add_contributor_page', project_id=project.id)}}"
                 data-tooltip="Add contributor"><i class="user plus icon"></i>Add contributor</a>
@@ -53,11 +58,13 @@ My Projects
           </td>
           <td data-label="Delete">
             {% if current_user == project.owner or 'admin' in current_user.roles %}
+            {% if current_user == project.owner %}
             <a class="ui primary circular labeled icon button" href="{{url_for('projects.edit',project_id=project.id)}}"
               data-tooltip="Edit Project">
               <i class="edit icon"></i>
               Edit
             </a>
+            {% endif %}
             <a id="btn-modal-{{project.id}}" class="ui red circular basic icon button" data-tooltip="Delete Project">
               <i class="trash icon"></i>
             </a>
