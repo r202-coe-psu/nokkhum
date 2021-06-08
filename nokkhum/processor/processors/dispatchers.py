@@ -73,6 +73,8 @@ class ImageDispatcher(threading.Thread):
         # await self.camera_topic_remove.unsubscribe()
         await self.sc.close()
         await self.nc.close()
+        self.sc = None
+        self.nc = None
 
     async def publish_data(self, data):
         serialized_data = pickle.dumps(data)

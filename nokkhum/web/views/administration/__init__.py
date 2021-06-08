@@ -4,7 +4,7 @@ from nokkhum.web import acl
 from . import projects
 
 module = Blueprint("administration", __name__, url_prefix="/administration")
-subviews = [projects]
+views = [projects]
 
 
 @module.route("/")

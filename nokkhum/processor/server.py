@@ -4,6 +4,7 @@ import sys
 import json
 import threading
 import time
+import datetime
 
 import asyncio
 
@@ -177,7 +178,6 @@ class ProcessorServer:
             return
         recorder_queue = ImageQueue()
         self.image_queues.append(recorder_queue)
-        self.capture_output_queues.append(recorder_queue)
 
         fps=command.get("fps", 0)
         if fps == 0 and self.processors["acquisitor"]:
@@ -190,10 +190,11 @@ class ProcessorServer:
             motion_queue = ImageQueue()
             self.image_queues.append(motion_queue)
 
-            capture_output_queues = [motion_queue, dispatcher_queue]
+            self.capture_output_queues.append(motion_queue)
 
             motion_detector = detectors.MotionDetector(
-                input_queue=motion_queue, output_queues=[recorder_queue]
+                input_queue=motion_queue,
+                output_queues=[recorder_queue]
             )
             motion_detector.start()
 
@@ -209,6 +210,7 @@ class ProcessorServer:
             )
 
         else:
+            self.capture_output_queues.append(recorder_queue)
             recorder = recorders.VideoRecorder(
                 queue=recorder_queue,
                 directory=self.options.directory,
@@ -291,8 +293,20 @@ class ProcessorServer:
         while self.running:
             try:
                 time.sleep(1)
-                if self.processors["acquisitor"] and not self.processors["acquisitor"].running:
-                    self.running = False
+                if self.processors["acquisitor"]:
+                    if not self.processors["acquisitor"].running:
+                        logger.debug('Acquisitor run False')
+                        self.running = False
+                        continue
+
+                    current_date = datetime.datetime.now()
+                    diff = current_date - self.processors["acquisitor"].check_point_date
+                    if diff.seconds > 10:
+                        logger.debug(
+                            f'Acquisitor diff {diff}'
+                            )
+                        self.running = False
+
             except KeyboardInterrupt as e:
                 logger.exception(e)
                 self.running = False

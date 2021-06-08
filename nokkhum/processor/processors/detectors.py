@@ -64,10 +64,10 @@ class OpenCVMotionDetector:
                                255,
                                cv2.THRESH_BINARY)[1]
 
-        print('motion',
-              cv2.countNonZero(thresh),
-              self.default_threshold_value,
-              frame.shape)
+        # print('motion',
+        #       cv2.countNonZero(thresh),
+        #       self.default_threshold_value,
+        #       frame.shape)
         if cv2.countNonZero(thresh) < self.default_threshold_value:
             return False
        

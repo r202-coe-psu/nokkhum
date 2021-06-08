@@ -22,6 +22,8 @@ class ImageAcquisitor(threading.Thread):
         self.fps = None
         self.command_builder = command_builder
 
+        self.check_point_date = datetime.datetime.now()
+        
         if fps:
             self.fps = fps
         elif capture.get_fps() > 0:
@@ -110,6 +112,7 @@ class ImageAcquisitor(threading.Thread):
                         # print('reset drop frame', drop_frame)
 
                 start_date = current_date
+                self.check_point_date = current_date
                 counter = 0
 
 

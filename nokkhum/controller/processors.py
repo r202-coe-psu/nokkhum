@@ -79,7 +79,7 @@ class ProcessorController:
                 processor.state = 'start'
                 processor.save()
 
-        # logger.debug('in actuate command ')
+        logger.debug(f'actuate command: {data}')
         if data.get('system'):
             processor_command = models.ProcessorCommand(
                     processor=processor,
@@ -107,7 +107,7 @@ class ProcessorController:
             logger.exception(e)
 
 
-        if data['action'] in ['start-recorder', 'start-motion-recorder', 'start-streamer']:
+        if data['action'] in ['start-recorder', 'start-streamer']:
             compute_node = await self.get_available_compute_node(compute_node)
             processor.compute_node = compute_node
 
@@ -139,6 +139,8 @@ class ProcessorController:
                 fps=camera.frame_rate,
                 size=(camera.width, camera.height),
                 camera_id=str(camera.id),
+                motion=data.get('motion', False),
+                sensitivity=data.get('sensitivity', 0),
             )
 
         topic = "nokkhum.compute.{}.rpc".format(compute_node.mac)

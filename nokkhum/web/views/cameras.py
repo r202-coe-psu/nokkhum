@@ -183,12 +183,18 @@ def start_recorder(camera_id):
     project = models.Project.objects.get(id=project_id)
     if not project.is_assistant_or_owner(current_user._get_current_object()):
         return Response(403)
+
+    camera = models.Camera.objects.get(id=camera_id)
     data = {
         "action": "start-recorder",
         "camera_id": camera_id,
         "project_id": project_id,
         "user_id": str(current_user._get_current_object().id),
     }
+
+    if camera.motion_property.active:
+        data['motion'] = camera.motion_property.active
+        data['sensitivity'] = camera.motion_property.sensitivity
 
     nats.nats_client.publish("nokkhum.processor.command", data)
 

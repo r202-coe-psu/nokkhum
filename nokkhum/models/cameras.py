@@ -21,7 +21,7 @@ class Camera(me.Document):
     location = me.GeoPointField()
     uri = me.StringField(required=True)
     status = me.StringField(required=True, default="active")
-    motion_property = me.EmbeddedDocumentField(MotionProperty)
+    motion_property = me.EmbeddedDocumentField(MotionProperty, default=MotionProperty())
 
     def get_streaming_url(self):
         config = current_app.config

@@ -286,7 +286,7 @@ class StorageController:
             video = future_result.result()
             if not video:
                 return
-            logger.debug(f">>>>>>>>>>> {video.__dict__}")
+            # logger.debug(f">>>>>>>>>>> {video.__dict__}")
             # except Exception as e:
             #     logger.exception(e)
             # video_file_path = pathlib.Path()

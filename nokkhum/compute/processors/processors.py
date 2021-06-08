@@ -120,7 +120,7 @@ class Processor:
         self.write(data)
         status = self.read()
         if not status:
-            status = {'video-streamer': False, 'video-recorder': False}
+            status = {'acquisitor': False, 'video-streamer': False, 'video-recorder': False}
         
         return status
 

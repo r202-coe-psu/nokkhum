@@ -16,7 +16,7 @@ from mongoengine import Q
 subviews = []
 
 module = Blueprint(
-    "administration.projects",
+    "projects",
     __name__,
     url_prefix="/projects",
 )
