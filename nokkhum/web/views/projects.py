@@ -152,6 +152,8 @@ def delete_contributor(project_id, user_id):
         project.users.remove(delete_user)
     if delete_user in project.assistant:
         project.assistant.remove(delete_user)
+    if delete_user in project.security_guard:
+        project.security_guard.remove(delete_user)
     project.save()
     return render_template(
         "/projects/add-contributor.html", project=project, users=users
@@ -166,6 +168,8 @@ def add_assistant(project_id, user_id):
     if not project.is_owner(current_user._get_current_object()):
         return redirect(url_for("dashboard.index"))
     assistant = models.User.objects.get(id=user_id)
+    if assistant not in project.users:
+        return redirect(url_for("dashboard.index"))
     if assistant not in project.assistant:
         project.assistant.append(assistant)
         project.save()
@@ -184,6 +188,40 @@ def demote_assistant(project_id, user_id):
     assistant = models.User.objects.get(id=user_id)
     if assistant in project.assistant:
         project.assistant.remove(assistant)
+        project.save()
+    return render_template(
+        "/projects/add-contributor.html", project=project, users=users
+    )
+
+
+@module.route("/<project_id>/add_security_guard/<user_id>", methods=["GET"])
+@login_required
+def add_security_guard(project_id, user_id):
+    users = models.User.objects()
+    project = models.Project.objects.get(id=project_id)
+    if not project.is_owner(current_user._get_current_object()):
+        return redirect(url_for("dashboard.index"))
+    security_guard = models.User.objects.get(id=user_id)
+    if security_guard not in project.users:
+        return redirect(url_for("dashboard.index"))
+    if security_guard not in project.security_guard:
+        project.security_guard.append(security_guard)
+        project.save()
+    return render_template(
+        "/projects/add-contributor.html", project=project, users=users
+    )
+
+
+@module.route("/<project_id>/demote_security_guard/<user_id>", methods=["GET"])
+@login_required
+def demote_security_guard(project_id, user_id):
+    users = models.User.objects()
+    project = models.Project.objects.get(id=project_id)
+    if not project.is_owner(current_user._get_current_object()):
+        return redirect(url_for("dashboard.index"))
+    security_guard = models.User.objects.get(id=user_id)
+    if security_guard in project.security_guard:
+        project.security_guard.remove(security_guard)
         project.save()
     return render_template(
         "/projects/add-contributor.html", project=project, users=users

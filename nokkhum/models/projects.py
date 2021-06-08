@@ -10,6 +10,7 @@ class Project(me.Document):
     owner = me.ReferenceField("User", dbref=True, required=True)
     assistant = me.ListField(me.ReferenceField("User", dbref=True))
     users = me.ListField(me.ReferenceField("User", dbref=True))
+    security_guard = me.ListField(me.ReferenceField("User", dbref=True))
     # cameras = me.ListField(me.ReferenceField("Camera", dbref=True))
     status = me.StringField(required=True, default="active")
     created_date = me.DateTimeField(required=True, default=datetime.datetime.now)
@@ -31,12 +32,26 @@ class Project(me.Document):
         return count
 
     def is_member(self, user):
-        if user in self.users or user in self.assistant or self.owner.id == user.id:
+        if (
+            user in self.users
+            or user in self.assistant
+            or self.owner.id == user.id
+            or user in self.security_guard
+        ):
             return True
         return False
 
     def is_assistant_or_owner(self, user):
         if user in self.assistant or self.owner.id == user.id:
+            return True
+        return False
+
+    def is_assistant_or_owner_or_security_guard(self, user):
+        if (
+            user in self.assistant
+            or self.owner.id == user.id
+            or user in self.security_guard
+        ):
             return True
         return False
 

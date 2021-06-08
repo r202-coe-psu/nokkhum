@@ -62,6 +62,10 @@ Add Contributor: {{project.name}}
             <div class="ui secondary basic label">
               Assistant
             </div>
+            {% elif user in project.security_guard %}
+            <div class="ui secondary basic label">
+              Security Guard
+            </div>
             {% else %}
             <div class="ui basic label">
               Member
@@ -72,13 +76,20 @@ Add Contributor: {{project.name}}
           {% if current_user == project.owner%}
           <td data-label="Manage">
             {% if user != project.owner %}
-            {% if user not in project.assistant %}
+            {% if user not in project.assistant and user not in project.security_guard %}
             <a class="ui green circular primary icon button" data-tooltip="Grant to project assistant"
               href="{{ url_for('projects.add_assistant',project_id=project.id, user_id=user.id) }}"><i
-                class="sort amount up icon"></i></a>
+                class="user tie icon"></i></a>
+            <a class="ui green circular primary icon button" data-tooltip="Grant to project security guard"
+              href="{{ url_for('projects.add_security_guard',project_id=project.id, user_id=user.id) }}"><i
+                class="user shield icon"></i></a>
             {% elif user in project.assistant %}
             <a class="ui orange circular primary icon button" data-tooltip="Demote from project assistant"
               href="{{ url_for('projects.demote_assistant',project_id=project.id, user_id=user.id) }}"><i
+                class="sort amount down icon"></i></a>
+            {% elif user in project.security_guard %}
+            <a class="ui orange circular primary icon button" data-tooltip="Demote from project security guard"
+              href="{{ url_for('projects.demote_security_guard',project_id=project.id, user_id=user.id) }}"><i
                 class="sort amount down icon"></i></a>
             {% endif %}
             {% if current_user == project.owner%}
