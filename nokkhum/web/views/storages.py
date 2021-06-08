@@ -1,3 +1,4 @@
+from nokkhum.models import storages
 from flask import (
     Blueprint,
     render_template,
@@ -61,7 +62,6 @@ def get_video_path(processor_id, date_dir, filename):
 @module.route("/")
 @login_required
 def index():
-
     return render_template("/storages/index.html")
 
 
@@ -71,6 +71,8 @@ def list_storage_by_processor(processor_id):
     date_dirs = get_dir_by_processor(processor_id)
     date_dirs.sort(reverse=True)
     processor = models.Processor.objects.get(id=processor_id)
+    if not processor.camera.project.is_member(current_user._get_current_object()):
+        return redirect(url_for("dashboard.index"))
     return render_template(
         "/storages/list_storage_by_processor.html",
         date_dirs=date_dirs,
@@ -86,6 +88,8 @@ def list_records_by_date(processor_id, date_dir):
     file_list.sort(reverse=True)
     processor = models.Processor.objects.get(id=processor_id)
     # print(file_list)
+    if not processor.camera.project.is_member(current_user._get_current_object()):
+        return redirect(url_for("dashboard.index"))
     return render_template(
         "/storages/list_records_by_date.html",
         file_list=file_list,
@@ -95,12 +99,64 @@ def list_records_by_date(processor_id, date_dir):
     )
 
 
+@module.route("share/processors/<processor_id>/<date_dir>", methods=["GET", "POST"])
+@login_required
+def share_storage(processor_id, date_dir):
+    processor = models.Processor.objects.get(id=processor_id)
+    # print(file_list)
+    if not processor.camera.project.is_assistant_or_owner_or_security_guard(
+        current_user._get_current_object()
+    ):
+        return redirect(url_for("dashboard.index"))
+
+    form = forms.storages.ShareStorageForm()
+    users = models.User.objects(status="active")
+    storage_share_list = models.StorageShare.objects(
+        processor=processor, date_dir=date_dir, expire_date__gte=datetime.date.today()
+    )
+    if not form.validate_on_submit():
+        return render_template(
+            "/storages/share_storage.html",
+            date_dir=date_dir,
+            processor=processor,
+            camera=processor.camera,
+            users=users,
+            form=form,
+            storage_share=storage_share_list,
+        )
+    print(form.data)
+
+    storage_share = models.StorageShare.objects(
+        processor=processor,
+        date_dir=date_dir,
+        psu_passport_username=form.psu_passport_username.data,
+    ).first()
+    if not storage_share:
+        storage_share = models.StorageShare(
+            processor=processor,
+            date_dir=date_dir,
+            psu_passport_username=form.psu_passport_username.data,
+        )
+
+    storage_share.start_date = datetime.datetime.strptime(
+        form.start_date.data, "%d/%m/%Y"
+    ).date()
+    storage_share.expire_date = datetime.datetime.strptime(
+        form.expire_date.data, "%d/%m/%Y"
+    ).date()
+    storage_share.save()
+    return redirect(
+        url_for("storages.share_storage", processor_id=processor_id, date_dir=date_dir)
+    )
+
+
 @module.route("/processors/<processor_id>/<date_dir>/view/<filename>")
 @login_required
 def view_video(processor_id, date_dir, filename):
     video_path = get_video_path(processor_id, date_dir, filename)
-
     processor = models.Processor.objects.get(id=processor_id)
+    if not processor.camera.project.is_member(current_user._get_current_object()):
+        return redirect(url_for("dashboard.index"))
     return render_template(
         "/storages/view_video.html",
         video_path=video_path,
@@ -112,29 +168,21 @@ def view_video(processor_id, date_dir, filename):
 @module.route("/processors/<processor_id>/<date_dir>/<filename>")
 @login_required
 def download_tar(processor_id, date_dir, filename):
+    processor = models.Processor.objects.get(id=processor_id)
+    if not processor.camera.project.is_member(current_user._get_current_object()):
+        return Response(403)
     if filename.startswith("_"):
         abort(404)
-
-    # data = {
-    #     "processor_id": processor_id,
-    #     "date_dir": date_dir,
-    #     "filename": filename,
-    #     "action": "extract",
-    # }
-
-    # nats.nats_client.publish("nokkhum.storage.command", data)
-    # return Response(200)
     media_path = get_video_path(processor_id, date_dir, filename)
-    # suffix = media_path.suffix[1:]
-    # if suffix in ["png"]:
-    #     return send_file(str(media_path), mimetype=f"image/{suffix}")
-    # else:
     return send_file(str(media_path), mimetype="application/x-xz")
 
 
 @module.route("/processors/<processor_id>/<date_dir>/thumbnails/<filename>")
 @login_required
 def get_thumbnail(processor_id, date_dir, filename):
+    processor = models.Processor.objects.get(id=processor_id)
+    if not processor.camera.project.is_member(current_user._get_current_object()):
+        return Response(403)
     if filename.startswith("_"):
         abort(404)
     media_path = get_video_path(processor_id, date_dir, filename)

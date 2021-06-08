@@ -12,6 +12,10 @@
     {{camera.name}}
   </a>
   >
+  <a href="{{ url_for('storages.list_storage_by_processor', processor_id=processor.id) }}">
+    Storage
+  </a>
+  >
   {{camera.name}}
 </h2>
 {% endblock %}

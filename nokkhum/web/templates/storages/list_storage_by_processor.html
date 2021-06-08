@@ -24,6 +24,11 @@
         <i class="grey folder icon"></i>
         <span class="ui grey text">{{ d.name }}</span>
       </a>
+      {% if camera.project.is_assistant_or_owner_or_security_guard(current_user) %}
+      <a href="{{ url_for('storages.share_storage', processor_id=processor.id, date_dir=d.name) }}">
+        Share
+      </a>
+      {% endif %}
     </div>
     {% endfor %}
   </div>

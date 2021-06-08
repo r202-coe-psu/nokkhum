@@ -18,6 +18,7 @@ from .processors import (
     FailRunningProcessor,
 )
 from .gridviews import GridView
+from .storages import StorageShare
 
 __all__ = [
     "User",
@@ -38,6 +39,7 @@ __all__ = [
     "CameraModel",
     "GridView",
     "MotionProperty",
+    "StorageShare",
 ]
 
 

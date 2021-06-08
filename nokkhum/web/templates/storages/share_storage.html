@@ -1,0 +1,113 @@
+{% extends '/storages/index.html' %}
+{% import '/base/html-renderer.html' as renderer %}
+{% block title %}Share Video Storage{% endblock %}
+
+{% block dashboard_title %}
+<h2><a href="{{ url_for('projects.view', project_id=camera.project.id) }}">{{ camera.project.name | title }}</a>>
+  <a href="{{ url_for('cameras.view', camera_id=camera.id, project_id=camera.project.id) }}">{{camera.name}}</a> >
+  <a href="{{ url_for('storages.list_storage_by_processor', processor_id=processor.id) }}">Storage</a> >
+  Share: {{ date_dir }}
+</h2>
+{% endblock %}
+
+{% block content %}
+<form class="ui form" method="POST" autocomplete="off">
+  {{ form.csrf_token }}
+  <div class="field">
+    {{ form.psu_passport_username.label }}
+    {{ form.psu_passport_username }}
+  </div>
+  <div class="two fields">
+    <div class="field">
+      <label>Start date</label>
+      <div class="ui calendar" id="rangestart">
+        <div class="ui input left icon">
+          <i class="calendar icon"></i>
+          {{ form.start_date }}
+        </div>
+      </div>
+    </div>
+    <div class="field">
+      <label>End date</label>
+      <div class="ui calendar" id="rangeend">
+        <div class="ui input left icon">
+          <i class="calendar icon"></i>
+          {{ form.expire_date }}
+        </div>
+      </div>
+    </div>
+  </div>
+  <input type="submit" class="ui primary button" value="Submit" style="margin-top: 0.75rem;">
+  <a class="ui button" href="{{ url_for('storages.list_storage_by_processor', processor_id=processor.id) }}"
+    style="margin-top: 0.75rem;">Back</a>
+</form>
+<table class="ui celled table">
+  <thead>
+    <tr>
+      <th>PSU Passport</th>
+      <th>Start Date</th>
+      <th>Expire Date</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for user in storage_share %}
+    <tr>
+      <td data-label="PSU Passport">{{ user.psu_passport_username }}</td>
+      <td data-label="Start Date">{{ user.start_date }}</td>
+      <td data-label="Expire Date">{{ user.expire_date }}</td>
+      <td data-label="Action"></td>
+
+    </tr>
+    {% endfor %}
+  </tbody>
+
+</table>
+
+
+{% endblock %}
+{% block additional_js %}
+<script type="text/javascript">
+  datetime_formatter = {
+    datetime: function (datetime, settings) {
+      if (!datetime) return '';
+      var day = datetime.getDate();
+      var month = datetime.getMonth() + 1;
+      var year = datetime.getFullYear();
+      return ("0" + day).slice(-2) + '/' + ("0" + month).slice(-2) + '/' + year;
+    }
+  };
+
+
+  calendar_text = {
+    days: ['S', 'M', 'T', 'W', 'T', 'F', 'S'],
+    months: ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'],
+    monthsShort: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+    today: 'Today',
+    now: 'Now',
+    am: 'AM',
+    pm: 'PM'
+  }
+
+  $('#add-user')
+    .dropdown({
+      ignoreDiacritics: true,
+      sortSelect: true,
+      fullTextSearch: 'exact'
+    });
+  $('#rangestart').calendar({
+    type: 'date',
+    formatter: datetime_formatter,
+    endCalendar: $('#rangeend'),
+    text: calendar_text,
+    monthFirst: false,
+  });
+  $('#rangeend').calendar({
+    type: 'date',
+    formatter: datetime_formatter,
+    startCalendar: $('#rangestart'),
+    text: calendar_text,
+    monthFirst: false,
+  });
+</script>
+{% endblock %}
