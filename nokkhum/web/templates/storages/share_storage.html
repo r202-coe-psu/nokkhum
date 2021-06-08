@@ -41,6 +41,11 @@
   <a class="ui button" href="{{ url_for('storages.list_storage_by_processor', processor_id=processor.id) }}"
     style="margin-top: 0.75rem;">Back</a>
 </form>
+
+<h3>Share List</h3>
+{% if not storage_share%}
+Not found any users.
+{% else%}
 <table class="ui celled table">
   <thead>
     <tr>
@@ -60,9 +65,11 @@
 
     </tr>
     {% endfor %}
+
   </tbody>
 
 </table>
+{% endif %}
 
 
 {% endblock %}
