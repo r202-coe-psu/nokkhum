@@ -153,7 +153,7 @@ class ProcessorController:
             )
         except Exception as e:
             logger.exception(e)
-            processor_command.message = e
+            processor_command.message = str(e)
             processor_command.completed = False
             processor_command.save()
             

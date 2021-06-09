@@ -28,7 +28,12 @@ class ProcessorServer:
     def __init__(self, settings):
         self.settings = settings
         self.running = False
-        self.processors = {"video-streamer": None, "video-recorder": None, "acquisitor": None}
+        self.processors = {
+                "video-streamer": None,
+                "video-recorder": None,
+                "acquisitor": None,
+                "motion-detector": None
+                }
 
         self.image_queues = []
         self.capture_output_queues = []
@@ -116,8 +121,7 @@ class ProcessorServer:
                         self.stop_dispatcher()
                 elif command["action"] == "stop-recorder":
                     if self.processors["video-recorder"]:
-                        self.processors["video-recorder"].stop()
-
+                        self.stop_recorder()
                 elif command.get('action') == 'get-status':
                     data = dict()
                     for k, v in self.processors.items():
@@ -194,10 +198,14 @@ class ProcessorServer:
 
             motion_detector = detectors.MotionDetector(
                 input_queue=motion_queue,
-                output_queues=[recorder_queue]
+                output_queues=[recorder_queue],
+                duration=self.settings.get(
+                    'NOKKHUM_PROCESSOR_MOTION_DETECTOR_DURATION'),
+                wait_motion_time=self.settings.get(
+                    'NOKKHUM_PROCESSOR_MOTION_DETECTOR_WAIT_MOTION_TIME'),
             )
             motion_detector.start()
-
+            self.processors["motion_detector"] = motion_detector
 
             recorder = recorders.MotionVideoRecorder(
                 queue=recorder_queue,
@@ -222,6 +230,39 @@ class ProcessorServer:
             )
         recorder.start()
         self.processors["video-recorder"] = recorder
+
+    def stop_recorder(self):
+        if 'video-recorder' in self.processors and \
+                self.processors["video-recorder"] is None:
+            return
+
+        processor = self.processors["video-recorder"]
+
+        # logger.debug(f'q size {len(self.image_queues)}')
+        input_queue = processor.input_queue
+        if input_queue in self.capture_output_queues:
+            self.capture_output_queues.remove(input_queue)
+        self.image_queues.remove(input_queue)
+
+        if processor.name == 'MotionVideoRecorder':
+            detector = self.processors["motion-detector"]
+            input_queue = detector.input_queue
+            self.capture_output_queues.remove(input_queue)
+            self.image_queues.remove(input_queue)
+            
+
+            detector.stop()
+            detector.join()
+            self.processors["motion-detector"] = None
+        
+        processor.stop()
+        processor.join()
+        self.processors["video-recorder"] = None
+
+
+        # logger.debug(f'q size {len(self.image_queues)}')
+
+
 
 
     def init_dispatcher(self, command):
