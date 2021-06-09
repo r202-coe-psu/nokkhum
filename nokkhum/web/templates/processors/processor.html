@@ -41,8 +41,8 @@ Resource Usage
       <h3>{{ loop.index }}. {{ project.name }}</h3>
       <p style="font-size: 1.1rem;">
         <i class="video icon"></i>
-        Surveillance cameras
-        {{ project.camera_is_active() }}
+        Surveillance cameras:
+        {{ project.camera_is_active() }} Cameras
       </p>
       <div class="ui grid stackable three column">
         {% for camera in project.cameras %}
@@ -68,6 +68,7 @@ Resource Usage
         </div>
         {% endfor %}
       </div>
+      <div class="ui divider"></div>
     </div>
   </div>
   {% endfor %}

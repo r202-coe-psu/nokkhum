@@ -44,7 +44,10 @@
 
 <h3>Share List</h3>
 {% if not storage_share%}
-Not found any users.
+<div class="ui warning message">
+  <p>Not found any users.</p>
+</div>
+
 {% else%}
 <table class="ui celled table">
   <thead>
@@ -61,7 +64,28 @@ Not found any users.
       <td data-label="PSU Passport">{{ user.psu_passport_username }}</td>
       <td data-label="Start Date">{{ user.start_date }}</td>
       <td data-label="Expire Date">{{ user.expire_date }}</td>
-      <td data-label="Action"></td>
+      <td data-label="Action">
+        <a id="btn-modal-{{user.psu_passport_username}}" class="ui red circular primary icon button"
+          data-tooltip="Delete"><i class="trash icon"></i></a>
+        <div class="ui tiny modal" id="delete-notification-{{user.psu_passport_username}}">
+          <i class="close icon"></i>
+          <div class="header">
+            Delete
+          </div>
+          <div class="image content">
+            <div class="description">
+              Are you sure you want to delete : "{{ user.psu_passport_username }}"
+            </div>
+          </div>
+          <div class="actions">
+            <div class="ui red cancel button"><i class="remove icon"></i>No</div>
+            <a class="ui green ok button"
+              href="{{ url_for('storages.remove_share_storage', processor_id=processor.id, date_dir=date_dir, username=user.psu_passport_username) }}"><i
+                class="checkmark icon"></i>Yes</a>
+          </div>
+        </div>
+
+      </td>
 
     </tr>
     {% endfor %}
@@ -116,5 +140,12 @@ Not found any users.
     text: calendar_text,
     monthFirst: false,
   });
+</script>
+<script type="text/javascript">
+  {% for user in storage_share %}
+  $('#btn-modal-{{user.psu_passport_username}}').click(function () {
+    $('#delete-notification-{{user.psu_passport_username}}').modal('show');
+  });
+  {% endfor %}
 </script>
 {% endblock %}
