@@ -135,9 +135,16 @@ def get_resource_usage():
                             report.cpu
                             / report.compute_node.machine_specification.cpu_count
                         ),
-                        total_memory=str(report.compute_node.machine_specification.total_memory // 1000000),
+                        total_memory=str(
+                            report.compute_node.machine_specification.total_memory
+                            // 1000000
+                        ),
                         memory=str(report.memory // 1000000),
-                        memory_percentage=int(report.memory*100/report.compute_node.machine_specification.total_memory),
+                        memory_percentage=int(
+                            report.memory
+                            * 100
+                            / report.compute_node.machine_specification.total_memory
+                        ),
                         state=str(processor.state),
                     )
                     results.append(result)
