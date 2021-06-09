@@ -1,6 +1,25 @@
 {% extends '/base/default-dashboard.html' %}
 
 {% block content %}
+<h3>List of Video Record Shared</h3>
+<div class="ui stackable three column grid">
+  {% if not storage_share_list%}
+  <div class="ui warning message">
+    <p>No any shared video</p>
+  </div>
+  {% endif %}
+  {% for storage in storage_share_list %}
+  <div class="column">
+    <a class="ui basic big button fluid" style="text-align: left;"
+      href="{{ url_for('storages.list_records_by_date', processor_id=storage.processor.id, date_dir=storage.date_dir) }}">
+      <i class="grey folder icon"></i>
+      <span class="ui grey text">{{ storage.processor.camera.name }}-{{ storage.date_dir }}</span>
+    </a>
+  </div>
+  {% endfor %}
+</div>
+
+<div class="ui divider"></div>
 {% if not projects %}
 <div class="ui segment center aligned">
   <p>No any project. Do you want to <a id="create-project-a" href="#">add new project?</a></p>

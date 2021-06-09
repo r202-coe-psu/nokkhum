@@ -89,7 +89,15 @@ def list_records_by_date(processor_id, date_dir):
     processor = models.Processor.objects.get(id=processor_id)
     # print(file_list)
     if not processor.camera.project.is_member(current_user._get_current_object()):
-        return redirect(url_for("dashboard.index"))
+        storage_share_list = models.StorageShare.objects(
+            psu_passport_username=current_user._get_current_object().username,
+            start_date__lte=datetime.date.today(),
+            expire_date__gte=datetime.date.today(),
+        ).first()
+        if storage_share_list:
+            pass
+        else:
+            return redirect(url_for("dashboard.index"))
     return render_template(
         "/storages/list_records_by_date.html",
         file_list=file_list,
@@ -124,7 +132,6 @@ def share_storage(processor_id, date_dir):
             form=form,
             storage_share=storage_share_list,
         )
-    print(form.data)
 
     storage_share = models.StorageShare.objects(
         processor=processor,
@@ -150,13 +157,48 @@ def share_storage(processor_id, date_dir):
     )
 
 
+@module.route(
+    "share/processors/<processor_id>/<date_dir>/<username>/remove",
+    methods=["GET"],
+)
+@login_required
+def remove_share_storage(processor_id, date_dir, username):
+    processor = models.Processor.objects.get(id=processor_id)
+    # print(file_list)
+    if not processor.camera.project.is_assistant_or_owner_or_security_guard(
+        current_user._get_current_object()
+    ):
+        return redirect(url_for("dashboard.index"))
+
+    storage_share = models.StorageShare.objects(
+        processor=processor,
+        date_dir=date_dir,
+        psu_passport_username=username,
+    ).first()
+    if not storage_share:
+        return redirect(url_for("dashboard.index"))
+
+    storage_share.delete()
+    return redirect(
+        url_for("storages.share_storage", processor_id=processor_id, date_dir=date_dir)
+    )
+
+
 @module.route("/processors/<processor_id>/<date_dir>/view/<filename>")
 @login_required
 def view_video(processor_id, date_dir, filename):
     video_path = get_video_path(processor_id, date_dir, filename)
     processor = models.Processor.objects.get(id=processor_id)
     if not processor.camera.project.is_member(current_user._get_current_object()):
-        return redirect(url_for("dashboard.index"))
+        storage_share_list = models.StorageShare.objects(
+            psu_passport_username=current_user._get_current_object().username,
+            start_date__lte=datetime.date.today(),
+            expire_date__gte=datetime.date.today(),
+        ).first()
+        if storage_share_list:
+            pass
+        else:
+            return redirect(url_for("dashboard.index"))
     return render_template(
         "/storages/view_video.html",
         video_path=video_path,
@@ -170,7 +212,16 @@ def view_video(processor_id, date_dir, filename):
 def download_tar(processor_id, date_dir, filename):
     processor = models.Processor.objects.get(id=processor_id)
     if not processor.camera.project.is_member(current_user._get_current_object()):
-        return Response(403)
+        storage_share_list = models.StorageShare.objects(
+            psu_passport_username=current_user._get_current_object().username,
+            start_date__lte=datetime.date.today(),
+            expire_date__gte=datetime.date.today(),
+        ).first()
+        if storage_share_list:
+            pass
+        else:
+            # return redirect(url_for("dashboard.index"))
+            return Response(403)
     if filename.startswith("_"):
         abort(404)
     media_path = get_video_path(processor_id, date_dir, filename)
@@ -182,7 +233,16 @@ def download_tar(processor_id, date_dir, filename):
 def get_thumbnail(processor_id, date_dir, filename):
     processor = models.Processor.objects.get(id=processor_id)
     if not processor.camera.project.is_member(current_user._get_current_object()):
-        return Response(403)
+        storage_share_list = models.StorageShare.objects(
+            psu_passport_username=current_user._get_current_object().username,
+            start_date__lte=datetime.date.today(),
+            expire_date__gte=datetime.date.today(),
+        ).first()
+        if storage_share_list:
+            pass
+        else:
+            # return redirect(url_for("dashboard.index"))
+            return Response(403)
     if filename.startswith("_"):
         abort(404)
     media_path = get_video_path(processor_id, date_dir, filename)
