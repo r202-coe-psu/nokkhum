@@ -51,7 +51,6 @@ def save():
     data = request.form
     displays_data = data["displays"]
     num_grids = data["num_grids"]
-
     gridview = models.GridView.objects(
         user=current_user._get_current_object(), type=f"grid-{num_grids}"
     ).first()

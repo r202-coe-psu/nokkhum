@@ -26,9 +26,9 @@
 <div class="ui vertical segment">
   <div class="ui stackable five column grid">
     {% if file_list | length == 0%}
-    <p style="padding-top: 1rem; padding-bottom: 1rem;"><span class="ui medium grey text">Don't have any video file in
-        this
-        Directory.
+    <p style="padding-top: 1rem; padding-bottom: 1rem;">
+      <span class="ui medium grey text">
+        Don't have any video file in this Directory.
       </span>
     </p>
     {% endif %}
@@ -57,11 +57,22 @@
           {%- if not f.name.startswith('_') %}
           <a
             href="{{ url_for('storages.view_video', processor_id=processor.id, date_dir=date_dir, filename=f.name.split('.')[0]) }}">
+
+            {% if "motion" in f.name%}
+            <i class="walking icon"></i>
+            {% else %}
             <i class="file video icon"></i>
+            {% endif %}
+
             {{ name }}
           </a>
           {% else %}
-          <div class="header">{{ name }}</div>
+          <div class="header">
+            {% if "motion" in f.name%}
+            <i class="walking icon"></i>
+            {% endif %}
+            {{ name }}
+          </div>
           <div class="description">Recording</div>
           {%- endif %}
         </div>
