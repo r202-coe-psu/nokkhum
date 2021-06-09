@@ -23,21 +23,25 @@ module = Blueprint("gridviews", __name__, url_prefix="/gridviews")
 def index():
     num_grids = [4, 10, 13, 16, 32]
     # user = models.User.objects.get(id=current_user._get_current_object().id)
-    if "admin" in current_user._get_current_object().roles:
-        projects = models.Project.objects(status="active")
-    else:
-        projects = models.Project.objects(
-            # Q(name__icontains=project_search)
-            Q(status="active")
-            & (
-                Q(owner=current_user._get_current_object())
-                | Q(users__icontains=current_user._get_current_object())
-                | Q(assistant__icontains=current_user._get_current_object())
-            )
+    gridviews_name = models.GridView.objects(
+        user=current_user._get_current_object()
+    ).values_list("name")
+    projects = models.Project.objects(
+        # Q(name__icontains=project_search)
+        Q(status="active")
+        & (
+            Q(owner=current_user._get_current_object())
+            | Q(users__icontains=current_user._get_current_object())
+            | Q(assistant__icontains=current_user._get_current_object())
+            | Q(security_guard__icontains=current_user._get_current_object())
         )
+    )
 
     return render_template(
-        "/cameras/gridview.html", projects=projects, num_grids=num_grids
+        "/cameras/gridview.html",
+        projects=projects,
+        num_grids=num_grids,
+        gridviews_name=gridviews_name,
     )
 
 

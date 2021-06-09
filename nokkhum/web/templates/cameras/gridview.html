@@ -64,13 +64,25 @@
       <i class="left chevron icon"></i>
       Dashboard
     </a>
-    <button class="ui icon primary button fluid" style="margin-top: 1rem;" type="button"
-      id="fullscreen_btn">
+    <button class="ui icon primary button fluid" style="margin-top: 1rem;" type="button" id="fullscreen_btn">
       <i class="expand icon"></i>
       เต็มจอ
     </button>
     <div class="ui form" style="padding-top: 1rem;">
       <form method="GET" name="grids-selector">
+        <div class="fields">
+          <div class="sixteen wide field">
+            <select name="name" id="name" onclick="this.form.submit()">
+              {% for name in gridviews_name%}
+              {% if name == request.args.get('gridviews_name','') %}
+              <option selected="selected">{{name}}</option>
+              {% else%}
+              <option value="{{name}}">{{name}}</option>
+              {% endif %}
+              {% endfor %}
+            </select>
+          </div>
+        </div>
         <div class="fields">
           <div class="twelve wide field">
             <select name="grid" id="grid" onclick="this.form.submit()">
