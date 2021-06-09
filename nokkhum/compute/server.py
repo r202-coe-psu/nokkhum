@@ -46,7 +46,7 @@ class ComputeNodeServer:
         data = json.loads(data)
         action = data.get('action', None)
 
-        response = None
+        response = {}
         if action == 'start':
             respons = self.processor_controller.start_processor(
                     data['processor_id'],
@@ -76,8 +76,8 @@ class ComputeNodeServer:
             respons = self.processor_controller.get_status(
                     data['processor_id'])
 
-        if response:
-            await self.nc.publish(reply, json.dumps(respons).encode())
+        # logger.debug(f'====> {respons}')
+        await self.nc.publish(reply, json.dumps(respons).encode())
 
 
     async def update_compute_node_resource(self):

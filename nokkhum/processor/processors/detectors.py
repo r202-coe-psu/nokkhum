@@ -23,7 +23,8 @@ class OpenCVMotionDetector:
         frame = self.resize_image(frame)
         height, width, _ = frame.shape
         self.default_threshold_value = width * height * (1 - self.sensitivity)
-        self.update_pattern_frame(frame)
+        blur = self.get_gray_and_blur(frame)
+        self.update_pattern_frame(blur)
 
     def resize_image(self, frame): 
 
@@ -46,7 +47,9 @@ class OpenCVMotionDetector:
         return blur
 
     def update_pattern_frame(self, frame): 
-        self.avg_frame = self.get_gray_and_blur(frame).astype("float")
+        # self.avg_frame = self.get_gray_and_blur(frame).astype("float")
+
+        self.avg_frame = frame.astype("float")
         self.frame_scale_abs = cv2.convertScaleAbs(self.avg_frame)
 
     def has_motion(self, frame):
@@ -64,14 +67,18 @@ class OpenCVMotionDetector:
                                255,
                                cv2.THRESH_BINARY)[1]
 
-        # print('motion',
-        #       cv2.countNonZero(thresh),
-        #       self.default_threshold_value,
-        #       frame.shape)
-        if cv2.countNonZero(thresh) < self.default_threshold_value:
+        count_non_zero = cv2.countNonZero(thresh)
+
+        # if count_non_zero > self.default_threshold_value/2:
+        #     self.update_pattern_frame(blur)
+        #     logger.debug(f'update motion {count_non_zero}/{self.default_threshold_value} -> {frame.shape}')
+
+        self.update_pattern_frame(blur)
+
+        if count_non_zero < self.default_threshold_value:
             return False
-       
-        self.update_pattern_frame(frame)
+      
+        logger.debug(f'has motion {count_non_zero}/{self.default_threshold_value} -> {frame.shape}')
         return True
 
 
@@ -80,7 +87,10 @@ class OpenCVMotionDetector:
 class MotionDetector(threading.Thread):
     def __init__(self,
                  input_queue,
-                 output_queues=[]):
+                 output_queues=[],
+                 duration=3,
+                 wait_motion_time=1,
+                 ):
         super().__init__()
         self.name = "Motion Dectector"
         self.running = False
@@ -90,8 +100,8 @@ class MotionDetector(threading.Thread):
 
         self.detector = OpenCVMotionDetector()
         self.tmp_queue = []
-        self.duration = 3
-        self.wait_motion_time = 1
+        self.duration = duration
+        self.wait_motion_time = wait_motion_time
 
     def stop(self):
         self.running = False
