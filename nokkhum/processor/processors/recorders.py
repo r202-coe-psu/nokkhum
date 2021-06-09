@@ -154,6 +154,10 @@ class VideoRecorder(threading.Thread):
 
 class MotionVideoRecorder(VideoRecorder):
     def __init__(self, **kw_args):
+
+        self.wait_motion_time = kw_args.get("wait_motion_time", 2)
+        if "wait_motion_time" in kw_args:
+            kw_args.pop("wait_motion_time")
         super().__init__(**kw_args)
         self.name = "MotionVideoRecorder"
         self.wait_motion_time = kw_args.get("wait_motion_time", 2)

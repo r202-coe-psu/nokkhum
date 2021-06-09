@@ -215,6 +215,8 @@ class ProcessorServer:
                 size=size,
                 extension="mkv",
                 command_builder=self.command_builder,
+                wait_motion_time=self.settings.get(
+                    'NOKKHUM_PROCESSOR_MOTION_DETECTOR_WAIT_MOTION_TIME'),
             )
 
         else:

@@ -77,7 +77,8 @@ class OpenCVMotionDetector:
 
         if count_non_zero < self.default_threshold_value:
             return False
-      
+     
+        # cv2.imshow('motion', frame)
         logger.debug(f'has motion {count_non_zero}/{self.default_threshold_value} -> {frame.shape}')
         return True
 
@@ -133,6 +134,9 @@ class MotionDetector(threading.Thread):
                 counter -= 1
             else:
                 counter = self.duration
+
+            # cv2.imshow("img", image.data)
+            # cv2.waitKey(10)
 
             current_date = datetime.datetime.now()
             if not self.detector.has_motion(image.data):
