@@ -15,11 +15,26 @@ Profile
     <div class="ui grid one column stackable">
       <div class="column">
         <span style="font-weight: bold; font-size: 1.5rem;">
+          Username:
+        </span>
+        <span style="font-size: 1.25rem;">
+          {{ current_user.username }}
+        </span>
+      </div>
+      <div class="column">
+        <span style="font-weight: bold; font-size: 1.5rem;">
           Name:
         </span>
         <span style="font-size: 1.25rem;">
-          {{ current_user.first_name }}
-          {{ current_user.last_name }}
+          {{ current_user.get_fullname() }}
+        </span>
+      </div>
+      <div class="column">
+        <span style="font-weight: bold; font-size: 1.5rem;">
+          Email:
+        </span>
+        <span style="font-size: 1.25rem;">
+          {{ current_user.email }}
         </span>
       </div>
       <div class="column">
