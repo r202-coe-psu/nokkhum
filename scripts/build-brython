@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd /nokkhum/web/static/brython; \
+cd nokkhum/web/static/brython; \
 for i in $(ls -d */); \
 do \
 cd $i; \
