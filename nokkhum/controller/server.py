@@ -219,9 +219,9 @@ class ControllerServer:
         processor_compress_video_task = loop.create_task(
             self.process_compress_video_files()
         )
-        process_convert_video_task = loop.create_task(
-            self.process_convert_video_files()
-        )
+        # process_convert_video_task = loop.create_task(
+        #     self.process_convert_video_files()
+        # )
 
         try:
             loop.run_forever()
