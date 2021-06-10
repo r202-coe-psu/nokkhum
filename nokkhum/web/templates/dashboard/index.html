@@ -1,11 +1,15 @@
 {% extends '/base/default-dashboard.html' %}
 
 {% block content %}
-<h3>List of Video Record Shared</h3>
 <div class="ui stackable three column grid">
+  <div class="column sixteen wide">
+    <h3>List of Shared Video Record</h3>
+  </div>
   {% if not storage_share_list%}
-  <div class="ui warning message">
-    <p>No any shared video</p>
+  <div class="column sixteen wide" style="padding-top: 0px;">
+    <div class="ui warning message">
+      <p>No any shared video</p>
+    </div>
   </div>
   {% endif %}
   {% for storage in storage_share_list %}
