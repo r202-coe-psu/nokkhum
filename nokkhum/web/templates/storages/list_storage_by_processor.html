@@ -10,25 +10,35 @@
 {% endblock %}
 
 {% block content %}
-<div class="ui vertical segment">
+<div class="ui basic segment">
   <div class="ui stackable five column grid">
     {% if date_dirs | length == 0%}
-    <p style="padding-top: 1rem; padding-bottom: 1rem;"><span class="ui medium grey text">Don't have any directory in
-        this
-        processor.</span></p>
+    <p style="padding-top: 1rem; padding-bottom: 1rem;">
+      <span class="ui medium grey text">
+        Don't have any directory in this processor.
+      </span>
+    </p>
     {% endif %}
     {% for d in date_dirs %}
     <div class="column">
-      <a class="ui basic big button fluid" style="text-align: left;"
-        href="{{ url_for('storages.list_records_by_date', processor_id=processor.id, date_dir=d.name) }}">
-        <i class="grey folder icon"></i>
-        <span class="ui grey text">{{ d.name }}</span>
-      </a>
-      {% if camera.project.is_assistant_or_owner_or_security_guard(current_user) %}
-      <a href="{{ url_for('storages.share_storage', processor_id=processor.id, date_dir=d.name) }}">
-        Share
-      </a>
-      {% endif %}
+      <div class="ui card fluid">
+        <div class="content">
+          <div class="header">{{ d.name }}</div>
+        </div>
+        <div class="extra content">
+          <a class="ui button right floated"
+            href="{{ url_for('storages.list_records_by_date', processor_id=processor.id, date_dir=d.name) }}">
+            <i class="folder icon"></i>
+            View
+          </a>
+          {% if camera.project.is_assistant_or_owner_or_security_guard(current_user) %}
+          <a class="ui button left floated" href="{{ url_for('storages.share_storage', processor_id=processor.id, date_dir=d.name) }}">
+            <i class="share icon"></i>
+            Share
+          </a>
+          {% endif %}
+        </div>
+      </div>
     </div>
     {% endfor %}
   </div>
