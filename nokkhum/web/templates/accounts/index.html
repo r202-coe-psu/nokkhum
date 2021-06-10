@@ -10,21 +10,39 @@ Profile
 
 
 {% block content %}
-<div class="ui container">
-  <div class="ui segment">
-    <h2 class="ui header">Profile <a class="btn-floating btn-large waves-effect waves-light" href="{{ url_for('accounts.edit_profile') }}" title='Edit profile.'><i class="edit icon"></i></a>
-    </h2>
-    <div class="ui grid two column">
+<div class="ui container fluid">
+  <div class="ui basic segment">
+    <div class="ui grid one column stackable">
       <div class="column">
-        {{ current_user.first_name }}
+        <span style="font-weight: bold; font-size: 1.5rem;">
+          Name:
+        </span>
+        <span style="font-size: 1.25rem;">
+          {{ current_user.first_name }}
+          {{ current_user.last_name }}
+        </span>
       </div>
       <div class="column">
-        {{ current_user.last_name }}
+        <span style="font-weight: bold; font-size: 1.5rem;">
+          Organization:
+        </span>
+        {% if current_user.organization %}
+        <span class="ui teal label" style="font-size: 1.25rem;">
+          {{ current_user.organization }}
+        </span>
+        {% else %}
+        <div class="ui info message">
+          Update your organization
+        </div>
+        {% endif %}
       </div>
       <div class="column">
-        Organization: {{ current_user.organization }}
+        <a class="ui button primary icon labeled" href="{{ url_for('accounts.edit_profile') }}"
+          title='Edit profile.'>
+          <i class="edit icon"></i>
+          Edit
+        </a>
       </div>
-
     </div>
   </div>
 </div>
