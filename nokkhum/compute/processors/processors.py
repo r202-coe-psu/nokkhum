@@ -23,7 +23,7 @@ class Processor:
         self.args = [
                 self.programe,
                 '--processor_id', self.id,
-                '--directory', self.settings['NOKKHUM_PROCESSOR_RECORDER_PATH'],
+                '--directory', self.settings['NOKKHUM_PROCESSOR_RECORDER_CACHE_PATH'],
                 ]
         self.attributes = {}
 
