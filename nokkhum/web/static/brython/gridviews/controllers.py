@@ -3,10 +3,10 @@ from javascript import JSON
 
 
 class GridViewController:
-    def __init__(self, num_grids="4", save_gird_url="", get_grid_url=""):
-        self.num_grids = num_grids
+    def __init__(self, save_gird_url="", get_grid_url="", grid_id=""):
         self.save_gird_url = save_gird_url
         self.get_grid_url = get_grid_url
+        self.grid_id = grid_id
 
     def mouseover(self, ev):
         ev.target.style.cursor = "pointer"
@@ -60,9 +60,7 @@ class GridViewController:
         btn = html.A(
             Class="clear-btn icon rightbottom ui inverted red button circular",
         )
-        trash_icon = html.I(
-            Class="trash icon"
-        )
+        trash_icon = html.I(Class="trash icon")
         btn <= trash_icon
         display.clear()
         display <= img
@@ -89,7 +87,7 @@ class GridViewController:
             self.save_gird_url,
             data={
                 "displays": JSON.stringify(displays_data),
-                "num_grids": self.num_grids,
+                "grid_id": self.grid_id,
             },
             oncomplete=on_complete,
             headers={"Content-Type": "application/x-www-form-urlencoded"},
@@ -119,9 +117,9 @@ class GridViewController:
             display.bind("dragleave", self.dragleave)
             display.bind("drop", self.drop)
 
-        document["save-grid"].bind("click", self.save_grid)
+        document["update-grid"].bind("click", self.save_grid)
 
         ajax.get(
-            f"{self.get_grid_url}?grid={self.num_grids}",
+            f"{self.get_grid_url}?grid_id={self.grid_id}",
             oncomplete=self.initial_grid,
         )

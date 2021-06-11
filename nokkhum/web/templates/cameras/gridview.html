@@ -76,25 +76,35 @@
     <div class="ui form" style="padding-top: 1rem;">
       <form method="GET" name="grids-selector">
         <div class="fields">
-          <div class="twelve wide field">
-            <select name="name" id="name" onclick="this.form.submit()">
-              {% for name in gridviews_name%}
-              {% if name == request.args.get('gridviews_name','') %}
-              <option selected="selected">{{name}}</option>
+          <div class="eleven wide field">
+            <select name="grid_id" id="grid_id" onchange="this.form.submit()">
+
+              {% if not gridviews%}
+              <option value="">Please Create Grid Template First</option>
+              {%endif%}
+              {% for grid in gridviews %}
+              {{ grid.id}}
+              {% if grid.id |string == request.args.get('grid_id','') %}
+              <option selected="selected" value="{{grid.id}}">{{grid.name}}</option>
               {% else%}
-              <option value="{{name}}">{{name}}</option>
+              <option value="{{grid.id}}">{{grid.name}}</option>
               {% endif %}
               {% endfor %}
             </select>
+
+          </div>
+          <div class="five wide field">
+            {% if not gridviews %}
+            <a id="update-grid" class="ui right green disabled button">
+              {% else%}
+              <a id="update-grid" class="ui right green  button">
+
+                {% endif %}
+                Update
+              </a>
           </div>
         </div>
-        <div class="fields">
-          <div class="field">
-            <a id="update-grid" class="ui right green button">
-              Update
-            </a>
-          </div>
-        </div>
+
       </form>
     </div>
     <div class="ui segment">
@@ -135,7 +145,7 @@
     </div>
   </div>
   <div id="cameras_grid" class="column">
-    {% set grid=request.args.get("grid", 4) | int%}
+    {% set grid=num_grid | int%}
     {% if grid == 10 %}
     {% include "/base/grids/ten_grids.html" %}
     {% elif grid == 13 %}
@@ -158,18 +168,30 @@
         </div>
       </h2>
       <form class="ui large form" method="POST" action="{{ url_for('gridviews.create') }}">
+
         <div class="ui segment">
-          <div class="required field">
-            <label>Grid Template Name</label>
-            <input type="text" name="name" required>
+          <div class="fields">
+            <div class="ten wide required field">
+              <label>Grid Template Name</label>
+              <input type="text" name="name" required>
+            </div>
+            <div class="four wide field">
+              <label>Number of Grids</label>
+              <select name="grid" id="grid">
+                {% for num in num_grids %}
+                <option value="{{num}}">{{num}} Grids</option>
+                {% endfor %}
+              </select>
+            </div>
           </div>
           <div class="right actions">
-            <div class="ui deny button">
-              Cancel
-            </div>
             <button type="submit" class="ui green button">
               Create
             </button>
+            <div class="ui deny button">
+              Cancel
+            </div>
+
           </div>
         </div>
       </form>
@@ -179,7 +201,7 @@
 <script type="text/python">
 from gridviews import controllers
 
-gridview = controllers.GridViewController({{request.args.get('grid', 4) | int}}, save_gird_url= "{{ url_for('gridviews.save')}}",  get_grid_url= "{{ url_for('gridviews.get_grid')}}")
+gridview = controllers.GridViewController(grid_id="{{request.args.get('grid_id', grid_id)}}", save_gird_url= "{{ url_for('gridviews.save')}}",  get_grid_url= "{{ url_for('gridviews.get_grid')}}")
 gridview.start()
 </script>
 {% endblock %}
@@ -200,6 +222,7 @@ gridview.start()
   $('.item')
     .popup()
     ;
+
   /* Get into full screen */
   function GoInFullscreen(element) {
     if (element.requestFullscreen)
