@@ -64,15 +64,15 @@
       <i class="left chevron icon"></i>
       Dashboard
     </a>
-    <button class="ui icon primary button fluid" style="margin-top: 1rem;" type="button" id="fullscreen_btn">
+    <a class="ui icon primary button fluid" style="margin-top: 1rem;" type="button" id="fullscreen_btn">
       <i class="expand icon"></i>
       เต็มจอ
-    </button>
-    <button id="create-grid-template-btn" class="ui icon green button fluid" style="margin-top: 1rem;" type="button"
+    </a>
+    <a id="create-grid-template-btn" class="ui icon green button fluid" style="margin-top: 1rem;" type="button"
       id="fullscreen_btn">
       <i class="add icon"></i>
       New Grid Template
-    </button>
+    </a>
     <div class="ui form" style="padding-top: 1rem;">
       <form method="GET" name="grids-selector">
         <div class="fields">
@@ -97,7 +97,7 @@
             {% if not gridviews %}
             <a id="update-grid" class="ui right green disabled button">
               {% else%}
-              <a id="update-grid" class="ui right green  button">
+              <a id="update-grid" class="ui right green button">
 
                 {% endif %}
                 Update

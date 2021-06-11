@@ -74,10 +74,16 @@ class GridViewController:
     def save_grid(self, ev):
         def on_complete(req):
             if req.status == 200:
-                print(req.text)
+                # print(req.text)
+                document["update-grid"].className = "ui right green button"
+                document.select("body")[0].toast(
+                    {"class": "success", "message": "You're using the good framework !"}
+                )
+
             else:
                 print("error ", req.text)
 
+        ev.target.className = "ui loading button"
         displays = document.select(".displays")
         displays_data = {}
         for display in displays:
