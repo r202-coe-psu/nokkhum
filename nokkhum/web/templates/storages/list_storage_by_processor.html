@@ -24,15 +24,16 @@
       <div class="ui card fluid">
         <div class="content" style="text-align: center">
           <div class="header">{{ d.name }}</div>
+          {# ไปดูใน model processor เพื่อเอาข้อมูล #}
         </div>
         <div class="extra content">
-          <a class="ui right floated" style="margin-top: 0.5rem;"
+          <a class="ui left floated" style="margin-top: 0.5rem;"
             href="{{ url_for('storages.list_records_by_date', processor_id=processor.id, date_dir=d.name) }}">
             <i class="folder icon"></i>
             View
           </a>
           {% if camera.project.is_assistant_or_owner_or_security_guard(current_user) %}
-          <a class="ui left floated" style="margin-top: 0.5rem;"
+          <a class="ui right floated" style="margin-top: 0.5rem;"
             href="{{ url_for('storages.share_storage', processor_id=processor.id, date_dir=d.name) }}">
             <i class="share icon"></i>
             Share
