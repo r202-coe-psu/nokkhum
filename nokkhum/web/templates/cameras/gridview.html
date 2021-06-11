@@ -68,10 +68,15 @@
       <i class="expand icon"></i>
       เต็มจอ
     </button>
+    <button id="create-grid-template-btn" class="ui icon green button fluid" style="margin-top: 1rem;" type="button"
+      id="fullscreen_btn">
+      <i class="add icon"></i>
+      New Grid Template
+    </button>
     <div class="ui form" style="padding-top: 1rem;">
       <form method="GET" name="grids-selector">
         <div class="fields">
-          <div class="sixteen wide field">
+          <div class="twelve wide field">
             <select name="name" id="name" onclick="this.form.submit()">
               {% for name in gridviews_name%}
               {% if name == request.args.get('gridviews_name','') %}
@@ -82,21 +87,8 @@
               {% endfor %}
             </select>
           </div>
-        </div>
-        <div class="fields">
-          <div class="twelve wide field">
-            <select name="grid" id="grid" onclick="this.form.submit()">
-              {% for num in num_grids %}
-              {% if num == request.args.get('grid', 4) | int %}
-              <option selected="selected">{{num}} Grids</option>
-              {% else%}
-              <option value="{{num}}">{{num}} Grids</option>
-              {% endif %}
-              {% endfor %}
-            </select>
-          </div>
-          <a id="save-grid" class="ui right green button">
-            Save
+          <a id="update-grid" class="ui right primary button">
+            Update
           </a>
         </div>
       </form>
@@ -153,6 +145,33 @@
     {% endif %}
   </div>
 </div>
+<div class="ui create small modal">
+  <div class="ui middle aligned grid">
+    <div class="column">
+      <h2 class="header">
+        <div class="content" style="margin-top: 1rem; margin-left: 1rem;">
+          Add New Grid Template
+        </div>
+      </h2>
+      <form class="ui large form" method="POST" action="{{ url_for('gridviews.create') }}">
+        <div class="ui segment">
+          <div class="required field">
+            <label>Grid Template Name</label>
+            <input type="text" name="name" required>
+          </div>
+          <div class="right actions">
+            <div class="ui deny button">
+              Cancel
+            </div>
+            <button type="submit" class="ui green button">
+              Create
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 <script type="text/python">
 from gridviews import controllers
 
@@ -162,6 +181,17 @@ gridview.start()
 {% endblock %}
 
 {% block additional_js %}
+<script>
+  $(function () {
+    $("#create-grid-template-btn").click(function () {
+      $(".ui.modal.create").modal('show');
+    });
+    $(".ui.modal.create").modal({
+      closable: true
+    });
+  });
+
+</script>
 <script>
   $('.item')
     .popup()
