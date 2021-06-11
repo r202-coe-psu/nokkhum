@@ -34,7 +34,7 @@ class StorageController:
     def compress(self, output_filename, video):
         with tarfile.open(output_filename, f"w:{self.settings['TAR_TYPE']}") as tar:
             tar.add(video, arcname=os.path.basename(video))
-            return output_filename
+            return [output_filename, video]
 
     async def process_compression_result(self):
         if self.compression_queue.empty():
@@ -45,8 +45,10 @@ class StorageController:
             while not future_result.done():
                 await asyncio.sleep(0.001)
             try:
-                tar_file = future_result.result()
-                logger.debug(tar_file)
+                result = future_result.result()
+                tar_file = result[0]
+                # logger.debug(tar_file)
+                video_mp4 = result[1]
                 tar_path = pathlib.Path(tar_file)
                 tar_path.rename(
                     pathlib.Path(
@@ -56,8 +58,40 @@ class StorageController:
                         )
                     )
                 )
+                video_mp4.unlink()
             except Exception as e:
                 logger.exception(e)
+
+    def check_file_log(self, date_dir):
+        for log in date_dir.iterdir():
+            if len(log.name.split(".")) < 3:
+                continue
+            date = log.name.split(".")[-1]
+            log_date = datetime.datetime.strptime(date, "%Y-%m-%d")
+            if (
+                datetime.datetime.now() - datetime.timedelta(days=7)
+            ).date() >= log_date.date():
+                log.unlink()
+
+    async def remove_empty_video_records_cache(self):
+        for processor_dir in self.cache_path.iterdir():
+            for date_dir in processor_dir.iterdir():
+                if date_dir.name == "log":
+                    self.check_file_log(date_dir)
+                    continue
+                year = int(date_dir.name[0:4])
+                month = int(date_dir.name[4:6])
+                day = int(date_dir.name[6:8])
+                expired_date = datetime.date.today() - datetime.timedelta(days=1)
+                expired_date = datetime.datetime.combine(
+                    expired_date, datetime.time(0, 0, 0)
+                )
+                if datetime.datetime(year, month, day) > expired_date:
+                    continue
+                if date_dir.iterdir():
+                    continue
+
+                date_dir.unlink(missing_ok=True)
 
     def check_video_file_name(self, video):
         filename = video.parents[0] / video.name[1:]
@@ -80,28 +114,38 @@ class StorageController:
     async def convert_video_files(self):
         logger.debug("start convert file mkv")
         data = {}
-        try:
-            for processor_dir in self.cache_path.iterdir():
-                for date_dir in processor_dir.iterdir():
-                    if not (date_dir.name).isdigit():
+        # try:
+        for processor_dir in self.cache_path.iterdir():
+            for date_dir in processor_dir.iterdir():
+                if not (date_dir.name).isdigit():
+                    continue
+                for video in date_dir.iterdir():
+                    if (date_dir / f"{video.name.split('.')[0]}.mp4").exists():
                         continue
-                    for video in date_dir.iterdir():
-                        if (date_dir / f"{video.name.split('.')[0]}.mp4").exists():
-                            continue
-                        if video.suffix != ".mkv":
-                            continue
-                        if video.name[0] == "_":
-                            self.check_video_file_name(video)
-                            continue
-                        result = self.loop.run_in_executor(
-                            self.convertion_pool, self.convert, video
+                    if video.suffix == ".png":
+                        new_image_path = (
+                            self.recorder_path
+                            / processor_dir.stem
+                            / date_dir.stem
+                            / video.name
                         )
-                        if not self.convertion_queue.full():
-                            await self.convertion_queue.put(result)
-                        else:
-                            return
-        except Exception as e:
-            logger.exception(e)
+                        if new_image_path.exists:
+                            continue
+                        video.rename(new_image_path)
+                    if video.suffix != ".mkv":
+                        continue
+                    if video.name[0] == "_":
+                        self.check_video_file_name(video)
+                        continue
+                    result = self.loop.run_in_executor(
+                        self.convertion_pool, self.convert, video
+                    )
+                    if not self.convertion_queue.full():
+                        await self.convertion_queue.put(result)
+                    else:
+                        return
+        # except Exception as e:
+        #     logger.exception(e)
 
     def convert(self, video):
         try:
@@ -137,15 +181,10 @@ class StorageController:
                 output_filename = (
                     f"{video.args[3].split('.')[0]}.tar.{self.settings['TAR_TYPE']}"
                 )
-                logger.debug("Prepare file 1")
                 video_file = pathlib.Path(video.args[3])
                 new_path = pathlib.Path(video.args[3].replace("/_", "/"))
-                logger.debug("Prepare file 2")
-
                 video_file.rename(new_path)
                 video.args[2].unlink()
-                logger.debug("Prepare file 3")
-
                 result = self.loop.run_in_executor(
                     self.compression_pool, self.compress, output_filename, new_path
                 )

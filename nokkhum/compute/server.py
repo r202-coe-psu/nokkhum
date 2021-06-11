@@ -182,6 +182,25 @@ class ComputeNodeServer:
             await self.storage_controller.process_convertion_result()
             await asyncio.sleep(10)
 
+    async def process_expired_compute(self):
+        time_check = self.settings["DAIRY_TIME_TO_REMOVE"]
+        hour, minute = time_check.split(":")
+        process_time = datetime.time(int(hour), int(minute), 0)
+
+        while self.running:
+            logger.debug("start process expired data")
+            date = datetime.date.today()
+            time_set = datetime.datetime.combine(date, process_time)
+            time_to_check = time_set - datetime.datetime.now()
+
+            # logger.debug(f'time to sleep {time_to_check.seconds}')
+            try:
+                await asyncio.sleep(time_to_check.seconds)
+                await self.storage_controller.remove_empty_video_records_cache()
+
+            except Exception as e:
+                logger.exception(e)
+
     async def set_up(self, loop):
         self.nc = NATS()
         await self.nc.connect(self.settings["NOKKHUM_MESSAGE_NATS_HOST"], loop=loop)
