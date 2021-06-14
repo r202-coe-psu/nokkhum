@@ -68,10 +68,13 @@
       <i class="expand icon"></i>
       เต็มจอ
     </a>
-    <a id="create-grid-template-btn" class="ui icon green button fluid" style="margin-top: 1rem;" type="button"
-      id="fullscreen_btn">
+    <a id="create-grid-template-btn" class="ui icon green button fluid" style="margin-top: 1rem;" type="button">
       <i class="add icon"></i>
       New Grid Template
+    </a>
+    <a id="manage-grid-template-btn" class="ui icon orange button fluid" style="margin-top: 1rem;" href="#">
+      <i class="tasks icon"></i>
+      Manage Grid Template
     </a>
     <div class="ui form" style="padding-top: 1rem;">
       <form method="GET" name="grids-selector">
@@ -95,9 +98,9 @@
           </div>
           <div class="five wide field">
             {% if not gridviews %}
-            <a id="update-grid" class="ui right green disabled button">
+            <a id="update-grid" class="ui right primary disabled button">
               {% else%}
-              <a id="update-grid" class="ui right green button">
+              <a id="update-grid" class="ui right primary button">
 
                 {% endif %}
                 Update
@@ -198,6 +201,43 @@
     </div>
   </div>
 </div>
+<div class="ui manage modal">
+  <div class="ui middle aligned grid">
+    <div class="column">
+      <h2 class="header">
+        <div class="content" style="margin-top: 1rem; margin-left: 1rem;">
+          Manage Grid Template
+        </div>
+      </h2>
+      <div class="ui segment">
+        <table class="ui celled table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Grid Numbers</th>
+              <th>Manage</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for grid in gridviews %}
+            <tr>
+              <td data-label="Name">{{ grid.name }}</td>
+              <td data-label="Grid Numbers">{{ grid.num_grid }}</td>
+              <td data-label="Manage"><a href="{{ url_for('gridviews.delete', grid_id=grid.id)}}">
+                  <i class="circular trash red icon"></i></a></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        <div class="right actions">
+          <div class="ui deny button">
+            Back
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 <script type="text/python">
 from gridviews import controllers
 
@@ -213,6 +253,14 @@ gridview.start()
       $(".ui.modal.create").modal('show');
     });
     $(".ui.modal.create").modal({
+      closable: true
+    });
+  });
+  $(function () {
+    $("#manage-grid-template-btn").click(function () {
+      $(".ui.modal.manage").modal('show');
+    });
+    $(".ui.modal.manage").modal({
       closable: true
     });
   });

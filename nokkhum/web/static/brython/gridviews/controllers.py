@@ -75,7 +75,7 @@ class GridViewController:
         def on_complete(req):
             if req.status == 200:
                 # print(req.text)
-                document["update-grid"].className = "ui right green button"
+                document["update-grid"].className = "ui right primary button"
                 document.select("body")[0].toast(
                     {"class": "success", "message": "You're using the good framework !"}
                 )

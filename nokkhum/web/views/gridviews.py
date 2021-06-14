@@ -35,7 +35,7 @@ def index():
     else:
         if gridviews:
             grid_id = str(gridviews[0].id)
-
+            num_grid = gridviews[0].num_grid
     projects = models.Project.objects(
         # Q(name__icontains=project_search)
         Q(status="active")
@@ -61,7 +61,6 @@ def index():
 @login_required
 def create():
     data = request.form
-    print(data)
     num_grid = data["grid"]
     name = data["name"]
     models.GridView(
@@ -116,3 +115,19 @@ def get_grid():
         displays_data = gridview.data
 
     return jsonify(displays_data)
+
+
+@module.route("/delete/<grid_id>", methods=["GET", "POST"])
+@login_required
+def delete(grid_id):
+    gridview = models.GridView.objects(
+        user=current_user._get_current_object(), id=grid_id
+    ).first()
+    if not gridview:
+        return Response(
+            "{'status':'Not found grid template'}",
+            status=404,
+            mimetype="application/json",
+        )
+    gridview.delete()
+    return redirect(url_for("gridviews.index"))
