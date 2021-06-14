@@ -23,9 +23,19 @@ module = Blueprint("gridviews", __name__, url_prefix="/gridviews")
 def index():
     num_grids = [4, 10, 13, 16, 32]
     # user = models.User.objects.get(id=current_user._get_current_object().id)
-    gridviews_name = models.GridView.objects(
-        user=current_user._get_current_object()
-    ).values_list("name")
+    gridviews = models.GridView.objects(user=current_user._get_current_object())
+    grid_id = request.args.get("grid_id")
+    num_grid = 4
+    if grid_id:
+        gridview = models.GridView.objects(
+            user=current_user._get_current_object(), id=grid_id
+        ).first()
+        if gridview:
+            num_grid = gridview.num_grid
+    else:
+        if gridviews:
+            grid_id = str(gridviews[0].id)
+
     projects = models.Project.objects(
         # Q(name__icontains=project_search)
         Q(status="active")
@@ -41,8 +51,26 @@ def index():
         "/cameras/gridview.html",
         projects=projects,
         num_grids=num_grids,
-        gridviews_name=gridviews_name,
+        gridviews=gridviews,
+        grid_id=grid_id,
+        num_grid=num_grid,
     )
+
+
+@module.route("/create", methods=["GET", "POST"])
+@login_required
+def create():
+    data = request.form
+    print(data)
+    num_grid = data["grid"]
+    name = data["name"]
+    models.GridView(
+        user=current_user._get_current_object(),
+        name=name,
+        num_grid=num_grid,
+        data={"status": "initial"},
+    ).save()
+    return redirect(url_for("gridviews.index"))
 
 
 @module.route("/save-gridviews", methods=["GET", "POST"])
@@ -50,13 +78,15 @@ def index():
 def save():
     data = request.form
     displays_data = data["displays"]
-    num_grids = data["num_grids"]
+    grid_id = data["grid_id"]
     gridview = models.GridView.objects(
-        user=current_user._get_current_object(), type=f"grid-{num_grids}"
+        user=current_user._get_current_object(), id=grid_id
     ).first()
     if not gridview:
-        gridview = models.GridView(
-            user=current_user._get_current_object(), type=f"grid-{num_grids}"
+        return Response(
+            "{'status':'Not found grid template'}",
+            status=404,
+            mimetype="application/json",
         )
     # print("1", displays_data)
     displays_data = json.loads(displays_data)
@@ -71,13 +101,17 @@ def save():
 def get_grid():
     # data = request.form
     displays_data = {}
-    num_grids = request.args.get("grid", 4)
-    if "?" in num_grids:
-        num_grids, _ = num_grids.split("?")
-
-    gridview = models.GridView.objects(
-        user=current_user._get_current_object(), type=f"grid-{num_grids}"
-    ).first()
+    grid_id = request.args.get("grid_id")
+    if "?" in grid_id:
+        grid_id, _ = grid_id.split("?")
+    if grid_id:
+        gridview = models.GridView.objects(
+            id=grid_id, user=current_user._get_current_object()
+        ).first()
+    else:
+        gridview = models.GridView.objects(
+            user=current_user._get_current_object()
+        ).first()
     if gridview:
         displays_data = gridview.data
 

@@ -49,7 +49,6 @@ class StorageController:
             expired_date = datetime.date.today() - datetime.timedelta(
                 days=storage_period
             )
-            # logger.debug(f'{expired_date}')
             expired_date = datetime.datetime.combine(
                 expired_date, datetime.time(0, 0, 0)
             )
@@ -68,17 +67,13 @@ class StorageController:
                 year = int(dir_file.name[0:4])
                 month = int(dir_file.name[4:6])
                 day = int(dir_file.name[6:8])
-                # logger.debug(f'{dir_file.name}')
 
                 if datetime.datetime(year, month, day) > expired_date:
-                    # logger.debug('not expired')
                     continue
 
                 # logger.debug('expired')
                 images_path = files_path / dir_file
-                # logger.debug(f'{images_path}')
                 for image_file in images_path.iterdir():
-                    # logger.debug(f'>>>>> {image_file}')
                     image_file.unlink()
 
                 dir_file.rmdir()
@@ -131,23 +126,12 @@ class StorageController:
         logger.debug("remove mp4 finish")
 
     def compress(self, output_filename, video):
-        # try:
-        #     logger.debug("converting")
-        #     name = video.name.split(".")[0]
-        #     with_mp4 = str(video.parents[0]) + name + ".mp4"
-        #     result = ffmpeg.input(video).output(with_mp4).run_async(overwrite_output=True)
-        #     logger.debug("waiting")
-        #     result.wait()
-        #     logger.debug("compressing")
         with tarfile.open(output_filename, f"w:{self.settings['TAR_TYPE']}") as tar:
             tar.add(video, arcname=os.path.basename(video))
             return output_filename
-        # except Exception as e:
-        #     logger.exception(e)
 
     async def process_compression_result(self):
         if self.compression_queue.empty():
-            # await asyncio.sleep(0.1)
             return
 
         while not self.compression_queue.empty():
@@ -159,8 +143,6 @@ class StorageController:
                 logger.debug(tar_file)
                 tar_path = pathlib.Path(tar_file)
                 tar_path.rename(pathlib.Path(tar_file.replace("/_", "/")))
-            # logger.debug(f"remove video {video}")
-            # video.unlink()
             except Exception as e:
                 logger.exception(e)
 
@@ -171,7 +153,6 @@ class StorageController:
             / data["date_dir"]
             / f'{data["filename"]}.mp4'
         )
-        # logger.debug(f"{mp4_path}>>>>>{mp4_path.exists()}")
 
         if mp4_path.exists():
             return
@@ -189,30 +170,12 @@ class StorageController:
         except Exception as e:
             logger.exception(e)
 
-    # async def compress_video_files(self):
-    #     logger.debug("start compress file mp4")
-    #     for processor_dir in self.path.iterdir():
-    #         for date_dir in processor_dir.iterdir():
-    #             if not (date_dir.name).isdigit():
-    #                 continue
-    #             for video in date_dir.iterdir():
-    #                 if video.suffix != ".mp4":
-    #                     continue
-    #                 if video.name[0] == "_":
-    #                     continue
-    #                 # logger.debug(video)
-    #                 output_filename = f'{date_dir/pathlib.Path(video.name.split(".")[0])}.tar.{self.settings["TAR_TYPE"]}'
-    #                 result = self.loop.run_in_executor(
-    #                     self.compression_pool, self.compress, output_filename, video
-    #                 )
-    #                 if not self.compression_queue.full():
-    #                     await self.compression_queue.put(result)
-    #                 else:
-    #                     return
-
     def check_video_file_name(self, video):
         filename = video.parents[0] / video.name[1:]
-        _, date, time, _ = video.name.split("-")
+        if "motion" in video.name:
+            _, date, time, _, _ = video.name.split("-")
+        else:
+            _, date, time, _ = video.name.split("-")
         file_date = datetime.datetime(
             int(date[:4]),
             int(date[4:6]),
@@ -240,11 +203,6 @@ class StorageController:
                     if video.name[0] == "_":
                         self.check_video_file_name(video)
                         continue
-                    # if not video.name in data:
-                    #     data[video.name] = 0
-                    # data[video.name] += 1
-                    # output_filename = f'{date_dir/pathlib.Path(video.name.split(".")[0])}.tar.{self.settings["TAR_TYPE"]}'
-                    # logger.debug(f"dataaaaaaaaaaa {data}")
                     result = self.loop.run_in_executor(
                         self.convertion_pool, self.convert, video
                     )
@@ -261,7 +219,6 @@ class StorageController:
             mp4_path = pathlib.Path(with_mp4.replace("/_", "/"))
             if mp4_path.exists():
                 return
-            # logger.debug(f">>>>>>> {with_mp4}")
             result = (
                 ffmpeg.input(video)
                 .output(with_mp4)
@@ -275,25 +232,18 @@ class StorageController:
 
     async def process_convertion_result(self):
         if self.convertion_queue.empty():
-            # await asyncio.sleep(0.1)
             return
 
         while not self.convertion_queue.empty():
             future_result = await self.convertion_queue.get()
-            # try:
             while not future_result.done():
                 await asyncio.sleep(0.001)
             video = future_result.result()
             if not video:
                 return
-            # logger.debug(f">>>>>>>>>>> {video.__dict__}")
-            # except Exception as e:
-            #     logger.exception(e)
-            # video_file_path = pathlib.Path()
             output_filename = (
                 f"{video.args[3].split('.')[0]}.tar.{self.settings['TAR_TYPE']}"
             )
-            # output_filename = f'{date_dir/pathlib.Path(video.name.split(".")[0])}.tar.{self.settings["TAR_TYPE"]}'
             video_file = pathlib.Path(video.args[3])
             new_path = pathlib.Path(video.args[3].replace("/_", "/"))
             video_file.rename(new_path)
