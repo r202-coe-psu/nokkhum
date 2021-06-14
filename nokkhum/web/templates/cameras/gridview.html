@@ -222,7 +222,7 @@
             {% for grid in gridviews %}
             <tr>
               <td data-label="Name">{{ grid.name }}</td>
-              <td data-label="Grid Numbers">{{ grid.num_grid }}</td>
+              <td data-label="Grid Numbers">{{ grid.num_grid }} Grids</td>
               <td data-label="Manage"><a href="{{ url_for('gridviews.delete', grid_id=grid.id)}}">
                   <i class="circular trash red icon"></i></a></td>
             </tr>
