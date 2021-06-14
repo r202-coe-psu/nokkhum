@@ -34,6 +34,9 @@ class ImageAcquisitor(threading.Thread):
         else:
             self.size = capture.get_size()
 
+        self.check_status_sleep = 2
+        self.check_status_timeout = 5
+
     def reconnect_camera(self):
         counter = 0
         self.capture.close()
@@ -71,6 +74,16 @@ class ImageAcquisitor(threading.Thread):
     def stop(self):
         self.running = False
 
+    def check_acquisitor_status(self):
+        while self.running:
+            time.sleep(self.check_status_sleep)
+            now = datetime.datetime.now()
+            diff = now - self.check_point_date
+            if diff.seconds > self.check_status_timeout:
+                logger.debug(f'Cannot acquire image abount {diff}')
+                self.running = False
+
+
     def run(self):
         logger.debug("Start ImageAcquisitor")
         self.running = True
@@ -78,6 +91,13 @@ class ImageAcquisitor(threading.Thread):
         start_date = datetime.datetime.now()
         counter = 0
         drop_frame = -1
+
+
+        checking_status_thread = threading.Thread(
+                target=self.check_acquisitor_status,
+                daemon=True,
+                )
+        checking_status_thread.start()
 
         while self.running:
             try:
@@ -121,4 +141,5 @@ class ImageAcquisitor(threading.Thread):
                         logger.debug("Queue is full try to sleep")
                         time.sleep(0.1)
 
+        checking_status_thread.join()
         logger.debug("End ImageAcquisitor")
