@@ -99,7 +99,7 @@ class ControllerServer:
                 await self.storage_controller.remove_mp4_file()
                 await asyncio.sleep(1)
                 await self.storage_controller.remove_web_log_file()
-
+                await asyncio.sleep(10)
             except Exception as e:
                 logger.exception(e)
 

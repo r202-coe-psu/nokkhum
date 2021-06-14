@@ -79,19 +79,21 @@ class StorageController:
                 if date_dir.name == "log":
                     self.check_file_log(date_dir)
                     continue
+
                 year = int(date_dir.name[0:4])
                 month = int(date_dir.name[4:6])
                 day = int(date_dir.name[6:8])
-                expired_date = datetime.date.today() - datetime.timedelta(days=1)
+                expired_date = datetime.date.today() - datetime.timedelta(days=2)
                 expired_date = datetime.datetime.combine(
                     expired_date, datetime.time(0, 0, 0)
                 )
                 if datetime.datetime(year, month, day) > expired_date:
                     continue
-                if date_dir.iterdir():
-                    continue
-
-                date_dir.unlink(missing_ok=True)
+                # if date_dir.iterdir():
+                #     logger.debug("have file continue")
+                #     continue
+                # logger.debug(date_dir.name)
+                date_dir.rmdir()
 
     def check_video_file_name(self, video):
         filename = video.parents[0] / video.name[1:]
