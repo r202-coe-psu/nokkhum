@@ -1,15 +1,51 @@
 import mongoengine as me
 from flask import current_app
+import datetime
 
 
-class CameraModel(me.EmbeddedDocument):
+class CameraBrand(me.Document):
+    meta = {"collection": "camera_brands"}
+
     name = me.StringField(required=True)
-    format_parameter = me.ListField(me.StringField)
-    rtsp_url = me.StringField(required=True)
+    # camera_models = me.ListField(me.EmbeddedDocumentField(CameraModel))
+    created_date = me.DateTimeField(required=True, default=datetime.datetime.now())
+    updated_date = me.DateTimeField(
+        required=True,
+        auto_now=True,
+        auto_now_add=False,
+        default=datetime.datetime.now(),
+    )
+
+
+class CameraModel(me.Document):
+    meta = {"collection": "camera_models"}
+
+    brand = me.ReferenceField("CameraBrand", dbref=True)
+
+    models = me.ListField(
+        me.StringField(required=True, default=""), required=True, default=[""]
+    )
+
+    protocal = me.StringField(
+        required=True,
+        default="rtsp",
+        choices=(("rtsp", "rtsp://"), ("http", "http://")),
+    )
+    path = me.StringField(required=True, default="", max_length=200)
+
+    created_date = me.DateTimeField(required=True, default=datetime.datetime.now())
+    updated_date = me.DateTimeField(
+        required=True,
+        auto_now=True,
+        auto_now_add=False,
+        default=datetime.datetime.now(),
+    )
+
 
 class MotionProperty(me.EmbeddedDocument):
     active = me.BooleanField(default=False, required=True)
     sensitivity = me.FloatField(min_value=0, max_value=100, default=50, required=True)
+
 
 class Camera(me.Document):
     meta = {"collection": "cameras"}
@@ -38,10 +74,3 @@ class Camera(me.Document):
         from . import projects
 
         return projects.Project.objects(cameras__contains=self).first()
-
-
-class CameraBrand(me.Document):
-    meta = {"collection": "camera_brands"}
-
-    name = me.StringField(required=True)
-    camera_models = me.ListField(me.EmbeddedDocumentField(CameraModel))

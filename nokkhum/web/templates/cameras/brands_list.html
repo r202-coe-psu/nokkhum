@@ -1,0 +1,121 @@
+{% extends '/projects/project.html' %}
+{% import '/base/html-renderer.html' as renderer %}
+{% block title %}
+Camera Settings
+{% endblock %}
+{% block additional_head %}
+<style>
+  .icon-centered {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+</style>
+{% endblock %}
+{% block dashboard_title %}
+Camera Settings
+{% endblock %}
+{% block content %}
+<a id="create-camera-brand-btn" class="ui green button">
+  Add New Camera Brand
+</a>
+{% if not camera_brands %}
+<div class="ui warning message">
+  <p>Not found any Camera brands</p>
+</div>
+
+{% else%}
+<table class="ui celled table">
+  <thead>
+    <tr>
+      <th>Camera Brand Name</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for brand in camera_brands %}
+    <tr>
+      <td data-label="Camera Brand Name"><a href="">{{ brand.name }} <i class="eye icon"></i></a></td>
+      <td data-label="Action">
+        <a href="">
+          <i class="circular inverted primary edit icon"></i>
+        </a>
+        <a id="btn-delete-modal-{{brand.id}}">
+          <i class="circular inverted red trash icon"></i>
+        </a>
+      </td>
+    </tr>
+    <div class="ui tiny modal" id="delete-brands-{{brand.id}}">
+      <i class="close icon"></i>
+      <div class="header">
+        Delete
+      </div>
+      <div class="image content">
+        <div class="description">
+          Are you sure you want to delete : "{{ brand.name }}"
+        </div>
+      </div>
+      <div class="actions">
+        <div class="ui red cancel button"><i class="remove icon"></i>No</div>
+        <a class="ui green ok button"
+          href="{{ url_for('administration.camera_settings.delete_brand', brand_id=brand.id) }}">
+          <i class="checkmark icon"></i>Yes</a>
+      </div>
+      {% endfor %}
+  </tbody>
+</table>
+
+{% endif %}
+
+<div class="ui create-camera-brand small modal">
+  <div class="ui middle aligned grid">
+    <div class="column">
+      <h2 class="header">
+        <div class="content" style="margin-top: 1rem; margin-left: 1rem;">
+          Add New Camera Brand
+        </div>
+      </h2>
+      <form class="ui large form" method="POST" action="{{ url_for('administration.camera_settings.create_brand') }}">
+        <div class="ui segment">
+          <div class="fields">
+            <div class="ten wide required field">
+              <label>Camera Brand Name</label>
+              <input type="text" name="name" required>
+            </div>
+          </div>
+          <div class="right actions">
+            <button type="submit" class="ui green button">
+              Create
+            </button>
+            <div class="ui deny button">
+              Cancel
+            </div>
+
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block additional_js %}
+<script>
+  $(function () {
+    $("#create-camera-brand-btn").click(function () {
+      $(".ui.modal.create-camera-brand").modal('show');
+    });
+    $(".ui.modal.create-camera-brand").modal({
+      closable: true
+    });
+  });
+
+</script>
+<script type="text/javascript">
+  {% for brand in camera_brands %}
+  $('#btn-delete-modal-{{brand.id}}').click(function () {
+    $('#delete-brands-{{brand.id}}').modal('show');
+  });
+  {% endfor %}
+</script>
+{% endblock %}
