@@ -260,11 +260,7 @@ class ProcessorServer:
         processor.stop()
         processor.join()
         self.processors["video-recorder"] = None
-
-
         # logger.debug(f'q size {len(self.image_queues)}')
-
-
 
 
     def init_dispatcher(self, command):

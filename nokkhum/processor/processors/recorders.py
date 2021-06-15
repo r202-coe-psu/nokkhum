@@ -118,8 +118,13 @@ class VideoRecorder(threading.Thread):
         begin_date = datetime.datetime.now()
 
         while self.running:
+            if self.queue.empty():
+                time.sleep(0.001)
+                continue
+
+            image = None
             try:
-                image = self.queue.get()
+                image = self.queue.get(timeout=1)
                 if image is None:
                     self.running = False
                     continue
