@@ -241,7 +241,7 @@ class ProcessorServer:
         processor = self.processors["video-recorder"]
 
         # logger.debug(f'q size {len(self.image_queues)}')
-        input_queue = processor.input_queue
+        input_queue = processor.queue
         if input_queue in self.capture_output_queues:
             self.capture_output_queues.remove(input_queue)
         self.image_queues.remove(input_queue)
