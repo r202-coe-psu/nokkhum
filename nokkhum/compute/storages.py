@@ -6,6 +6,7 @@ import logging
 import pathlib
 import tarfile
 import os
+import shutil
 import concurrent.futures
 import ffmpeg
 
@@ -50,14 +51,23 @@ class StorageController:
                 # logger.debug(tar_file)
                 video_mp4 = result[1]
                 tar_path = pathlib.Path(tar_file)
-                tar_path.rename(
-                    pathlib.Path(
+                # tar_path.rename(
+                #     pathlib.Path(
+                #         tar_file.replace("/_", "/").replace(
+                #             self.settings["NOKKHUM_PROCESSOR_RECORDER_CACHE_PATH"],
+                #             self.settings["NOKKHUM_PROCESSOR_RECORDER_PATH"],
+                #         )
+                #     )
+                # )
+                new_tar_paht = pathlib.Path(
                         tar_file.replace("/_", "/").replace(
                             self.settings["NOKKHUM_PROCESSOR_RECORDER_CACHE_PATH"],
                             self.settings["NOKKHUM_PROCESSOR_RECORDER_PATH"],
                         )
                     )
-                )
+
+                shutil.move(tar_path, new_tar_paht)
+
                 video_mp4.unlink()
             except Exception as e:
                 logger.exception(e)
