@@ -143,11 +143,12 @@ class StorageController:
                             / date_dir.stem
                             / video.name
                         )
-                        if new_image_path.parent.exists():
+                        if new_image_path.exists():
                             continue
                         if not new_image_path.parent.exists():
                             new_image_path.parent.mkdir(parents=True)
-                        video.rename(new_image_path)
+                        # video.rename(new_image_path)
+                        shutil.move(video, new_image_path)
 
                     if video.suffix != ".mkv":
                         continue
