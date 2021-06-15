@@ -143,17 +143,23 @@ class StorageController:
                             / date_dir.stem
                             / video.name
                         )
-                        if new_image_path.exists:
+                        if new_image_path.parent.exists():
                             continue
+                        if not new_image_path.parent.exists():
+                            new_image_path.parent.mkdir(parents=True)
                         video.rename(new_image_path)
+
                     if video.suffix != ".mkv":
                         continue
+
                     if video.name[0] == "_":
                         self.check_video_file_name(video)
                         continue
+
                     result = self.loop.run_in_executor(
                         self.convertion_pool, self.convert, video
                     )
+
                     if not self.convertion_queue.full():
                         await self.convertion_queue.put(result)
                     else:

@@ -248,14 +248,14 @@ class ProcessorServer:
 
         if processor.name == 'MotionVideoRecorder':
             detector = self.processors["motion-detector"]
-            input_queue = detector.input_queue
-            self.capture_output_queues.remove(input_queue)
-            self.image_queues.remove(input_queue)
-            
+            if detector:
+                input_queue = detector.input_queue
+                self.capture_output_queues.remove(input_queue)
+                self.image_queues.remove(input_queue)
 
-            detector.stop()
-            detector.join()
-            self.processors["motion-detector"] = None
+                detector.stop()
+                detector.join()
+                self.processors["motion-detector"] = None
         
         processor.stop()
         processor.join()
