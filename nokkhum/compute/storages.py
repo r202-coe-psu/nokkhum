@@ -59,14 +59,16 @@ class StorageController:
                 #         )
                 #     )
                 # )
-                new_tar_paht = pathlib.Path(
+                new_tar_path = pathlib.Path(
                         tar_file.replace("/_", "/").replace(
                             self.settings["NOKKHUM_PROCESSOR_RECORDER_CACHE_PATH"],
                             self.settings["NOKKHUM_PROCESSOR_RECORDER_PATH"],
                         )
                     )
+                if not new_tar_path.parent.exists():
+                     new_tar_path.parent.mkdir(parents=True, exist_ok=True)
 
-                shutil.move(tar_path, new_tar_paht)
+                shutil.move(tar_path, new_tar_path)
 
                 video_mp4.unlink()
             except Exception as e:
