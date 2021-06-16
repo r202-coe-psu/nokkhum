@@ -12,7 +12,7 @@ Add Contributor: {{project.name}}
 {% endblock %}
 
 {% block content %}
-{% if 'admin' in current_user.roles or project.is_assistant_or_owner(current_user) %}
+{% if project.is_assistant_or_owner(current_user) %}
 <div class="row" style="margin-bottom: 0.25rem;">
   <h3>Search User's Email</h3>
 </div>
@@ -73,7 +73,7 @@ Add Contributor: {{project.name}}
             {% endif %}
             {% endif %}
           </td>
-          {% if 'admin' in current_user.roles or project.is_owner(current_user) %}
+          {% if project.is_owner(current_user) %}
           <td data-label="Manage">
             {% if user != project.owner %}
             {% if user not in project.assistant and user not in project.security_guard %}
@@ -92,7 +92,7 @@ Add Contributor: {{project.name}}
               href="{{ url_for('projects.demote_security_guard',project_id=project.id, user_id=user.id) }}"><i
                 class="sort amount down icon"></i></a>
             {% endif %}
-            {% if 'admin' in current_user.roles or project.is_owner(current_user) %}
+            {% if project.is_owner(current_user) %}
             <a id="btn-modal-{{user.id}}" class="ui red circular primary icon button" data-tooltip="Delete"><i
                 class="trash icon"></i></a>
             <div class="ui modal" id="delete-notification-{{user.id}}">

@@ -49,7 +49,7 @@ My Projects
             <div>
               <a class="ui primary icon labeled button" href="{{ url_for('projects.view', project_id=project.id) }}"
                 data-tooltip="View Project"><i class="eye icon"></i>View</a>
-              {% if'admin' in current_user.roles or project.is_assistant_or_owner(current_user) %}
+              {% if project.is_assistant_or_owner(current_user) %}
               <a class="ui primary icon labeled button teal"
                 href="{{ url_for('projects.add_contributor_page', project_id=project.id)}}"
                 data-tooltip="Add contributor"><i class="user plus icon"></i>Add contributor</a>

@@ -21,7 +21,7 @@ Project: {{project.name}}
 <input id="project-id" type="hidden" value="{{project.id}}">
 <div>
   <div class="field">
-    {% if 'admin' in current_user.roles or project.is_assistant_or_owner(current_user) %}
+    {% if project.is_assistant_or_owner(current_user) %}
     <a class="ui primary button" href="{{ url_for('cameras.add', project_id=project.id) }}"><i class="plus icon"></i>Add
       Camera</a>
     <a class="ui primary icon teal labeled button"
@@ -44,7 +44,7 @@ Project: {{project.name}}
             <th>Camera Name</th>
             <th>View Camera</th>
             <th>Processor State</th>
-            {% if 'admin' in current_user.roles or project.is_assistant_or_owner(current_user) %}
+            {% if project.is_assistant_or_owner(current_user) %}
             <th>Recorder Controller</th>
             <th>Manage</th>
             {% endif %}
@@ -69,7 +69,7 @@ Project: {{project.name}}
               </a>
             </td>
             <td data-label="ProcessorState" class="processor-state" id="state-{{camera.id}}"></td>
-            {% if 'admin' in current_user.roles or project.is_assistant_or_owner(current_user) %}
+            {% if project.is_assistant_or_owner(current_user) %}
             <td>
               <button class="ui icon button start-recorder" id="{{camera.id}}/{{project.id}}" style="width: 8rem;">
                 <i class="play icon"></i>
@@ -85,7 +85,7 @@ Project: {{project.name}}
                 href="{{ url_for('cameras.edit', project_id=project.id, camera_id=camera.id) }}">
                 <i class="settings icon"></i>
               </a>
-              {% if 'admin' in current_user.roles or project.is_owner(current_user) %}
+              {% if project.is_owner(current_user) %}
               <button id="btn-modal-{{camera.id}}" class="ui red basic circular primary icon button"><i
                   class="trash icon"></i></button>
               {% endif %}
