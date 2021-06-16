@@ -1,4 +1,4 @@
-{% extends '/projects/project.html' %}
+{% extends '/base/default-dashboard.html' %}
 {% import '/base/html-renderer.html' as renderer %}
 {% block title %}
 Camera Settings
@@ -36,9 +36,13 @@ Camera Settings
   <tbody>
     {% for brand in camera_brands %}
     <tr>
-      <td data-label="Camera Brand Name"><a href="">{{ brand.name }} <i class="eye icon"></i></a></td>
+      <td data-label="Camera Brand Name">
+        <a href="{{ url_for('administration.camera_settings.models_index', brand_id=brand.id) }}">
+          {{ brand.name }} <i class="eye icon"></i>
+        </a>
+      </td>
       <td data-label="Action">
-        <a href="">
+        <a href="{{ url_for('administration.camera_settings.edit_brand', brand_id=brand.id) }}">
           <i class="circular inverted primary edit icon"></i>
         </a>
         <a id="btn-delete-modal-{{brand.id}}">

@@ -1,7 +1,9 @@
-from collections import defaultdict
 from wtforms import fields
 from wtforms import validators
 from flask_wtf import FlaskForm
+from flask_mongoengine.wtf import model_form
+
+from nokkhum import models
 
 
 class CameraForm(FlaskForm):
@@ -32,11 +34,32 @@ class CameraForm(FlaskForm):
     # port = fields.StringField('Port', validators=[validators.InputRequired()])
 
 
-class InitCameraForm(FlaskForm):
-    brand_name = fields.StringField(
-        "Camera Brand", validators=[validators.InputRequired()]
-    )
-    model_name = fields.StringField(
-        "Camera Model", validators=[validators.InputRequired()]
-    )
-    rtsp_url = fields.StringField("RTSP URL", validators=[validators.InputRequired()])
+BaseCameraBrandForm = model_form(
+    models.CameraBrand,
+    FlaskForm,
+    only=["name"],
+    field_args={
+        "name": {"label": "Camera Brand Name"},
+    },
+)
+
+
+class CameraBrandForm(BaseCameraBrandForm):
+    pass
+
+
+BaseCameraModelForm = model_form(
+    models.CameraModel,
+    FlaskForm,
+    only=["model", "protocal", "path", "port"],
+    field_args={
+        "model": {"label": "Camera Model Name"},
+        "protocal": {"label": "Protocal"},
+        "path": {"label": "Path"},
+        "port": {"label": "Port"},
+    },
+)
+
+
+class CameraModelForm(BaseCameraModelForm):
+    pass

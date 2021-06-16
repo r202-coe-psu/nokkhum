@@ -9,8 +9,6 @@ BaseProjectForm = model_form(
     FlaskForm,
     only=["psu_passport_username"],
     field_args={
-        # "start_date": {"label": "Start Date"},
-        # "expire_date": {"label": "Expire Date"},
         "psu_passport_username": {"label": "PSU Passport Username"},
     },
 )

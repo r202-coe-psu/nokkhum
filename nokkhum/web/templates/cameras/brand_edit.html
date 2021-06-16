@@ -1,0 +1,39 @@
+{% extends '/projects/index.html' %}
+{% import '/base/html-renderer.html' as renderer %}
+{% block title %}Edit Camera Brand: {{camera_brand.name}}{% endblock %}
+
+{% block dashboard_title %}
+Edit Camera Brand : {{camera_brand.name}}
+{% endblock %}
+
+{% block breadcrumbs %}
+{{ super() }}
+<i class="right angle icon divider"></i>
+<a class="section" href="">Edit Project</a>
+{% endblock %}
+
+{% block content %}
+<div>
+  <form class="ui big form" method="POST">
+    {{ form.csrf_token }}
+    <div class="ui grid">
+      <div class="six wide computer twelve wide tablet column">
+        <div class="field">
+          {{ renderer.render_field(form.name) }}
+        </div>
+        <button class="ui submit primary button" type="submit">Confirm</button>
+        <a class="ui button" href="{{url_for('administration.camera_settings.brands_index')}}">Back</a>
+      </div>
+    </div>
+    <div class="ui grid">
+      <div class="seven wide computer twelve wide tablet column">
+        {% if form.errors | count > 0 %}
+        <div class="ui error">{{ form.errors }}</div>
+        {% endif %}
+        <div class="ui error message"></div>
+      </div>
+    </div>
+  </form>
+</div>
+
+{% endblock %}

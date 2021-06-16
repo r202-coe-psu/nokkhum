@@ -116,11 +116,11 @@ def view_advance():
     )
 
 
-@module.route("/edit", methods=["GET", "POST"])
+@module.route("/<camera_id>/edit", methods=["GET", "POST"])
 @login_required
-def edit():
+def edit(camera_id):
     project_id = request.args.get("project_id")
-    camera_id = request.args.get("camera_id")
+    # camera_id = request.args.get("camera_id")
     project = models.Project.objects.get(id=project_id)
     camera = models.Camera.objects.get(id=camera_id)
     processor = models.Processor.objects.get(camera=camera, project=project)

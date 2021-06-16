@@ -6,7 +6,7 @@ import datetime
 class CameraBrand(me.Document):
     meta = {"collection": "camera_brands"}
 
-    name = me.StringField(required=True)
+    name = me.StringField(default="", required=True, max_length=100)
     # camera_models = me.ListField(me.EmbeddedDocumentField(CameraModel))
     created_date = me.DateTimeField(required=True, default=datetime.datetime.now())
     updated_date = me.DateTimeField(
@@ -22,14 +22,12 @@ class CameraModel(me.Document):
 
     brand = me.ReferenceField("CameraBrand", dbref=True)
 
-    models = me.ListField(
-        me.StringField(required=True, default=""), required=True, default=[""]
-    )
-
+    model = me.StringField(required=True, default="", max_length=100)
+    port = me.StringField(required=True, default="", max_length=10)
     protocal = me.StringField(
         required=True,
         default="rtsp",
-        choices=(("rtsp", "rtsp://"), ("http", "http://")),
+        choices=(("rtsp://", "rtsp://"), ("http://", "http://")),
     )
     path = me.StringField(required=True, default="", max_length=200)
 
@@ -50,12 +48,15 @@ class MotionProperty(me.EmbeddedDocument):
 class Camera(me.Document):
     meta = {"collection": "cameras"}
     project = me.ReferenceField("Project", dbref=True)
-    name = me.StringField(required=True)
+    name = me.StringField(required=True, default="")
     frame_rate = me.FloatField(required=True)
     width = me.IntField(required=True)
     height = me.IntField(required=True)
     location = me.GeoPointField()
-    uri = me.StringField(required=True)
+    uri = me.StringField(required=True, default="")
+
+    # model = me.ReferenceField("CameraModel", dbref=True)
+
     status = me.StringField(required=True, default="active")
     motion_property = me.EmbeddedDocumentField(MotionProperty, default=MotionProperty())
 

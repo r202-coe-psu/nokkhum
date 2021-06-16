@@ -1,0 +1,92 @@
+{% extends '/projects/project.html' %}
+{% import '/base/html-renderer.html' as renderer %}
+{% block title %}
+{% if "create" in request.path %}
+Add New Camera Model
+{% else %}
+Edit Camera Model {{ camera_model.model }}
+{% endif %}
+{% endblock %}
+
+{% block dashboard_title %}
+{% if "create" in request.path %}
+Add New Camera Model
+{% else %}
+Edit Camera Model {{ camera_model.model }}
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="ui stackable one column grid">
+  <div class="column">
+    <div class="ui vertical segment">
+      <form class="ui big form" method="POST">
+        {{ form.csrf_token }}
+        <div class="left floated column">
+          <div class="ui four column grid">
+            <div class="two column row">
+              <div class="ten wide column">
+                <div class="field">
+                  {{ renderer.render_field(form.model) }}
+                </div>
+              </div>
+              <div class="three wide column">
+                <div class="field">
+                  {{ renderer.render_field(form.protocal) }}
+                </div>
+              </div>
+              <div class="three wide column">
+                <div class="field">
+                  {{ renderer.render_field(form.port) }}
+                </div>
+              </div>
+            </div>
+            <div class="one column row">
+              <div class="column">
+                <div class="field">
+                  {{ renderer.render_field(form.path) }}
+                </div>
+              </div>
+            </div>
+            <div class="one column row">
+              <div class="right aligned column">
+                <a class="ui button"
+                  href="{{ url_for('administration.camera_settings.models_index', brand_id=brand.id) }}">Back</a>
+                <button class="ui submit primary button" type="submit">Confirm</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block additional_js %}
+<script src="{{ url_for('static', filename='node_modules/fomantic-ui-css/components/form.min.js') }}"></script>
+<script type="text/javascript">
+  $('.ui.radio.checkbox').checkbox();
+  $('.ui.form')
+    .form({
+      fields: {
+        model: {
+          rules: [
+            {
+              type: "empty",
+              prompt: "Please enter model name"
+            },
+          ]
+        },
+        path: {
+          rules: [
+            {
+              type: "empty",
+              prompt: "Please enter uri"
+            }
+          ]
+        },
+      }
+    });
+</script>
+{% endblock %}
