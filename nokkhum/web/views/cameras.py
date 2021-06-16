@@ -25,16 +25,17 @@ module = Blueprint("cameras", __name__, url_prefix="/cameras")
 @login_required
 def add():
     project_id = request.args.get("project_id")
+    project = models.Project.objects.get(id=project_id)
+    if not project.is_assistant_or_owner(current_user._get_current_object()):
+        return redirect(url_for("dashboard.index"))
     form = forms.cameras.CameraForm()
     form.frame_size.choices = [
         ("640*360", "640 x 360"),
+        ("640*480", "640 x 480"),
         ("854*480", "854 x 480"),
         ("1280*720", "1280 x 720"),
         ("1920*1080", "1920 x 1080"),
     ]
-    project = models.Project.objects.get(id=project_id)
-    if not project.is_assistant_or_owner(current_user._get_current_object()):
-        return redirect(url_for("dashboard.index"))
     if not form.validate_on_submit():
         return render_template(
             "/cameras/add-edit-camera.html", form=form, project=project
@@ -176,9 +177,6 @@ def delete():
 @module.route("/<camera_id>/start-recorder", methods=["POST"])
 @login_required
 def start_recorder(camera_id):
-
-    # print(request.form.get('camera_id'))
-    # print(current_user._get_current_object().id)
     project_id = request.form.get("project_id")
     project = models.Project.objects.get(id=project_id)
     if not project.is_assistant_or_owner(current_user._get_current_object()):
@@ -193,8 +191,8 @@ def start_recorder(camera_id):
     }
 
     if camera.motion_property.active:
-        data['motion'] = camera.motion_property.active
-        data['sensitivity'] = camera.motion_property.sensitivity
+        data["motion"] = camera.motion_property.active
+        data["sensitivity"] = camera.motion_property.sensitivity
 
     nats.nats_client.publish("nokkhum.processor.command", data)
 

@@ -87,7 +87,6 @@ def list_records_by_date(processor_id, date_dir):
     file_list = get_file_by_dir_date(processor_id, date_dir)
     file_list.sort(reverse=True)
     processor = models.Processor.objects.get(id=processor_id)
-    # print(file_list)
     if not processor.camera.project.is_member(current_user._get_current_object()):
         storage_share_list = models.StorageShare.objects(
             psu_passport_username=current_user._get_current_object().username,
@@ -111,7 +110,6 @@ def list_records_by_date(processor_id, date_dir):
 @login_required
 def share_storage(processor_id, date_dir):
     processor = models.Processor.objects.get(id=processor_id)
-    # print(file_list)
     if not processor.camera.project.is_assistant_or_owner_or_security_guard(
         current_user._get_current_object()
     ):

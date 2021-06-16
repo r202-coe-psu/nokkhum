@@ -32,6 +32,8 @@ class Project(me.Document):
         return count
 
     def is_member(self, user):
+        if user.is_admin:
+            return True
         if (
             user in self.users
             or user in self.assistant
@@ -42,11 +44,15 @@ class Project(me.Document):
         return False
 
     def is_assistant_or_owner(self, user):
+        if user.is_admin:
+            return True
         if user in self.assistant or self.owner.id == user.id:
             return True
         return False
 
     def is_assistant_or_owner_or_security_guard(self, user):
+        if user.is_admin:
+            return True
         if (
             user in self.assistant
             or self.owner.id == user.id
@@ -56,6 +62,8 @@ class Project(me.Document):
         return False
 
     def is_owner(self, user):
+        if user.is_admin:
+            return True
         if self.owner.id == user.id:
             return True
         return False

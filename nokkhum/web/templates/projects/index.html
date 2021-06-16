@@ -49,7 +49,7 @@ My Projects
             <div>
               <a class="ui primary icon labeled button" href="{{ url_for('projects.view', project_id=project.id) }}"
                 data-tooltip="View Project"><i class="eye icon"></i>View</a>
-              {% if current_user == project.owner or current_user in project.assistant %}
+              {% if'admin' in current_user.roles or project.is_assistant_or_owner(current_user) %}
               <a class="ui primary icon labeled button teal"
                 href="{{ url_for('projects.add_contributor_page', project_id=project.id)}}"
                 data-tooltip="Add contributor"><i class="user plus icon"></i>Add contributor</a>
@@ -57,14 +57,12 @@ My Projects
             </div>
           </td>
           <td data-label="Delete">
-            {% if current_user == project.owner or 'admin' in current_user.roles %}
-            {% if current_user == project.owner %}
+            {% if project.is_owner(current_user) or 'admin' in current_user.roles %}
             <a class="ui primary circular labeled icon button" href="{{url_for('projects.edit',project_id=project.id)}}"
               data-tooltip="Edit Project">
               <i class="edit icon"></i>
               Edit
             </a>
-            {% endif %}
             <a id="btn-modal-{{project.id}}" class="ui red circular basic icon button" data-tooltip="Delete Project">
               <i class="trash icon"></i>
             </a>
@@ -80,11 +78,11 @@ My Projects
                       Are you sure you want to delete project: "{{ project.name }}"
                     </div>
                   </div>
-                  {% for came in project.cameras %}
-                  {% if came.status=='active' %}
+                  {% for camera in project.cameras %}
+                  {% if camera.status=='active' %}
                   <div class="ui big label basic">
                     <i class="camera icon"></i>
-                    {{came.name}}
+                    {{ camera.name }}
                   </div>
                   {% endif %}
                   {% endfor %}

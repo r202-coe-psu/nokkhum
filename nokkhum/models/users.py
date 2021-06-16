@@ -38,3 +38,8 @@ class User(me.Document, UserMixin):
 
     def get_fullname(self):
         return f"{self.first_name} {self.last_name}"
+
+    def is_admin(self):
+        if "admin" in self.roles:
+            return True
+        return False

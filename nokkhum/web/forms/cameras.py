@@ -6,7 +6,7 @@ from flask_wtf import FlaskForm
 
 class CameraForm(FlaskForm):
     name = fields.StringField("Camera Name")
-    frame_rate = fields.FloatField()
+    frame_rate = fields.FloatField(default=15)
     frame_size = fields.SelectField("Frame Size")
     # width = fields.FloatField()
     # height = fields.FloatField()
@@ -19,11 +19,13 @@ class CameraForm(FlaskForm):
     uri = fields.StringField("URI")
 
     storage_period = fields.IntegerField(
-        "Storage Period (day)", default=30, validators=[validators.NumberRange(min=0)]
+        "Storage Period (Days)", default=30, validators=[validators.NumberRange(min=0)]
     )
     motion_detector = fields.BooleanField("Motion Detector", default=False)
-    sensitivity = fields.FloatField("Sensitivity",default=50, validators=[validators.NumberRange(min=0, max=100)])
-    
+    sensitivity = fields.FloatField(
+        "Sensitivity", default=50, validators=[validators.NumberRange(min=0, max=100)]
+    )
+
     # username = fields.StringField('Username')
     # password = fields.PasswordField('Password')
     # ip_address = fields.StringField('IP Address', validators=[validators.InputRequired()])
