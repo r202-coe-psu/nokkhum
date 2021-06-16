@@ -241,30 +241,26 @@ class ProcessorServer:
         processor = self.processors["video-recorder"]
 
         # logger.debug(f'q size {len(self.image_queues)}')
-        input_queue = processor.input_queue
+        input_queue = processor.queue
         if input_queue in self.capture_output_queues:
             self.capture_output_queues.remove(input_queue)
         self.image_queues.remove(input_queue)
 
         if processor.name == 'MotionVideoRecorder':
             detector = self.processors["motion-detector"]
-            input_queue = detector.input_queue
-            self.capture_output_queues.remove(input_queue)
-            self.image_queues.remove(input_queue)
-            
+            if detector:
+                input_queue = detector.input_queue
+                self.capture_output_queues.remove(input_queue)
+                self.image_queues.remove(input_queue)
 
-            detector.stop()
-            detector.join()
-            self.processors["motion-detector"] = None
+                detector.stop()
+                detector.join()
+                self.processors["motion-detector"] = None
         
         processor.stop()
         processor.join()
         self.processors["video-recorder"] = None
-
-
         # logger.debug(f'q size {len(self.image_queues)}')
-
-
 
 
     def init_dispatcher(self, command):

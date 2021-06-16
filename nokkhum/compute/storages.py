@@ -6,6 +6,7 @@ import logging
 import pathlib
 import tarfile
 import os
+import shutil
 import concurrent.futures
 import ffmpeg
 
@@ -50,14 +51,25 @@ class StorageController:
                 # logger.debug(tar_file)
                 video_mp4 = result[1]
                 tar_path = pathlib.Path(tar_file)
-                tar_path.rename(
-                    pathlib.Path(
+                # tar_path.rename(
+                #     pathlib.Path(
+                #         tar_file.replace("/_", "/").replace(
+                #             self.settings["NOKKHUM_PROCESSOR_RECORDER_CACHE_PATH"],
+                #             self.settings["NOKKHUM_PROCESSOR_RECORDER_PATH"],
+                #         )
+                #     )
+                # )
+                new_tar_path = pathlib.Path(
                         tar_file.replace("/_", "/").replace(
                             self.settings["NOKKHUM_PROCESSOR_RECORDER_CACHE_PATH"],
                             self.settings["NOKKHUM_PROCESSOR_RECORDER_PATH"],
                         )
                     )
-                )
+                if not new_tar_path.parent.exists():
+                     new_tar_path.parent.mkdir(parents=True, exist_ok=True)
+
+                shutil.move(tar_path, new_tar_path)
+
                 video_mp4.unlink()
             except Exception as e:
                 logger.exception(e)
@@ -131,17 +143,24 @@ class StorageController:
                             / date_dir.stem
                             / video.name
                         )
-                        if new_image_path.exists:
+                        if new_image_path.exists():
                             continue
-                        video.rename(new_image_path)
+                        if not new_image_path.parent.exists():
+                            new_image_path.parent.mkdir(parents=True)
+                        # video.rename(new_image_path)
+                        shutil.move(video, new_image_path)
+
                     if video.suffix != ".mkv":
                         continue
+
                     if video.name[0] == "_":
                         self.check_video_file_name(video)
                         continue
+
                     result = self.loop.run_in_executor(
                         self.convertion_pool, self.convert, video
                     )
+
                     if not self.convertion_queue.full():
                         await self.convertion_queue.put(result)
                     else:

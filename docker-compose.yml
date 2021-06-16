@@ -112,6 +112,7 @@ services:
         container_name: nokkhum-compute
         volumes:
             - ../deployment:/deployment
+            - ../deployment/nokkhum/cache:/deployment/nokkhum/cache
             - /etc/localtime:/etc/localtime:ro
         links:
             - stan-server

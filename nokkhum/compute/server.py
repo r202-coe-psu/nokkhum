@@ -24,7 +24,7 @@ class ComputeNodeServer:
 
         path = pathlib.Path(self.settings["NOKKHUM_PROCESSOR_RECORDER_CACHE_PATH"])
         if not path.exists() and not path.is_dir():
-            path.mkdir()
+            path.mkdir(parents=True)
 
         machine = machines.Machine(
             storage_path=path, interface=self.settings["NOKKHUM_COMPUTE_INTERFACE"]
