@@ -57,7 +57,11 @@ class VideoMonitor:
             video_id = ev.target.parent.parent.id
         else:
             video_id = ev.target.parent.id
-        _, processor_id, date, time, milli_sec = video_id.split("-")
+        print(video_id)
+        if "motion" in video_id:
+            _, processor_id, date, time, milli_sec, _ = video_id.split("-")
+        else:
+            _, processor_id, date, time, milli_sec = video_id.split("-")
         self.video_path = f"{processor_id}/{date}/{video_id.replace('video-', '')}"
         print(self.video_path)
         document["monitor"].bind("click", self.render_video)

@@ -75,30 +75,22 @@ def view():
     if camera is None:
         return render_template("/projects/project.html")
     processor = camera.get_processor()
-    date_dirs = get_dir_by_processor(str(processor.id))
+    # date_dirs = get_dir_by_processor(str(processor.id))
     # print(date_dirs)
-    files_list = []
-    videos_path = []
+    file_dict = {}
     date_dir = datetime.datetime.now().strftime("%Y%m%d")
-    # if date_dirs:
-    files_list = get_file_by_dir_date(str(processor.id), date_dir)
-    if files_list:
-        files_list.sort(reverse=True)
-        files_list = files_list[:5]
-
-    for file in files_list:
-        videos_path.append(
-            get_video_path(str(processor.id), date_dirs[0].name, file.name)
-        )
-    # print(videos_path)
+    file_by_date = get_file_by_dir_date(str(processor.id), date_dir)
+    # files_dict
+    for file in sorted(file_by_date.keys(), reverse=True)[:5]:
+        file_dict[file] = file_by_date[file]
     return render_template(
         "/cameras/camera.html",
         camera=camera,
         processor=processor,
         project=project,
         date_dir=date_dir,
-        files_list=files_list,
-        videos_path=videos_path,
+        file_dict=file_dict,
+        # videos_path=videos_path,
     )
 
 

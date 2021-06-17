@@ -39,35 +39,34 @@ Camera: {{camera.name}}
           href="{{ url_for('storages.list_storage_by_processor', processor_id=camera.get_processor().id, date_dir=date_dir) }}">See
           all</a>
       </div>
-      {% for f in files_list %}
-      {%- if f.name.startswith('_') %}
+      {% for key in file_dict.keys()|sort(reverse = True) %}
+      {% if file_dict[key] == "Recording" %}
       {% set image_style = 'disabled' %}
       {% set path_url = url_for('storages.get_thumbnail', processor_id=processor.id, date_dir=date_dir,
-      filename='{}-thumbnail.png'.format(f.stem.split('.')[0][1:])) %}
-      <div id="video-{{f.name.split('.')[0]}}" class="disabled view-video ui horizontal raised card fluid">
+      filename='{}'.format(key)) %}
+      <div id="video-{{key.split('.')[0]}}" class="disabled view-video ui horizontal raised card fluid">
         <div class="ui image {{image_style}}">
           <img
-            src="{{ url_for('storages.get_thumbnail', processor_id=processor.id, date_dir=date_dir, filename='{}-thumbnail.png'.format(f.stem.split('.')[0][1:])) }} ">
+            src="{{ url_for('storages.get_thumbnail', processor_id=processor.id, date_dir=date_dir, filename='{}'.format(key)) }} ">
         </div>
         <div class="content">
-          {% set name = f.name[f.name.find('-')+1: f.name.rfind('-')] %}
-
+          {% set name = key[key.find('-')+1: key.rfind('-')] %}
           <div class="ui grey label">Recording</div>
         </div>
       </div>
       {% else %}
       {% set image_style = '' %}
       {% set path_url = url_for('storages.get_thumbnail', processor_id=processor.id, date_dir=date_dir,
-      filename='{}-thumbnail.png'.format(f.stem.split('.')[0])) %}
-      <a id="video-{{f.name.split('.')[0]}}" class="view-video ui horizontal raised card fluid"
+      filename='{}'.format(key)) %}
+      <a id="video-{{file_dict[key].split('.')[0]}}" class="view-video ui horizontal raised card fluid"
         onclick="switchMonitor('{{path_url}}')">
         <div class="image {{ image_style }}">
           <img
-            src="{{ url_for('storages.get_thumbnail', processor_id=processor.id, date_dir=date_dir, filename='{}-thumbnail.png'.format(f.stem.split('.')[0])) }}">
+            src="{{ url_for('storages.get_thumbnail', processor_id=processor.id, date_dir=date_dir, filename='{}'.format(key)) }}">
 
         </div>
         <div class="content">
-          {% set name = f.name[f.name.find('-')+1: f.name.rfind('-')] %}
+          {% set name = key[key.find('-')+1: key.rfind('-')] %}
 
           <div class="header">{{ name }}</div>
 
@@ -81,7 +80,6 @@ Camera: {{camera.name}}
 
 <script type="text/python">
   from videos import monitors
-  print("{{ url_for('static-data.static', filename='') }}")
   video_monitor = monitors.VideoMonitor(
     streaming_url="{{ camera.get_streaming_url() }}",
     get_video_url="{{ url_for('api.index_video')}}",

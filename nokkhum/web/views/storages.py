@@ -42,15 +42,19 @@ def get_dir_by_processor(processor_id):
 
 def get_file_by_dir_date(processor_id, date_dir):
     root = get_storage_path()
-    processor_path = root / processor_id / date_dir
-    if not processor_path.exists():
-        return []
-    # print(processor_path)
-    file_list = []
-    for p in processor_path.iterdir():
-        if p.suffix == f".{current_app.config.get('TAR_TYPE')}" or p.suffix == ".mkv":
-            file_list.append(p)
-    return file_list
+    video_path = root / processor_id / date_dir
+    if not video_path.exists():
+        return {}
+    file_dict = {}
+    for p in video_path.iterdir():
+        if p.suffix == ".png":
+            video_zip = f"{p.stem.replace('-thumbnail','')}.tar.{current_app.config.get('TAR_TYPE')}"
+            if not (video_path / video_zip).exists():
+                file_dict[p.name] = "Recording"
+            else:
+                file_dict[p.name] = video_zip
+    # print(file_dict)
+    return file_dict
 
 
 def get_video_path(processor_id, date_dir, filename):
@@ -84,8 +88,8 @@ def list_storage_by_processor(processor_id):
 @module.route("/processors/<processor_id>/<date_dir>")
 @login_required
 def list_records_by_date(processor_id, date_dir):
-    file_list = get_file_by_dir_date(processor_id, date_dir)
-    file_list.sort(reverse=True)
+    file_dict = get_file_by_dir_date(processor_id, date_dir)
+    # file_list.sort(reverse=True)
     processor = models.Processor.objects.get(id=processor_id)
     if not processor.camera.project.is_member(current_user._get_current_object()):
         storage_share_list = models.StorageShare.objects(
@@ -99,7 +103,7 @@ def list_records_by_date(processor_id, date_dir):
             return redirect(url_for("dashboard.index"))
     return render_template(
         "/storages/list_records_by_date.html",
-        file_list=file_list,
+        file_dict=file_dict,
         date_dir=date_dir,
         processor=processor,
         camera=processor.camera,
