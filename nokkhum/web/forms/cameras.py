@@ -8,7 +8,9 @@ from nokkhum import models
 
 class CameraForm(FlaskForm):
     name = fields.StringField("Camera Name")
-    frame_rate = fields.FloatField(default=15)
+    frame_rate = fields.FloatField(
+        default=15, validators=[validators.NumberRange(min=1, max=175)]
+    )
     frame_size = fields.SelectField("Frame Size")
     # width = fields.FloatField()
     # height = fields.FloatField()
@@ -18,7 +20,15 @@ class CameraForm(FlaskForm):
     longitude = fields.FloatField(
         "Longitude", validators=[validators.NumberRange(min=-180, max=180)]
     )
+
     uri = fields.StringField("URI")
+
+    brand = fields.SelectField("Camera Brand")
+    model = fields.SelectField("Camera Model")
+    ip_address = fields.StringField("Camera IP Address")
+    username = fields.StringField("Username")
+    password = fields.StringField("Password")
+    channel = fields.IntegerField("Channel", default=0)
 
     storage_period = fields.IntegerField(
         "Storage Period (Days)", default=30, validators=[validators.NumberRange(min=0)]

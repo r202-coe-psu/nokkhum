@@ -36,10 +36,55 @@ Edit Camera {{ camera.name }}
                 </div>
               </div>
             </div>
-            <div class="one column row">
+            <div class="ui one column row">
               <div class="column">
-                <div class="field">
-                  {{ renderer.render_field(form.uri) }}
+                <div class="inline fields">
+                  <!-- <label>Camera </label> -->
+                  <div class="field">
+                    <div id="cameraModelInput" class="ui radio checkbox" onclick="form_render(this)">
+                      <input type="radio" name="uri" checked>
+                      <label>Camera Model</label>
+                    </div>
+                  </div>
+                  <div class="field">
+                    <div id="cameraURIInput" class="ui radio checkbox" onclick="form_render(this)">
+                      <input type="radio" name="uri">
+                      <label>Camera URI</label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div id="cameraFromURI" class="one column row" style="display: none;">
+              <div class="column">
+                <div class="fields">
+                  <div class="sixteen wide field">
+                    {{ renderer.render_field(form.uri) }}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div id="cameraFromModel" class="one column row">
+              <div class="column">
+                <div class="fields">
+                  <div class="three wide field">
+                    {{ renderer.render_field(form.brand) }}
+                  </div>
+                  <div class="three wide field">
+                    {{ renderer.render_field(form.model) }}
+                  </div>
+                  <div class="five wide field">
+                    {{ renderer.render_field(form.ip_address) }}
+                  </div>
+                  <div class="field">
+                    {{ renderer.render_field(form.username) }}
+                  </div>
+                  <div class="field">
+                    {{ renderer.render_field(form.password) }}
+                  </div>
+                  <div class="two wide field">
+                    {{ renderer.render_field(form.channel) }}
+                  </div>
                 </div>
               </div>
             </div>
@@ -68,7 +113,7 @@ Edit Camera {{ camera.name }}
                 <div class="three fields">
                   <div class="field">
                     {{ renderer.render_field(form.storage_period) }}
-                    <div class="ui pointing  label"> 0 Day: Don't remove data.</div>
+                    <div class="ui pointing  label">0 Day: Don't remove data.</div>
                   </div>
                   <div class="field">
                     {{ renderer.render_field(form.sensitivity) }}
@@ -87,6 +132,7 @@ Edit Camera {{ camera.name }}
             </div>
           </div>
         </div>
+        <div class="ui error message"></div>
       </form>
     </div>
   </div>
@@ -94,6 +140,24 @@ Edit Camera {{ camera.name }}
 {% endblock %}
 
 {% block additional_js %}
+<script>
+  function form_render(ele) {
+    cameraFormURI = document.getElementById("cameraFromURI")
+    cameraFromModel = document.getElementById("cameraFromModel")
+    cameraFormURI.style.display = "none"
+    cameraFromModel.style.display = "none"
+
+    if (ele.id == "cameraModelInput") {
+      cameraFromModel.style.display = ""
+
+    }
+    else {
+      cameraFormURI.style.display = ""
+
+    }
+
+  }
+</script>
 <script src="{{ url_for('static', filename='node_modules/fomantic-ui-css/components/form.min.js') }}"></script>
 <script type="text/javascript">
   $('.ui.radio.checkbox').checkbox();
@@ -104,7 +168,7 @@ Edit Camera {{ camera.name }}
           rules: [
             {
               type: "empty",
-              prompt: "Please enter camera name"
+              prompt: "Please enter Camera Name"
             },
             {
               type: "maxLength[35]",
@@ -116,7 +180,11 @@ Edit Camera {{ camera.name }}
           rules: [
             {
               type: "empty",
-              prompt: "Please enter frame rate"
+              prompt: "Please enter Frame Rate"
+            },
+            {
+              type: 'integer[1..175]',
+              prompt: 'Please enter Frame Rate more than 0'
             }
           ]
         },
@@ -152,14 +220,6 @@ Edit Camera {{ camera.name }}
             }
           ]
         },
-        uri: {
-          rules: [
-            {
-              type: "empty",
-              prompt: "Please enter uri"
-            }
-          ]
-        },
         storage_period: {
           rules: [
             {
@@ -170,5 +230,10 @@ Edit Camera {{ camera.name }}
         }
       }
     });
+</script>
+<script>
+  $('.ui.radio.checkbox')
+    .checkbox()
+    ;
 </script>
 {% endblock %}

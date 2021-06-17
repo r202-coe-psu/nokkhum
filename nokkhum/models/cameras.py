@@ -49,11 +49,17 @@ class Camera(me.Document):
     meta = {"collection": "cameras"}
     project = me.ReferenceField("Project", dbref=True)
     name = me.StringField(required=True, default="")
-    frame_rate = me.FloatField(required=True)
+    frame_rate = me.FloatField(required=True, default=15.0, min_value=1)
     width = me.IntField(required=True)
     height = me.IntField(required=True)
     location = me.GeoPointField()
+
     uri = me.StringField(required=True, default="")
+
+    username = me.StringField(required=True, default="")
+    password = me.StringField(required=True, default="")
+    ip_address = me.StringField(required=True, default="")
+    channel = me.IntField(required=True, default=0)
 
     # model = me.ReferenceField("CameraModel", dbref=True)
 
