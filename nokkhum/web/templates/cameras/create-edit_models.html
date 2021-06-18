@@ -4,7 +4,7 @@
 {% if "create" in request.path %}
 Add New Camera Model
 {% else %}
-Edit Camera Model {{ camera_model.model }}
+Edit Camera Model {{ camera_model.name }}
 {% endif %}
 {% endblock %}
 
@@ -12,7 +12,7 @@ Edit Camera Model {{ camera_model.model }}
 {% if "create" in request.path %}
 Add New Camera Model
 {% else %}
-Edit Camera Model {{ camera_model.model }}
+Edit Camera Model {{ camera_model.name }}
 {% endif %}
 {% endblock %}
 
@@ -27,7 +27,7 @@ Edit Camera Model {{ camera_model.model }}
             <div class="two column row">
               <div class="ten wide column">
                 <div class="field">
-                  {{ renderer.render_field(form.model) }}
+                  {{ renderer.render_field(form.name) }}
                 </div>
               </div>
               <div class="three wide column">

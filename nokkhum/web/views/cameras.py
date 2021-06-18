@@ -8,6 +8,7 @@ from flask import (
     Response,
     g,
     current_app,
+    jsonify,
 )
 import datetime
 from flask_login import login_required, current_user
@@ -36,10 +37,11 @@ def add():
         ("1280*720", "1280 x 720"),
         ("1920*1080", "1920 x 1080"),
     ]
-    brands = models.CameraBrand.objects().values_list("name")
-    choices = ["-"] + list(brands)
+    brands = models.CameraBrand.objects().order_by("name")
+    choices = [("", "-")] + [(str(brand.id), brand.name) for brand in brands]
+    # print(choices)
     form.brand.choices = choices
-    form.model.choices = ["-"]
+    form.model.choices = [("", "-")]
     if not form.validate_on_submit():
         return render_template(
             "/cameras/add-edit-camera.html", form=form, project=project
@@ -215,3 +217,12 @@ def stop_recorder(camera_id):
     response = Response()
     response.status_code = 200
     return response
+
+
+@module.route("/brands/<brand_id>/get_models", methods=["GET"])
+@login_required
+def get_models_by_brand(brand_id):
+    brand = models.CameraBrand.objects.get(id=brand_id)
+    camera_models = models.CameraModel.objects(brand=brand).order_by("name")
+    choices = [("", "-")] + [(str(model.id), model.name) for model in camera_models]
+    return jsonify(choices)

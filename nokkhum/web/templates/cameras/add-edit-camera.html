@@ -38,17 +38,17 @@ Edit Camera {{ camera.name }}
             </div>
             <div class="ui one column row">
               <div class="column">
-                <div class="inline fields">
+                <div class="inline fields" id="camera_input_select">
                   <!-- <label>Camera </label> -->
                   <div class="field">
-                    <div id="cameraModelInput" class="ui radio checkbox" onclick="form_render(this)">
-                      <input type="radio" name="uri" checked>
+                    <div id="byModel" class="ui radio checkbox">
+                      <input id="byModelInput" type="radio" name="model" checked>
                       <label>Camera Model</label>
                     </div>
                   </div>
                   <div class="field">
-                    <div id="cameraURIInput" class="ui radio checkbox" onclick="form_render(this)">
-                      <input type="radio" name="uri">
+                    <div id="byURI" class="ui radio checkbox">
+                      <input id="byURIInput" type="radio" name="uri">
                       <label>Camera URI</label>
                     </div>
                   </div>
@@ -68,10 +68,10 @@ Edit Camera {{ camera.name }}
               <div class="column">
                 <div class="fields">
                   <div class="three wide field">
-                    {{ renderer.render_field(form.brand) }}
+                    {{ renderer.render_select_search(form.brand) }}
                   </div>
                   <div class="three wide field">
-                    {{ renderer.render_field(form.model) }}
+                    {{ renderer.render_select_search(form.model) }}
                   </div>
                   <div class="five wide field">
                     {{ renderer.render_field(form.ip_address) }}
@@ -137,29 +137,20 @@ Edit Camera {{ camera.name }}
     </div>
   </div>
 </div>
+<script type="text/python">
+  from cameras import form_controller
+  camera_form = form_controller.FormController(get_camera_model_choices_url="{{ url_for("cameras.get_models_by_brand", brand_id="brand_id")}}")
+  camera_form.start()
+</script>
 {% endblock %}
 
 {% block additional_js %}
-<script>
-  function form_render(ele) {
-    cameraFormURI = document.getElementById("cameraFromURI")
-    cameraFromModel = document.getElementById("cameraFromModel")
-    cameraFormURI.style.display = "none"
-    cameraFromModel.style.display = "none"
-
-    if (ele.id == "cameraModelInput") {
-      cameraFromModel.style.display = ""
-
-    }
-    else {
-      cameraFormURI.style.display = ""
-
-    }
-
-  }
-</script>
+<script type="text/javascript" src="{{ url_for('static', filename='brython/cameras.brython.js') }}"></script>
 <script src="{{ url_for('static', filename='node_modules/fomantic-ui-css/components/form.min.js') }}"></script>
 <script type="text/javascript">
+  $('.search.dropdown')
+    .dropdown()
+    ;
   $('.ui.radio.checkbox').checkbox();
   $('.ui.form')
     .form({
