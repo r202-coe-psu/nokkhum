@@ -24,7 +24,7 @@ class CameraForm(FlaskForm):
     uri = fields.StringField("URI")
 
     brand = fields.SelectField("Camera Brand")
-    model = fields.SelectField("Camera Model")
+    # model = fields.SelectField("Camera Model")
     ip_address = fields.StringField("Camera IP Address")
     username = fields.StringField("Username")
     password = fields.StringField("Password")
@@ -61,7 +61,7 @@ class CameraBrandForm(BaseCameraBrandForm):
 BaseCameraModelForm = model_form(
     models.CameraModel,
     FlaskForm,
-    only=["name", "protocal", "path", "port"],
+    only=["name", "path",],
     field_args={
         "name": {"label": "Camera Model Name"},
         "protocal": {"label": "Protocal"},

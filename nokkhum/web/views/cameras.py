@@ -1,4 +1,4 @@
-from nokkhum.models import projects
+from nokkhum.models import cameras, projects
 from flask import (
     Blueprint,
     render_template,
@@ -38,14 +38,24 @@ def add():
         ("1920*1080", "1920 x 1080"),
     ]
     brands = models.CameraBrand.objects().order_by("name")
-    choices = [("", "-")] + [(str(brand.id), brand.name) for brand in brands]
+    choices = [("", "Select Brand")] + [(str(brand.id), brand.name) for brand in brands]
     # print(choices)
     form.brand.choices = choices
-    form.model.choices = [("", "-")]
+    # form.model.choices = [("", "-")]
+    model_id = request.form.get("model_id")
+
     if not form.validate_on_submit():
+        print(form.errors)
         return render_template(
             "/cameras/add-edit-camera.html", form=form, project=project
         )
+    # uri = form.protocal.data
+    # if "[USERNAME]" in form.path.data:
+    # print(form.model.data)
+    camera_model = None
+    if model_id:
+        camera_model = models.CameraModel.objects.get(id=model_id)
+    # path = ""
     width, height = form.frame_size.data.split("*")
     motion_property = models.MotionProperty()
     camera = models.Camera(
@@ -58,6 +68,22 @@ def add():
         project=project,
         motion_property=motion_property,
     )
+    if form.ip_address.data and camera_model:
+        if "[USERNAME]" in camera_model.path or "[PASSWORD]" in camera_model.path:
+            path = (
+                camera_model.path.replace("[USERNAME]", form.username.data)
+            ).replace("[PASSWORD]", form.password.data)
+            uri = f"{camera_model.protocal}{form.ip_address.data}{camera_model.port}{path}"
+        else:
+            uri = f"{camera_model.protocal}{form.username.data}:{form.password.data}@{form.ip_address.data}:{camera_model.port}{camera_model.path}"
+        uri.replace("[CHANNEL]", str(form.channel.data))
+        camera.uri = uri
+        camera.ip_address = form.ip_address.data
+        camera.username = form.username.data
+        camera.password = form.password.data
+        camera.channel = form.channel.data
+        camera.model_id = model_id
+
     camera.motion_property.active = form.motion_detector.data
     camera.motion_property.sensitivity = form.sensitivity.data
     camera.save()
@@ -100,18 +126,18 @@ def view():
     )
 
 
-@module.route("/view-advance", methods=["GET"])
-@login_required
-def view_advance():
-    project_id = request.args.get("project_id")
-    camera_id = request.args.get("camera_id")
-    project = models.Project.objects.get(id=project_id)
-    camera = models.Camera.objects.get(id=camera_id)
-    if camera is None:
-        return render_template("/projects/project.html")
-    return render_template(
-        "/cameras/camera-advance.html", camera=camera, project=project
-    )
+# @module.route("/view-advance", methods=["GET"])
+# @login_required
+# def view_advance():
+#     project_id = request.args.get("project_id")
+#     camera_id = request.args.get("camera_id")
+#     project = models.Project.objects.get(id=project_id)
+#     camera = models.Camera.objects.get(id=camera_id)
+#     if camera is None:
+#         return render_template("/projects/project.html")
+#     return render_template(
+#         "/cameras/camera-advance.html", camera=camera, project=project
+#     )
 
 
 @module.route("/<camera_id>/edit", methods=["GET", "POST"])
@@ -129,21 +155,46 @@ def edit(camera_id):
         ("1280*720", "1280 x 720"),
         ("1920*1080", "1920 x 1080"),
     ]
+
     if not camera.motion_property:
         motion_property = models.MotionProperty()
         camera.update(motion_property=motion_property)
     if not project.is_assistant_or_owner(current_user._get_current_object()):
         return redirect(url_for("projects.view", project_id=project_id))
+    brands = models.CameraBrand.objects().order_by("name")
+    choices = [("", "Select Brand")] + [(str(brand.id), brand.name) for brand in brands]
+    form.brand.choices = choices
+
     if not form.validate_on_submit():
+        # print(type(form.frame_rate.data))
         form.frame_size.data = f"{camera.width}*{camera.height}"
         form.longitude.data = camera.location[0]
         form.latitude.data = camera.location[1]
         form.storage_period.data = processor.storage_period
         form.motion_detector.data = camera.motion_property.active
         form.sensitivity.data = camera.motion_property.sensitivity
+        if camera.model_id:
+            camera_model = models.CameraModel.objects.get(id=camera.model_id)
+            form.brand.data = str(camera_model.brand.id)
         return render_template(
             "/cameras/add-edit-camera.html", form=form, camera=camera, project=project
         )
+    model_id = request.form.get("model_id")
+    camera_model = None
+    if model_id:
+        camera_model = models.CameraModel.objects.get(id=model_id)
+
+    if form.ip_address.data and camera_model:
+        if "[USERNAME]" in camera_model.path or "[PASSWORD]" in camera_model.path:
+            path = (
+                camera_model.path.replace("[USERNAME]", form.username.data)
+            ).replace("[PASSWORD]", form.password.data)
+            uri = f"{camera_model.protocal}{form.ip_address.data}{camera_model.port}{path}"
+        else:
+            uri = f"{camera_model.protocal}{form.username.data}:{form.password.data}@{form.ip_address.data}:{camera_model.port}{camera_model.path}"
+        uri.replace("[CHANNEL]", str(form.channel.data))
+        camera.uri = uri
+        camera.model_id = model_id
 
     width, height = form.frame_size.data.split("*")
     processor.storage_period = form.storage_period.data
@@ -154,6 +205,7 @@ def edit(camera_id):
     camera.height = height
     camera.motion_property.active = form.motion_detector.data
     camera.motion_property.sensitivity = form.sensitivity.data
+    camera.model_id = model_id
     camera.save()
     return redirect(url_for("projects.view", project_id=project.id))
 
@@ -224,5 +276,22 @@ def stop_recorder(camera_id):
 def get_models_by_brand(brand_id):
     brand = models.CameraBrand.objects.get(id=brand_id)
     camera_models = models.CameraModel.objects(brand=brand).order_by("name")
-    choices = [("", "-")] + [(str(model.id), model.name) for model in camera_models]
+    choices = [(str(model.id), model.name) for model in camera_models]
     return jsonify(choices)
+
+
+@module.route("/<camera_id>/initial_form", methods=["GET"])
+@login_required
+def initial_form(camera_id):
+    camera = models.Camera.objects.get(id=camera_id)
+    data = {"type": "uri"}
+    if camera.model_id:
+        camera_model = models.CameraModel.objects.get(id=camera.model_id)
+        camera_models = models.CameraModel.objects(brand=camera_model.brand).order_by(
+            "name"
+        )
+        data["model_id"] = camera.model_id
+        choices = [(str(model.id), model.name) for model in camera_models]
+        data["choices"] = choices
+        data["type"] = "model"
+    return jsonify(data)

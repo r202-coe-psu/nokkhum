@@ -21,6 +21,7 @@ Edit Camera {{ camera.name }}
   <div class="column">
     <div class="ui vertical segment">
       <form class="ui big form" method="POST">
+        {{ form.error}}
         {{ form.csrf_token }}
         <div class="left floated column">
           <div class="ui four column grid">
@@ -71,7 +72,10 @@ Edit Camera {{ camera.name }}
                     {{ renderer.render_select_search(form.brand) }}
                   </div>
                   <div class="three wide field">
-                    {{ renderer.render_select_search(form.model) }}
+                    <label>Camera Models</label>
+                    <select id="model_selector" name="model_id" class="ui search dropdown">
+                      <option value="">Select Model</option>
+                    </select>
                   </div>
                   <div class="five wide field">
                     {{ renderer.render_field(form.ip_address) }}
@@ -139,7 +143,12 @@ Edit Camera {{ camera.name }}
 </div>
 <script type="text/python">
   from cameras import form_controller
-  camera_form = form_controller.FormController(get_camera_model_choices_url="{{ url_for("cameras.get_models_by_brand", brand_id="brand_id")}}")
+  {% if camera %}
+    {% set camera_id = camera.id %}
+    {% else %}
+    {% set camera_id = "" %}
+  {% endif %}
+  camera_form = form_controller.FormController(get_camera_model_choices_url="{{ url_for("cameras.get_models_by_brand", brand_id="brand_id")}}", camera_id="{{camera_id}}", get_initial_form_url="{{ url_for('cameras.initial_form', camera_id="camera_id")}}")
   camera_form.start()
 </script>
 {% endblock %}
@@ -174,7 +183,7 @@ Edit Camera {{ camera.name }}
               prompt: "Please enter Frame Rate"
             },
             {
-              type: 'integer[1..175]',
+              type: 'float[1..175]',
               prompt: 'Please enter Frame Rate more than 0'
             }
           ]

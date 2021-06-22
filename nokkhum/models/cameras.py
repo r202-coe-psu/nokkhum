@@ -60,7 +60,8 @@ class Camera(me.Document):
     password = me.StringField(required=True, default="")
     ip_address = me.StringField(required=True, default="")
     channel = me.IntField(required=True, default=0)
-
+    model_id = me.StringField(required=True, default="")
+    # brand_id = me.StringField(required=True, default="")
     # model = me.ReferenceField("CameraModel", dbref=True)
 
     status = me.StringField(required=True, default="active")

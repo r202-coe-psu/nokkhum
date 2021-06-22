@@ -70,7 +70,8 @@ Camera Brand: {{ brand.name }}
           href="{{ url_for('administration.camera_settings.delete_model', brand_id=brand.id, camera_model_id=camera_model.id) }}">
           <i class="checkmark icon"></i>Yes</a>
       </div>
-      {% endfor %}
+    </div>
+    {% endfor %}
   </tbody>
 </table>
 
