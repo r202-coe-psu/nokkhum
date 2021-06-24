@@ -69,14 +69,14 @@ def add():
         motion_property=motion_property,
     )
     if form.ip_address.data and camera_model:
-        if "[USERNAME]" in camera_model.path or "[PASSWORD]" in camera_model.path:
-            path = (
-                camera_model.path.replace("[USERNAME]", form.username.data)
-            ).replace("[PASSWORD]", form.password.data)
-            uri = f"{camera_model.protocal}{form.ip_address.data}{camera_model.port}{path}"
-        else:
-            uri = f"{camera_model.protocal}{form.username.data}:{form.password.data}@{form.ip_address.data}:{camera_model.port}{camera_model.path}"
-        uri.replace("[CHANNEL]", str(form.channel.data))
+        # if "[USERNAME]" in camera_model.path or "[PASSWORD]" in camera_model.path:
+        path = (camera_model.path.replace("[USERNAME]", form.username.data)).replace(
+            "[PASSWORD]", form.password.data
+        )
+        # uri = f"{camera_model.protocal}{form.ip_address.data}{camera_model.port}{path}"
+        # else:
+        uri = f"{camera_model.protocal}{form.username.data}:{form.password.data}@{form.ip_address.data}:{camera_model.port}{path}"
+        uri = uri.replace("[CHANNEL]", str(form.channel.data))
         camera.uri = uri
         camera.ip_address = form.ip_address.data
         camera.username = form.username.data
@@ -179,20 +179,20 @@ def edit(camera_id):
         return render_template(
             "/cameras/add-edit-camera.html", form=form, camera=camera, project=project
         )
+    form.populate_obj(camera)
     model_id = request.form.get("model_id")
     camera_model = None
     if model_id:
         camera_model = models.CameraModel.objects.get(id=model_id)
-
     if form.ip_address.data and camera_model:
-        if "[USERNAME]" in camera_model.path or "[PASSWORD]" in camera_model.path:
-            path = (
-                camera_model.path.replace("[USERNAME]", form.username.data)
-            ).replace("[PASSWORD]", form.password.data)
-            uri = f"{camera_model.protocal}{form.ip_address.data}{camera_model.port}{path}"
-        else:
-            uri = f"{camera_model.protocal}{form.username.data}:{form.password.data}@{form.ip_address.data}:{camera_model.port}{camera_model.path}"
-        uri.replace("[CHANNEL]", str(form.channel.data))
+        # if "[USERNAME]" in camera_model.path or "[PASSWORD]" in camera_model.path:
+        path = (camera_model.path.replace("[USERNAME]", form.username.data)).replace(
+            "[PASSWORD]", form.password.data
+        )
+        #     uri = f"{camera_model.protocal}{form.ip_address.data}{camera_model.port}{path}"
+        # else:
+        uri = f"{camera_model.protocal}{form.username.data}:{form.password.data}@{form.ip_address.data}:{camera_model.port}{path}"
+        uri = uri.replace("[CHANNEL]", str(form.channel.data))
         camera.uri = uri
         camera.model_id = model_id
 
@@ -200,7 +200,6 @@ def edit(camera_id):
     processor.storage_period = form.storage_period.data
     processor.save()
     camera.location = [form.longitude.data, form.latitude.data]
-    form.populate_obj(camera)
     camera.width = width
     camera.height = height
     camera.motion_property.active = form.motion_detector.data

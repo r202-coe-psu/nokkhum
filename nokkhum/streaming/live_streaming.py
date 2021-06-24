@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 
 TIMEOUT = 30
 
+
 async def generate_frame(camera_id, user_id, ss):
     queue = await ss.add_new_queue(camera_id, user_id)
 
@@ -31,9 +32,9 @@ async def generate_frame(camera_id, user_id, ss):
                 await asyncio.sleep(0.1)
 
                 # logger.debug(f"{camera_id} is empty {now-served_date}")
-                if (now-served_date).seconds > TIMEOUT:
+                if (now - served_date).seconds > TIMEOUT:
                     running = False
-                
+
                 continue
 
             frame = queue.get_nowait()
@@ -55,7 +56,6 @@ async def generate_frame(camera_id, user_id, ss):
         # logger.debug("remove queue")
 
 
-
 @module.route("/")
 async def index():
     return "Live Camera"
@@ -64,7 +64,7 @@ async def index():
 @module.route("/cameras/<camera_id>")
 async def live(camera_id):
     ss = current_app.streaming_sub
-    user_id = request.args.get('user_id')
+    user_id = request.args.get("user_id")
     response = await make_response(generate_frame(camera_id, user_id, ss))
     response.timeout = None  # No timeout for this route
     response.headers["Content-Type"] = "multipart/x-mixed-replace; boundary=frame"

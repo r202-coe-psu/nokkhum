@@ -61,7 +61,7 @@ class CameraBrandForm(BaseCameraBrandForm):
 BaseCameraModelForm = model_form(
     models.CameraModel,
     FlaskForm,
-    only=["name", "path",],
+    only=["name", "path", "protocal", "port"],
     field_args={
         "name": {"label": "Camera Model Name"},
         "protocal": {"label": "Protocal"},
