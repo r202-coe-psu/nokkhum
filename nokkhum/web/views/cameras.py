@@ -75,7 +75,11 @@ def add():
         )
         # uri = f"{camera_model.protocal}{form.ip_address.data}{camera_model.port}{path}"
         # else:
-        uri = f"{camera_model.protocal}{form.username.data}:{form.password.data}@{form.ip_address.data}:{camera_model.port}{path}"
+        if camera_model.port:
+            address = f"{form.ip_address.data}:{camera_model.port}"
+        else:
+            address = form.ip_address.data
+        uri = f"{camera_model.protocal}{form.username.data}:{form.password.data}@{address}{path}"
         uri = uri.replace("[CHANNEL]", str(form.channel.data))
         camera.uri = uri
         camera.ip_address = form.ip_address.data
@@ -191,7 +195,11 @@ def edit(camera_id):
         )
         #     uri = f"{camera_model.protocal}{form.ip_address.data}{camera_model.port}{path}"
         # else:
-        uri = f"{camera_model.protocal}{form.username.data}:{form.password.data}@{form.ip_address.data}:{camera_model.port}{path}"
+        if camera_model.port:
+            address = f"{form.ip_address.data}:{camera_model.port}"
+        else:
+            address = form.ip_address.data
+        uri = f"{camera_model.protocal}{form.username.data}:{form.password.data}@{address}{path}"
         uri = uri.replace("[CHANNEL]", str(form.channel.data))
         camera.uri = uri
         camera.model_id = model_id

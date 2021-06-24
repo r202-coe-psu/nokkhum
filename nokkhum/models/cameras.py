@@ -23,7 +23,7 @@ class CameraModel(me.Document):
     brand = me.ReferenceField("CameraBrand", dbref=True)
 
     name = me.StringField(required=True, default="", max_length=100)
-    port = me.StringField(required=True, default="", max_length=10)
+    port = me.StringField(default="", max_length=10)
     protocal = me.StringField(
         required=True,
         default="rtsp",
