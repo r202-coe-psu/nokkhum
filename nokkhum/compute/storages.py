@@ -33,6 +33,8 @@ class StorageController:
         self.convertion_queue = asyncio.queues.Queue(maxsize=100)
 
     def compress(self, output_filename, video):
+        if not video.exists():
+            return
         with tarfile.open(output_filename, f"w:{self.settings['TAR_TYPE']}") as tar:
             tar.add(video, arcname=os.path.basename(video))
             return [output_filename, video]
@@ -47,6 +49,8 @@ class StorageController:
                 await asyncio.sleep(0.001)
             try:
                 result = future_result.result()
+                if not result:
+                    continue
                 tar_file = result[0]
                 # logger.debug(tar_file)
                 video_mp4 = result[1]
@@ -59,14 +63,17 @@ class StorageController:
                 #         )
                 #     )
                 # )
+                # logger.debug(str(tar_file).replace("_", "/"))
                 new_tar_path = pathlib.Path(
-                        tar_file.replace("/_", "/").replace(
-                            self.settings["NOKKHUM_PROCESSOR_RECORDER_CACHE_PATH"],
-                            self.settings["NOKKHUM_PROCESSOR_RECORDER_PATH"],
-                        )
+                    str(tar_file)
+                    .replace("/_", "/")
+                    .replace(
+                        self.settings["NOKKHUM_PROCESSOR_RECORDER_CACHE_PATH"],
+                        self.settings["NOKKHUM_PROCESSOR_RECORDER_PATH"],
                     )
+                )
                 if not new_tar_path.parent.exists():
-                     new_tar_path.parent.mkdir(parents=True, exist_ok=True)
+                    new_tar_path.parent.mkdir(parents=True, exist_ok=True)
 
                 shutil.move(tar_path, new_tar_path)
 
@@ -135,6 +142,19 @@ class StorageController:
                     continue
                 for video in date_dir.iterdir():
                     if (date_dir / f"{video.name.split('.')[0]}.mp4").exists():
+                        if video.name[0] != "_":
+                            output_filename = (
+                                date_dir
+                                / f"_{video.name.split('.')[0]}.tar.{self.settings['TAR_TYPE']}"
+                            )
+                            result = self.loop.run_in_executor(
+                                self.compression_pool,
+                                self.compress,
+                                output_filename,
+                                video,
+                            )
+                            if not self.compression_queue.full():
+                                await self.compression_queue.put(result)
                         continue
                     if video.suffix == ".png":
                         new_image_path = (
@@ -170,9 +190,11 @@ class StorageController:
 
     def convert(self, video):
         try:
-            logger.debug("converting")
+            if not video.exists():
+                return
             name = video.name.split(".")[0]
             with_mp4 = str(video.parents[0]) + "/_" + name + ".mp4"
+            logger.debug(f"converting >>{with_mp4}")
             mp4_path = pathlib.Path(with_mp4.replace("/_", "/"))
             if mp4_path.exists():
                 return
@@ -181,7 +203,7 @@ class StorageController:
                 .output(with_mp4)
                 .run_async(overwrite_output=True, quiet=True)
             )
-            logger.debug("waiting")
+            # logger.debug("waiting")
             result.wait()
             return result
         except Exception as e:
@@ -198,12 +220,14 @@ class StorageController:
                     await asyncio.sleep(0.001)
                 video = future_result.result()
                 if not video:
-                    return
+                    continue
                 output_filename = (
                     f"{video.args[3].split('.')[0]}.tar.{self.settings['TAR_TYPE']}"
                 )
                 video_file = pathlib.Path(video.args[3])
                 new_path = pathlib.Path(video.args[3].replace("/_", "/"))
+                if not video_file.exists():
+                    continue
                 video_file.rename(new_path)
                 video.args[2].unlink()
                 result = self.loop.run_in_executor(
@@ -212,6 +236,6 @@ class StorageController:
                 if not self.compression_queue.full():
                     await self.compression_queue.put(result)
                 else:
-                    return
+                    continue
             except Exception as e:
                 logger.exception(e)
