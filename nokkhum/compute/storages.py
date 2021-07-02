@@ -64,6 +64,8 @@ class StorageController:
                 #     )
                 # )
                 # logger.debug(str(tar_file).replace("_", "/"))
+                if not tar_path.exists:
+                    continue
                 new_tar_path = pathlib.Path(
                     str(tar_file)
                     .replace("/_", "/")
@@ -74,8 +76,7 @@ class StorageController:
                 )
                 if not new_tar_path.parent.exists():
                     new_tar_path.parent.mkdir(parents=True, exist_ok=True)
-                if not tar_path.exists:
-                    continue
+
                 shutil.move(tar_path, new_tar_path)
 
                 video_mp4.unlink()
