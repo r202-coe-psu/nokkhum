@@ -244,7 +244,7 @@
 <script type="text/python">
 from gridviews import controllers
 
-gridview = controllers.GridViewController(grid_id="{{request.args.get('grid_id', grid_id)}}", save_gird_url= "{{ url_for('gridviews.save')}}",  get_grid_url= "{{ url_for('gridviews.get_grid')}}")
+gridview = controllers.GridViewController(grid_id="{{request.args.get('grid_id', grid_id)}}", save_gird_url= "{{ url_for('gridviews.save')}}",  get_grid_url= "{{ url_for('gridviews.get_grid')}}", ws_url="{{ config.get('WS_URL')}}")
 gridview.start()
 </script>
 {% endblock %}

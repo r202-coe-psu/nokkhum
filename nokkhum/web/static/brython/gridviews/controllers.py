@@ -1,12 +1,22 @@
-from browser import document, html, ajax
+from browser import document, html, ajax, websocket, window
 from javascript import JSON
+import javascript as js
 
 
 class GridViewController:
-    def __init__(self, save_gird_url="", get_grid_url="", grid_id=""):
+    def __init__(
+        self,
+        save_gird_url="",
+        get_grid_url="",
+        grid_id="",
+        ws_url="ws://localhost:8081",
+    ):
         self.save_gird_url = save_gird_url
         self.get_grid_url = get_grid_url
         self.grid_id = grid_id
+        self.ws = {}
+        self.data_stream_src = window.URL.createObjectURL
+        self.ws_url = ws_url
 
     def mouseover(self, ev):
         ev.target.style.cursor = "pointer"
@@ -42,20 +52,22 @@ class GridViewController:
         released while the object is over the zone.
         """
         # retrieve data stored in drag_start (the draggable element's id)
-        src = ev.dataTransfer.getData("text")
-        camera = document[src]
-        camera_id, url = src.split("-")
+        camera_id = ev.dataTransfer.getData("text")
+        # print(src)
+
+        # camera_id = src
         display = document[ev.target.id]
         display.attrs["drop-active"] = False
         try:
-            document[f"img-{src}"].unbind("dragstart")
-            document[f"img-{src}"].parent.clear()
+            document[f"img-{camera_id}"].unbind("dragstart")
+            document[f"img-{camera_id}"].parent.clear()
 
         except Exception as e:
             pass
         img = html.IMG(
-            id=f"img-{src}",
-            src=url,
+            Class="grid-camera-displays",
+            id=f"img-{camera_id}",
+            src="",
         )
         btn = html.A(
             Class="clear-btn icon rightbottom ui inverted red button circular",
@@ -68,7 +80,7 @@ class GridViewController:
         img.draggable = True
         btn.bind("click", self.clear_display)
         img.bind("dragstart", self.dragstart_img)
-
+        self.register_ws(camera_id)
         ev.preventDefault()
 
     def save_grid(self, ev):
@@ -76,9 +88,9 @@ class GridViewController:
             if req.status == 200:
                 # print(req.text)
                 document["update-grid"].className = "ui right primary button"
-                document.select("body")[0].toast(
-                    {"class": "success", "message": "You're using the good framework !"}
-                )
+                # document.select("body")[0].toast(
+                #     {"class": "success", "message": "You're using the good framework !"}
+                # )
 
             else:
                 print("error ", req.text)
@@ -88,6 +100,7 @@ class GridViewController:
         displays_data = {}
         for display in displays:
             displays_data[display.id] = display.innerHTML
+            print(display.innerHTML)
         # print(displays_data)
         ajax.post(
             self.save_gird_url,
@@ -99,18 +112,44 @@ class GridViewController:
             headers={"Content-Type": "application/x-www-form-urlencoded"},
         )
 
+    def register_ws(self, camera_id):
+        # if camera_id in self.ws:
+        #     return
+        ws = websocket.WebSocket(f"{self.ws_url}/ws/cameras/{camera_id}")
+        ws.bind("open", self.on_open)
+        ws.bind("message", self.on_message)
+        ws.bind("close", self.on_close)
+        self.ws[camera_id] = ws
+
     def initial_grid(self, req):
         displays_data = JSON.parse(req.text)
         for id, img_html in displays_data.items():
             if not img_html:
                 continue
-            # print(img_html)
+            # print(id)
             # document[id].clear()
             document[id].innerHTML = img_html
             for child in document[id].children:
+                if child.id:
+                    self.register_ws(child.id.split("-")[-1])
                 child.bind("dragstart", self.dragstart_img)
         for clear_btn in document.select(".clear-btn"):
             clear_btn.bind("click", self.clear_display)
+
+    def on_open(self, evt):
+        print("open", evt)
+
+    def on_message(self, evt):
+        # print(evt.data)
+        camera_id = evt.target.url.split("/")[-1]
+        # data_stream_src = window.URL.createObjectURL(evt.data)
+        # print(document[f"img-{camera_id}"].__dict__)
+        # print(document[f"img-{camera_id}"].__dict__)
+        document[f"img-{camera_id}"].srcset = self.data_stream_src(evt.data)
+
+    def on_close(self, evt):
+        # websocket is closed
+        print("close", evt)
 
     def start(self):
         # print("start")
@@ -129,3 +168,10 @@ class GridViewController:
             f"{self.get_grid_url}?grid_id={self.grid_id}",
             oncomplete=self.initial_grid,
         )
+
+        # self.ws = websocket.WebSocket(
+        #     "ws://localhost:8081/ws/cameras/60d430533d01f0b515499e0f"
+        # )
+        # self.ws.bind("open", self.on_open)
+        # self.ws.bind("message", self.on_message)
+        # self.ws.bind("close", self.on_close)

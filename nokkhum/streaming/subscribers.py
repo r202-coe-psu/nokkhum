@@ -57,10 +57,9 @@ class StreamingSubscriber:
                     await asyncio.sleep(0.001)
                     continue
 
-
                 for q in queues:
                     if q.full():
-                        logger.debug("drop image")
+                        # logger.debug("drop image")
                         q.get_nowait()
                         await asyncio.sleep(0)
 
@@ -68,8 +67,7 @@ class StreamingSubscriber:
             except Exception as e:
                 logger.exception(e)
 
-        logger.debug('end live')
-
+        logger.debug("end live")
 
     async def streaming_cb(self, msg):
         # self.message_queue.put(msg.data)
@@ -95,7 +93,9 @@ class StreamingSubscriber:
         self.nc = NATS()
         self.nc._max_payload = 2097152
         # logger.debug("in setup")
-        logger.debug(f'connect to nats server {self.settings["NOKKHUM_MESSAGE_NATS_HOST"]}')
+        logger.debug(
+            f'connect to nats server {self.settings["NOKKHUM_MESSAGE_NATS_HOST"]}'
+        )
 
         await self.nc.connect(
             self.settings["NOKKHUM_MESSAGE_NATS_HOST"],
@@ -157,24 +157,15 @@ class StreamingSubscriber:
             await self.stream_id[camera_id].unsubscribe()
             del self.camera_queues[camera_id]
             await self.send_stop_live(camera_id, user_id)
-        
 
     async def send_start_live(self, camera_id, user_id):
         # logger.debug("add_camera_topic")
-        data = {
-                "camera_id": camera_id,
-                "user_id": user_id,
-                'action': 'start-streamer'
-                }
+        data = {"camera_id": camera_id, "user_id": user_id, "action": "start-streamer"}
         camera_register_topic = "nokkhum.processor.command"
         await self.nc.publish(camera_register_topic, json.dumps(data).encode())
 
     async def send_stop_live(self, camera_id, user_id):
         # logger.debug("remove_camera_topic")
-        data = {
-                "camera_id": camera_id,
-                "user_id": user_id,
-                'action': 'stop-streamer'
-                }
+        data = {"camera_id": camera_id, "user_id": user_id, "action": "stop-streamer"}
         camera_remove_topic = "nokkhum.processor.command"
         await self.nc.publish(camera_remove_topic, json.dumps(data).encode())

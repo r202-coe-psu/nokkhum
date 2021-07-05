@@ -23,7 +23,7 @@ NOKKHUM_STAN_CLUSTER = "nokkhum-stan-cluster"
 
 # steaming config
 NOKKHUM_STREAMING_URL = "http://localhost:8081"
-
+WS_URL = "ws://localhost:8081"
 # websocket config
 # NOKKHUM_WS_URL = 'ws://localhost:8082'
 

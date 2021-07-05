@@ -2,7 +2,7 @@ __version__ = "0.0.1"
 
 import optparse
 
-from quart import Quart, g
+from quart import Quart, g, websocket
 import asyncio
 
 from nokkhum import models, default_settings
@@ -10,15 +10,18 @@ from nokkhum.utils import config
 
 from . import live_streaming
 from .subscribers import StreamingSubscriber
+from . import streaming_ws
 
 
 def create_app():
     app = Quart(__name__)
+
     app.config.from_object(default_settings)
     app.config.from_envvar("NOKKHUM_SETTINGS", silent=True)
 
     # models.init_db(app)
     app.register_blueprint(live_streaming.module)
+    app.register_blueprint(streaming_ws.module)
 
     @app.before_serving
     async def before():
@@ -28,13 +31,18 @@ def create_app():
 
         settings = config.get_settings()
 
-
         streaming_sub = StreamingSubscriber(g.queues, settings)
         await streaming_sub.set_up()
         app.streaming_sub = streaming_sub
-        
+
         # print(id(g), dir(g))
 
+    # @app.websocket("/ws")
+    # async def ws():
+    #     # while True:
+    #     await websocket.send(f"echo hello")
+
+    print(app.url_map)
     return app
 
 
