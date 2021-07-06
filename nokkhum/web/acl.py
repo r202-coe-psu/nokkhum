@@ -11,7 +11,10 @@ from flask_principal import (
     UserNeed,
     RoleNeed,
     identity_loaded,
+    session_identity_loader,
+    Identity,
 )
+
 
 from . import models
 
@@ -34,6 +37,12 @@ def init_acl(app):
 
     login_manager.init_app(app)
     principals.init_app(app)
+
+
+@principals.identity_loader
+def load_identity_when_session_expires():
+    if hasattr(current_user, "id"):
+        return Identity(current_user)
 
 
 @login_manager.user_loader

@@ -1,7 +1,14 @@
-from flask import Blueprint, render_template, url_for, redirect, current_app
+from flask import (
+    Blueprint,
+    render_template,
+    url_for,
+    redirect,
+    current_app,
+    make_response,
+)
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash
-from flask_principal import Identity, identity_changed
+from flask_principal import Identity, identity_changed, AnonymousIdentity
 
 from nokkhum import models
 from .. import forms
@@ -23,7 +30,13 @@ def login():
 @login_required
 def logout():
     logout_user()
-    return redirect(url_for("site.index"))
+    yesterday = datetime.datetime.now() + datetime.timedelta(days=-1)
+    response = make_response(redirect(url_for("site.index")))
+    response.set_cookie("remember_token", "", expires=yesterday)
+    identity_changed.send(
+        current_app._get_current_object(), identity=AnonymousIdentity()
+    )
+    return response
 
 
 @module.route("/accounts")
@@ -94,7 +107,7 @@ def authorized_engpsu():
 
         user.save()
 
-    login_user(user)
+    login_user(user, remember=True)
 
     oauth2token = models.OAuth2Token(
         name=client.engpsu.name,
