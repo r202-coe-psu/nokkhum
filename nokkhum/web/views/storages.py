@@ -50,6 +50,14 @@ def get_file_by_dir_date(processor_id, date_dir):
         if p.suffix == ".png":
             video_zip = f"{p.stem.replace('-thumbnail','')}.tar.{current_app.config.get('TAR_TYPE')}"
             if not (video_path / video_zip).exists():
+                # 609cfce862aed870bc36e2be-20210618-052413-907243-thumbnail.png
+                time = p.name.split("-")[2]
+                checker_time = datetime.datetime.combine(
+                    datetime.date.today(),
+                    datetime.time(int(time[:2]), int(time[2:4]), int(time[4:])),
+                )
+                if (datetime.datetime.now() - checker_time).seconds > 3600:
+                    continue
                 file_dict[p.name] = "Recording"
             else:
                 file_dict[p.name] = video_zip
