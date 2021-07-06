@@ -51,8 +51,14 @@ async def generate_frame(camera_id, user_id, ss):
             # await websocket.send(
             #     b"--frame\r\n" b"Content-Type: image/jpeg\r\n\r\n" + frame + b"\r\n"
             # )
-            await websocket.send(frame)
-            await asyncio.sleep(0)
+            try:
+                await websocket.send(frame)
+                await asyncio.sleep(0)
+            # await websocket.send(camera_id)
+            except asyncio.CancelledError:
+                # Handle disconnection here
+                running = False
+                await websocket.close(1000)
     finally:
         # queue.task_done()
         logger.debug(f"{camera_id} is finish")
@@ -60,9 +66,6 @@ async def generate_frame(camera_id, user_id, ss):
             await ss.remove_queue(camera_id, user_id, queue)
         except Exception as e:
             logger.exception(e)
-
-
-logger.debug("remove queue")
 
 
 @module.websocket("")
@@ -74,18 +77,5 @@ async def index():
 @module.websocket("/cameras/<camera_id>")
 async def live_camera(camera_id):
     logger.debug("in web socket")
-    # try:
-    while True:
-        # await websocket.receive()
-        ss = current_app.streaming_sub
-        # user_id = request.args.get("user_id")
-        # data = await websocket.receive()
-        await generate_frame(camera_id, None, ss)
-        # await websocket.send(camera_id)
-    # except asyncio.CancelledError:
-    #     # Handle disconnection here
-    #     await websocket.close(1000)
-
-    # response.timeout = None  # No timeout for this route
-    # response.headers["Content-Type"] = "multipart/x-mixed-replace; boundary=frame"
-    # return response
+    ss = current_app.streaming_sub
+    await generate_frame(camera_id, None, ss)

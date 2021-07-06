@@ -124,7 +124,7 @@ class StreamingSubscriber:
         #     loop.close()
 
     async def subscribe_camera_topic_error(self, error):
-        print(f"error sub {error}")
+        logger.debug(f"error sub {error}")
 
     async def subscribe_camera_topic(self, camera_id):
         live_streaming_topic = f"nokkhum.streaming.cameras.{camera_id}"
@@ -154,7 +154,8 @@ class StreamingSubscriber:
 
         if len(self.camera_queues[camera_id]) == 0:
             # logger.debug("remove topic")
-            await self.stream_id[camera_id].unsubscribe()
+            if camera_id in self.stream_id:
+                await self.stream_id[camera_id].unsubscribe()
             del self.camera_queues[camera_id]
             await self.send_stop_live(camera_id, user_id)
 

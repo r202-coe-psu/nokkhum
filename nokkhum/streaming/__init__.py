@@ -42,7 +42,6 @@ def create_app():
     #     # while True:
     #     await websocket.send(f"echo hello")
 
-    print(app.url_map)
     return app
 
 
