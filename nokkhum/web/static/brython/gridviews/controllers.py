@@ -72,7 +72,7 @@ class GridViewController:
             src="",
         )
         btn = html.A(
-            Class="clear-btn icon right bottom ui inverted red button circular",
+            Class="clear-btn icon rightbottom ui inverted red button circular",
         )
         trash_icon = html.I(Class="trash icon")
         btn <= trash_icon
