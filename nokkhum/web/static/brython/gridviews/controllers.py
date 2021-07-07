@@ -15,7 +15,9 @@ class GridViewController:
         self.get_grid_url = get_grid_url
         self.grid_id = grid_id
         self.ws = {}
+        # self.data_stream_src = window.URL.createObjectURL
         self.data_stream_src = window.URL.createObjectURL
+
         self.ws_url = ws_url
 
     def mouseover(self, ev):
@@ -116,10 +118,14 @@ class GridViewController:
             headers={"Content-Type": "application/x-www-form-urlencoded"},
         )
 
-    def register_ws(self, camera_id):
+    def register_ws(self, camera_id="", ws_url=""):
         # if camera_id in self.ws:
         #     return
-        ws = websocket.WebSocket(f"{self.ws_url}/ws/cameras/{camera_id}")
+        if ws_url:
+            ws = websocket.WebSocket(ws_url)
+        else:
+            ws = websocket.WebSocket(f"{self.ws_url}/ws/cameras/{camera_id}")
+
         ws.bind("open", self.on_open)
         ws.bind("message", self.on_message)
         ws.bind("close", self.on_close)
@@ -158,7 +164,7 @@ class GridViewController:
 
     def on_message(self, evt):
         # print(evt.data)
-        window.localStorage.clear()
+        # window.localStorage.clear()
         camera_id = evt.target.url.split("/")[-1]
         # print(document[f"loading-{camera_id}"].__dict__)
         document[f"loading-{camera_id}"].style = {"display": "none"}
@@ -166,11 +172,15 @@ class GridViewController:
         # print(document[f"img-{camera_id}"].__dict__)
         # print(document[f"img-{camera_id}"].__dict__)
         # print(self.data_stream_src(evt.data))
+        if document[f"img-{camera_id}"].srcset:
+            window.URL.revokeObjectURL(document[f"img-{camera_id}"].srcset)
         document[f"img-{camera_id}"].srcset = self.data_stream_src(evt.data)
 
     def on_close(self, evt):
         # websocket is closed
-        print("close", evt)
+        print("close", evt.target.__dict__)
+        self.register_ws(ws_url=evt.target.url)
+        print("reconnecting")
 
     def start(self):
         # print("start")
