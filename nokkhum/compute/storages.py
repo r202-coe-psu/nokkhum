@@ -203,10 +203,11 @@ class StorageController:
             result = (
                 ffmpeg.input(video)
                 .output(with_mp4)
-                .run_async(overwrite_output=True, quiet=True)
+                .run_async(overwrite_output=True, quiet=False)
             )
             # logger.debug("waiting")
             result.wait()
+            logger.debug(f"end convert >>{video.name}")
             return result
         except Exception as e:
             logger.exception(e)

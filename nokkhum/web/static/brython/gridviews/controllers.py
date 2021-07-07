@@ -70,13 +70,17 @@ class GridViewController:
             src="",
         )
         btn = html.A(
-            Class="clear-btn icon rightbottom ui inverted red button circular",
+            Class="clear-btn icon right bottom ui inverted red button circular",
         )
         trash_icon = html.I(Class="trash icon")
         btn <= trash_icon
         display.clear()
         display <= img
         display <= btn
+        loading = html.DIV(Class="ui active dimmer", id=f"loading-{camera_id}")
+        loading <= html.DIV("Loading", Class="ui text loader")
+
+        display <= loading
         img.draggable = True
         btn.bind("click", self.clear_display)
         img.bind("dragstart", self.dragstart_img)
@@ -129,9 +133,22 @@ class GridViewController:
             # print(id)
             # document[id].clear()
             document[id].innerHTML = img_html
+            # print(document[id].innerHTML.img)
+            # print(id)
             for child in document[id].children:
+                # print(child)
                 if child.id:
                     self.register_ws(child.id.split("-")[-1])
+                    child.srcset = ""
+                    loading = html.DIV(
+                        Class="ui active dimmer",
+                        id=f"loading-{child.id.replace('img-', '')}",
+                    )
+                    loading <= html.DIV(
+                        "Loading",
+                        Class="ui text loader",
+                    )
+                    document[id] <= loading
                 child.bind("dragstart", self.dragstart_img)
         for clear_btn in document.select(".clear-btn"):
             clear_btn.bind("click", self.clear_display)
@@ -141,10 +158,14 @@ class GridViewController:
 
     def on_message(self, evt):
         # print(evt.data)
+        window.localStorage.clear()
         camera_id = evt.target.url.split("/")[-1]
+        # print(document[f"loading-{camera_id}"].__dict__)
+        document[f"loading-{camera_id}"].style = {"display": "none"}
         # data_stream_src = window.URL.createObjectURL(evt.data)
         # print(document[f"img-{camera_id}"].__dict__)
         # print(document[f"img-{camera_id}"].__dict__)
+        # print(self.data_stream_src(evt.data))
         document[f"img-{camera_id}"].srcset = self.data_stream_src(evt.data)
 
     def on_close(self, evt):

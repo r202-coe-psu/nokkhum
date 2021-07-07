@@ -41,11 +41,12 @@ async def generate_frame(camera_id, user_id, ss):
                 continue
 
             frame = queue.get_nowait()
-            if frame is None:
+            if not frame:
                 # logger.debug("frame")
                 # await asyncio.sleep(0.001)
                 logger.debug(f"{camera_id} got None")
-                running = False
+                # running = False
+                await asyncio.sleep(0.1)
                 continue
             served_date = now
             # await websocket.send(
