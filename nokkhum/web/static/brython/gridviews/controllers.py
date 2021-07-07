@@ -146,15 +146,16 @@ class GridViewController:
                 if child.id:
                     self.register_ws(child.id.split("-")[-1])
                     child.srcset = ""
-                    loading = html.DIV(
-                        Class="ui active dimmer",
-                        id=f"loading-{child.id.replace('img-', '')}",
-                    )
-                    loading <= html.DIV(
-                        "Loading",
-                        Class="ui text loader",
-                    )
-                    document[id] <= loading
+                    if "loading" not in document[id].innerHTML:
+                        loading = html.DIV(
+                            Class="ui active dimmer",
+                            id=f"loading-{child.id.replace('img-', '')}",
+                        )
+                        loading <= html.DIV(
+                            "Loading",
+                            Class="ui text loader",
+                        )
+                        document[id] <= loading
                 child.bind("dragstart", self.dragstart_img)
         for clear_btn in document.select(".clear-btn"):
             clear_btn.bind("click", self.clear_display)
@@ -173,6 +174,7 @@ class GridViewController:
         # print(document[f"img-{camera_id}"].__dict__)
         # print(self.data_stream_src(evt.data))
         if document[f"img-{camera_id}"].srcset:
+            # print(f'revoke>>>{document[f"img-{camera_id}"].srcset}')
             window.URL.revokeObjectURL(document[f"img-{camera_id}"].srcset)
         document[f"img-{camera_id}"].srcset = self.data_stream_src(evt.data)
 
