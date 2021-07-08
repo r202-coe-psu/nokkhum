@@ -210,7 +210,7 @@ class StorageController:
         result = (
             ffmpeg.input(video)
             .output(with_mp4)
-            .run_async(overwrite_output=True, quiet=False)
+            .run_async(overwrite_output=True, quiet=True)
         )
         # logger.debug("waiting")
 
