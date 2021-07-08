@@ -142,9 +142,10 @@ class GridViewController:
             # print(document[id].innerHTML.img)
             # print(id)
             for child in document[id].children:
-                # print(child)
                 if child.id:
-                    self.register_ws(child.id.split("-")[-1])
+                    # print(child.id)
+                    if child.id.split("-")[0] == "img":
+                        self.register_ws(child.id.split("-")[-1])
                     child.srcset = ""
                     if "loading" not in document[id].innerHTML:
                         loading = html.DIV(
@@ -176,7 +177,14 @@ class GridViewController:
         if document[f"img-{camera_id}"].srcset:
             # print(f'revoke>>>{document[f"img-{camera_id}"].srcset}')
             window.URL.revokeObjectURL(document[f"img-{camera_id}"].srcset)
+        # document[f"img-{camera_id}"].srcObject = evt.data
         document[f"img-{camera_id}"].srcset = self.data_stream_src(evt.data)
+        # window.URL.revokeObjectURL(self.data_stream_src(evt.data))
+        # print(evt.data)
+        # print(base64.b64encode(evt.data.decode()))
+        # document[
+        #     f"img-{camera_id}"
+        # ].srcset = "data:image/png;base64," + base64.b64encode(evt.data)
 
     def on_close(self, evt):
         # websocket is closed
