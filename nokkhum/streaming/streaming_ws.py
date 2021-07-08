@@ -59,7 +59,7 @@ async def generate_frame(camera_id, user_id, ss):
             except asyncio.CancelledError:
                 # Handle disconnection here
                 running = False
-                await websocket.close()
+                await websocket.close(1001)
     finally:
         # queue.task_done()
         logger.debug(f"{camera_id} is finish")
