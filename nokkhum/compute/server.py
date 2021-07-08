@@ -172,14 +172,29 @@ class ComputeNodeServer:
         while self.running:
             logger.debug("start compress video file task")
             # await self.storage_controller.compress_video_files()
-            await self.storage_controller.process_compression_result()
+            try:
+                await self.storage_controller.process_compression_result()
+            except Exception as e:
+                logger.exception(e)
             await asyncio.sleep(10)
 
     async def process_convert_video_files(self):
         while self.running:
             logger.debug("start convert video file task")
-            await self.storage_controller.convert_video_files()
-            await self.storage_controller.process_convertion_result()
+            try:
+                await self.storage_controller.convert_video_files()
+                # await self.storage_controller.process_convertion_result()
+            except Exception as e:
+                logger.exception(e)
+            await asyncio.sleep(10)
+
+    async def process_convert_video_result(self):
+        while self.running:
+            logger.debug("start convert video result task")
+            try:
+                await self.storage_controller.process_convertion_result()
+            except Exception as e:
+                logger.exception(e)
             await asyncio.sleep(10)
 
     async def process_expired_dir_recorder_cache(self):
@@ -247,15 +262,20 @@ class ComputeNodeServer:
         update_output_task = loop.create_task(self.update_processor_output())
         update_resource_task = loop.create_task(self.update_compute_node_resource())
         update_fail_processor_task = loop.create_task(self.update_fail_processor())
+
         process_convert_video_task = loop.create_task(
             self.process_convert_video_files()
         )
-        processor_compress_video_task = loop.create_task(
+        process_convert_video_result_task = loop.create_task(
+            self.process_convert_video_result()
+        )
+        process_compress_video_task = loop.create_task(
             self.process_compress_video_files()
         )
-        processor_expired_dir_recorder = loop.create_task(
+        process_expired_dir_recorder = loop.create_task(
             self.process_expired_dir_recorder_cache()
         )
+
         try:
             loop.run_forever()
         except Exception as e:

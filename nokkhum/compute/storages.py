@@ -224,37 +224,34 @@ class StorageController:
             return
 
         while not self.convertion_queue.empty():
-            try:
-                future_result = await self.convertion_queue.get()
-                while not future_result.done():
-                    await asyncio.sleep(0.001)
+            future_result = await self.convertion_queue.get()
+            while not future_result.done():
+                await asyncio.sleep(0.001)
 
-                video = future_result.result()
-                if not video:
-                    continue
+            video = future_result.result()
+            if not video:
+                continue
 
-                output_filename = (
-                    f"{video.args[3].split('.')[0]}.tar.{self.settings['TAR_TYPE']}"
-                )
+            output_filename = (
+                f"{video.args[3].split('.')[0]}.tar.{self.settings['TAR_TYPE']}"
+            )
 
-                video_file = pathlib.Path(video.args[3])
-                new_path = pathlib.Path(video.args[3].replace("/_", "/"))
+            video_file = pathlib.Path(video.args[3])
+            new_path = pathlib.Path(video.args[3].replace("/_", "/"))
 
-                if not video_file.exists():
-                    continue
+            if not video_file.exists():
+                continue
 
-                video_file.rename(new_path)
-                video.args[2].unlink()
-                video.terminate()
+            video_file.rename(new_path)
+            video.args[2].unlink()
+            video.terminate()
 
-                result = self.loop.run_in_executor(
-                    self.compression_pool, self.compress, output_filename, new_path
-                )
+            result = self.loop.run_in_executor(
+                self.compression_pool, self.compress, output_filename, new_path
+            )
 
-                while self.compression_queue.full():
-                    await asyncio.sleep(0.001)
+            while self.compression_queue.full():
+                await asyncio.sleep(0.001)
 
-                await self.compression_queue.put(result)
+            await self.compression_queue.put(result)
 
-            except Exception as e:
-                logger.exception(e)
