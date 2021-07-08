@@ -146,17 +146,19 @@ class GridViewController:
                     # print(child.id)
                     if child.id.split("-")[0] == "img":
                         self.register_ws(child.id.split("-")[-1])
-                    child.srcset = ""
-                    if "loading" not in document[id].innerHTML:
-                        loading = html.DIV(
-                            Class="ui active dimmer",
-                            id=f"loading-{child.id.replace('img-', '')}",
-                        )
-                        loading <= html.DIV(
-                            "Loading",
-                            Class="ui text loader",
-                        )
-                        document[id] <= loading
+                        child.srcset = ""
+                        if "loading" not in document[id].innerHTML:
+                            loading = html.DIV(
+                                Class="ui active dimmer",
+                                id=f"loading-{child.id.replace('img-', '')}",
+                            )
+                            loading <= html.DIV(
+                                "Loading",
+                                Class="ui text loader",
+                            )
+                            document[id] <= loading
+                    else:
+                        document[child.id].style = {"display": ""}
                 child.bind("dragstart", self.dragstart_img)
         for clear_btn in document.select(".clear-btn"):
             clear_btn.bind("click", self.clear_display)
