@@ -68,5 +68,8 @@ class CommandController:
                     'processor_id': str(processor.id),
                     'project_id': str(processor.project.id),
                     'system': True}
+            if processor.camera.motion_property.active:
+                data["motion"] = camera.motion_property.active
+                data["sensitivity"] = camera.motion_property.sensitivity
             await self.command_queue.put(data)
 
