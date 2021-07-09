@@ -297,8 +297,8 @@ class StorageController:
             new_path = pathlib.Path(video.args[3].replace("/_", "/"))
 
             if not video_file.exists():
-                logger.debug(f'compress {video_file} exists')
-                self.video_process_status.pop(video.stem)
+                logger.debug(f'compress {video_file} not exists')
+                self.video_process_status.pop(video_file.stem)
                 continue
 
             video_file.rename(new_path)
