@@ -298,7 +298,7 @@ class StorageController:
 
             if not video_file.exists():
                 logger.debug(f'compress {video_file} not exists')
-                self.video_process_status.pop(video_file.stem)
+                self.video_process_status.pop(new_path.stem)
                 continue
 
             video_file.rename(new_path)
