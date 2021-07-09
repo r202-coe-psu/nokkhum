@@ -178,7 +178,8 @@ class StorageController:
                     continue
 
                 for video in date_dir.iterdir():
-                    if (date_dir / f"{video.name.split('.')[0]}.mp4").exists():
+                    if (date_dir / f"{video.name.stem}.mp4").exists() and '_' not in video.name:
+
                         if video.name[0] != "_":
                             output_filename = (
                                 date_dir
@@ -186,8 +187,6 @@ class StorageController:
                             )
 
                             key = video.stem
-                            if '_' in key:
-                                key = key.replace('_', '')
 
                             if key in self.video_process_status:
                                 continue
