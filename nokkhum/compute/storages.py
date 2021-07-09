@@ -185,10 +185,14 @@ class StorageController:
                                 / f"_{video.name.split('.')[0]}.tar.{self.settings['TAR_TYPE']}"
                             )
 
-                            if video.stem in self.video_process_status:
+                            key = video.stem
+                            if '_' in key:
+                                key = key.replace('_', '')
+
+                            if key in self.video_process_status:
                                 continue
 
-                            self.video_process_status[video.stem] = VideoProcessStatus(
+                            self.video_process_status[key] = VideoProcessStatus(
                                     name=video.stem,
                                     status='waiting compression',
                                     message='recover'
