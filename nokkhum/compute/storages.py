@@ -178,7 +178,7 @@ class StorageController:
                     continue
 
                 for video in date_dir.iterdir():
-                    if (date_dir / f"{video.name.stem}.mp4").exists() and '_' not in video.name:
+                    if (date_dir / f"{video.stem}.mp4").exists() and '_' not in video.name:
 
                         if video.name[0] != "_":
                             output_filename = (
