@@ -209,11 +209,30 @@ def view_video(processor_id, date_dir, filename):
             pass
         else:
             return redirect(url_for("dashboard.index"))
+    motion_time_dalta = 0
+    if "motion" in filename:
+        end_motion_timestamp = filename.split("-")[-1]
+        end_motion = datetime.datetime.fromtimestamp(int(end_motion_timestamp))
+        date = filename.split("-")[1]
+        time = filename.split("-")[2]
+        start_motion = datetime.datetime(
+            int(date[:4]),
+            int(date[4:6]),
+            int(date[6:]),
+            int(time[:2]),
+            int(time[2:4]),
+            int(time[4:]),
+        )
+        print(start_motion)
+        print(end_motion)
+
+        motion_time_dalta = (end_motion - start_motion).seconds
     return render_template(
         "/storages/view_video.html",
         video_path=video_path,
         processor=processor,
         camera=processor.camera,
+        motion_time_dalta=motion_time_dalta,
     )
 
 
