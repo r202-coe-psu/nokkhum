@@ -173,7 +173,7 @@ class StorageController:
     def check_video_file_name(self, video):
         filename = video.parents[0] / video.name[1:]
         if "motion" in video.name:
-            _, date, time, _, _ = video.name.split("-")
+            _, date, time, _, _, _ = video.name.split("-")
         else:
             _, date, time, _ = video.name.split("-")
         file_date = datetime.datetime(

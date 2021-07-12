@@ -15,14 +15,13 @@ from dataclasses import dataclass
 logger = logging.getLogger(__name__)
 
 
-
 @dataclass
 class VideoProcessStatus:
-    name: str 
-    status: str = 'no operation'
+    name: str
+    status: str = "no operation"
     created_date: datetime.datetime = datetime.datetime.now()
     updated_date: datetime.datetime = datetime.datetime.now()
-    message: str = ''
+    message: str = ""
 
 
 class StorageController:
@@ -49,16 +48,16 @@ class StorageController:
     def compress(self, output_filename, video):
 
         key = video.stem
-        self.video_process_status[key].status = 'compression'
+        self.video_process_status[key].status = "compression"
         self.video_process_status[key].updated_date = datetime.datetime.now()
         if not video.exists():
             return
 
         with tarfile.open(output_filename, f"w:{self.settings['TAR_TYPE']}") as tar:
             tar.add(video, arcname=os.path.basename(video))
-        
+
         video.unlink()
-        self.video_process_status[key].status = 'compression success'
+        self.video_process_status[key].status = "compression success"
         self.video_process_status[key].updated_date = datetime.datetime.now()
         return output_filename
 
@@ -75,18 +74,16 @@ class StorageController:
             if not result:
                 continue
 
-
             tar_file = result
             # logger.debug(tar_file)
             # video_mp4 = result[1]
             tar_path = pathlib.Path(tar_file)
 
-
-            key = tar_path.stem.replace('_', '')
-            if '.' in key:
+            key = tar_path.stem.replace("_", "")
+            if "." in key:
                 p = pathlib.Path(key)
                 key = p.stem
-            self.video_process_status[key].status = 'transfer file'
+            self.video_process_status[key].status = "transfer file"
             self.video_process_status[key].updated_date = datetime.datetime.now()
             # tar_path.rename(
             #     pathlib.Path(
@@ -115,7 +112,6 @@ class StorageController:
 
             self.video_process_status.pop(key)
             # video_mp4.unlink()
-
 
     def check_file_log(self, date_dir):
         for log in date_dir.iterdir():
@@ -153,7 +149,7 @@ class StorageController:
     def check_video_file_name(self, video):
         filename = video.parents[0] / video.name[1:]
         if "motion" in video.name:
-            _, date, time, _, _ = video.name.split("-")
+            _, date, time, _, _, _ = video.name.split("-")
         else:
             _, date, time, _ = video.name.split("-")
         file_date = datetime.datetime(
@@ -178,7 +174,9 @@ class StorageController:
                     continue
 
                 for video in date_dir.iterdir():
-                    if (date_dir / f"{video.stem}.mp4").exists() and '_' not in video.name:
+                    if (
+                        date_dir / f"{video.stem}.mp4"
+                    ).exists() and "_" not in video.name:
 
                         if video.name[0] != "_":
                             output_filename = (
@@ -192,10 +190,10 @@ class StorageController:
                                 continue
 
                             self.video_process_status[key] = VideoProcessStatus(
-                                    name=video.stem,
-                                    status='waiting compression',
-                                    message='recover'
-                                    )
+                                name=video.stem,
+                                status="waiting compression",
+                                message="recover",
+                            )
 
                             result = self.loop.run_in_executor(
                                 self.compression_pool,
@@ -232,14 +230,13 @@ class StorageController:
                         continue
 
                     self.video_process_status[video.stem] = VideoProcessStatus(
-                            name=video.stem,
-                            status='wait convertion'
-                            )
+                        name=video.stem, status="wait convertion"
+                    )
 
                     result = self.loop.run_in_executor(
                         self.convertion_pool, self.convert, video
                     )
-                
+
                     while self.convertion_queue.full():
                         await asyncio.sleep(0.001)
 
@@ -248,7 +245,7 @@ class StorageController:
         #     logger.exception(e)
 
     def convert(self, video):
-        self.video_process_status[video.stem].status = 'converting'
+        self.video_process_status[video.stem].status = "converting"
         self.video_process_status[video.stem].updated_date = datetime.datetime.now()
 
         if not video.exists():
@@ -271,11 +268,10 @@ class StorageController:
 
         result.wait()
 
-        self.video_process_status[video.stem].status = 'convert success'
+        self.video_process_status[video.stem].status = "convert success"
         self.video_process_status[video.stem].updated_date = datetime.datetime.now()
         logger.debug(f"end convert >> {video.name}")
         return result
-
 
     async def process_convertion_result(self):
         if self.convertion_queue.empty():
@@ -288,7 +284,7 @@ class StorageController:
 
             video = future_result.result()
             if not video:
-                logger.debug(f'got {video}')
+                logger.debug(f"got {video}")
                 self.video_process_status.pop(video.stem)
                 continue
 
@@ -300,7 +296,7 @@ class StorageController:
             new_path = pathlib.Path(video.args[3].replace("/_", "/"))
 
             if not video_file.exists():
-                logger.debug(f'compress {video_file} not exists')
+                logger.debug(f"compress {video_file} not exists")
                 self.video_process_status.pop(new_path.stem)
                 continue
 
@@ -308,8 +304,10 @@ class StorageController:
             video.args[2].unlink()
             video.terminate()
 
-            self.video_process_status[new_path.stem].status = 'wait compression'
-            self.video_process_status[new_path.stem].updated_date = datetime.datetime.now()
+            self.video_process_status[new_path.stem].status = "wait compression"
+            self.video_process_status[
+                new_path.stem
+            ].updated_date = datetime.datetime.now()
             result = self.loop.run_in_executor(
                 self.compression_pool, self.compress, output_filename, new_path
             )
@@ -318,4 +316,3 @@ class StorageController:
                 await asyncio.sleep(0.001)
 
             await self.compression_queue.put(result)
-

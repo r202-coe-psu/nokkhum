@@ -59,7 +59,7 @@ class VideoMonitor:
             video_id = ev.target.parent.id
         print(video_id)
         if "motion" in video_id:
-            _, processor_id, date, time, milli_sec, _ = video_id.split("-")
+            _, processor_id, date, time, milli_sec, _, _ = video_id.split("-")
         else:
             _, processor_id, date, time, milli_sec = video_id.split("-")
         self.video_path = f"{processor_id}/{date}/{video_id.replace('video-', '')}"

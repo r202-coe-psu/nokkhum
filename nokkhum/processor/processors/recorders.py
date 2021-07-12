@@ -35,7 +35,7 @@ class VideoRecorder(threading.Thread):
         self.fps = fps
         self.size = size
         self.api_preference = api_preference
-        
+
         self.command_builder = command_builder
 
         if minutes > 2:
@@ -44,6 +44,9 @@ class VideoRecorder(threading.Thread):
             self.duration = 120
 
         self.filename_format = "_{}-{}.{}"
+        self.start_motion = datetime.datetime.now()
+        self.end_motion = datetime.datetime.now()
+        self.image = None
 
     def get_encoder(self, extension):
         if extension == "mp4":
@@ -65,6 +68,11 @@ class VideoRecorder(threading.Thread):
             self.processor_id, now.strftime("%Y%m%d-%H%M%S-%f"), self.extension
         )
 
+        if "motion" in self.filename_format:
+            self.start_motion = datetime.datetime.now()
+        else:
+            self.create_thumbnail(self.image)
+
         if self.api_preference == cv2.CAP_GSTREAMER:
             filename = f"appsrc ! autovideoconvert ! x264enc ! mp4mux ! filesink location={filename}"
         writer = cv2.VideoWriter(
@@ -80,9 +88,18 @@ class VideoRecorder(threading.Thread):
         return writer
 
     def create_thumbnail(self, image):
-        thumbnail_name = name = "{}/{}-thumbnail.png".format(
-            self.filename.parent, self.filename.stem[1:]
-        )
+        if "motion" in self.filename_format:
+            filename = self.filename.stem[1:].replace(
+                "[end_motion]",
+                str(self.end_motion.timestamp()).split(".")[0],
+            )
+            thumbnail_name = name = "{}/{}-thumbnail.png".format(
+                self.filename.parent, filename
+            )
+        else:
+            thumbnail_name = name = "{}/{}-thumbnail.png".format(
+                self.filename.parent, self.filename.stem[1:]
+            )
         cv2.imwrite(thumbnail_name, image.data)
 
     def stop(self):
@@ -98,9 +115,18 @@ class VideoRecorder(threading.Thread):
         return img
 
     def postprocess_video(self):
-        self.filename.rename(
-            "{}/{}".format(self.filename.parent, self.filename.name[1:])
-        )
+        if "motion" in self.filename_format:
+            self.end_motion = datetime.datetime.now()
+            filename = self.filename.name[1:].replace(
+                "[end_motion]",
+                str(self.end_motion.timestamp()).split(".")[0],
+            )
+            self.create_thumbnail(self.image)
+            self.filename.rename("{}/{}".format(self.filename.parent, filename))
+        else:
+            self.filename.rename(
+                "{}/{}".format(self.filename.parent, self.filename.name[1:])
+            )
 
     def run(self):
         self.running = True
@@ -113,8 +139,7 @@ class VideoRecorder(threading.Thread):
             self.running = False
         else:
             writer = self.get_new_recoder()
-            self.create_thumbnail(image)
-
+            self.image = image
         begin_date = datetime.datetime.now()
 
         while self.running:
@@ -123,8 +148,10 @@ class VideoRecorder(threading.Thread):
                 continue
 
             image = None
+            self.image = None
             try:
                 image = self.queue.get(timeout=1)
+                self.image = image
                 if image is None:
                     self.running = False
                     continue
@@ -145,7 +172,7 @@ class VideoRecorder(threading.Thread):
 
                 writer = self.get_new_recoder()
                 begin_date = current_date
-                self.create_thumbnail(image)
+                # self.create_thumbnail(image)
 
             img = self.prepair_image(image)
             writer.write(img)
@@ -167,7 +194,7 @@ class MotionVideoRecorder(VideoRecorder):
         self.name = "MotionVideoRecorder"
         self.wait_motion_time = kw_args.get("wait_motion_time", 2)
 
-        self.filename_format = "_{}-{}-motion.{}"
+        self.filename_format = "_{}-{}-motion-[end_motion].{}"
 
         # self.duration = 120
 
@@ -182,6 +209,7 @@ class MotionVideoRecorder(VideoRecorder):
             image = None
             try:
                 image = self.queue.get(timeout=1)
+                self.image = image
                 if image is None:
                     self.running = False
                     continue
@@ -203,16 +231,18 @@ class MotionVideoRecorder(VideoRecorder):
             if not writer:
                 begin_date = datetime.datetime.now()
                 writer = self.get_new_recoder()
-                self.create_thumbnail(image)
+                # self.create_thumbnail(image)
 
             # check get new record
             elif (current_date - begin_date).seconds >= self.duration:
+                # elif (current_date - begin_date).seconds >= 30:
+
                 writer.release()
                 self.postprocess_video()
 
                 writer = self.get_new_recoder()
                 begin_date = current_date
-                self.create_thumbnail(image)
+                # self.create_thumbnail(image)
 
             img = self.prepair_image(image)
             writer.write(img)
