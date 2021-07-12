@@ -32,9 +32,9 @@ Video Storage: {{camera.name}}
   {% set file_time = "{}:{}:{}".format(time[:2], time[2:4], time[4:6]) %}
 
   <h3 class="ui header">Video: {{ file_time }} on {{ file_date }}
-    {% if "motion" in request.path %}
-    มีการเคลื่อนไหว {{motion_time_dalta}} วินาที
-    {% endif %}
+    {%- if "motion" in request.path %}
+    - {{motion_time_dalta}} seconds
+    {%- endif %}
   </h3>
   <div class="ui center segment">
     <div class="ui special cards">
