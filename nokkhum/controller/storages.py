@@ -15,7 +15,13 @@ logger = logging.getLogger(__name__)
 class StorageController:
     def __init__(self, settings):
         self.settings = settings
-        self.path = pathlib.Path(self.settings["NOKKHUM_PROCESSOR_RECORDER_PATH"])
+        # self.recorder_path = pathlib.Path(self.settings["NOKKHUM_PROCESSOR_RECORDER_PATH"])
+        self.cache_path = pathlib.Path(
+            self.settings["NOKKHUM_PROCESSOR_RECORDER_CACHE_PATH"]
+        )
+        self.recorder_path = pathlib.Path(
+            self.settings["NOKKHUM_PROCESSOR_RECORDER_PATH"]
+        )
         self.loop = asyncio.get_event_loop()
         self.compression_pool = concurrent.futures.ThreadPoolExecutor(
             max_workers=settings.get("NOKKHUM_CONTROLLER_COMPRESSION_MAX_WORKER")
@@ -33,57 +39,64 @@ class StorageController:
             date = log.name.split(".")[-1]
             log_date = datetime.datetime.strptime(date, "%Y-%m-%d")
             if (
-                datetime.datetime.now() - datetime.timedelta(days=7)
+                datetime.datetime.now()
+                - datetime.timedelta(
+                    days=self.settings["NOKKHUM_PROCESSOR_RECORDER_LOGS_EXPIRED_DAYS"]
+                )
             ).date() >= log_date.date():
                 log.unlink()
+
+    def check_expired_dir(self, files_path, storage_period):
+
+        if storage_period == 0:
+            return
+        expired_date = datetime.date.today() - datetime.timedelta(days=storage_period)
+        expired_date = datetime.datetime.combine(expired_date, datetime.time(0, 0, 0))
+
+        for dir_file in files_path.iterdir():
+            if not dir_file.name.isdigit():
+                if dir_file.name == "log":
+                    self.check_file_log(dir_file)
+                continue
+
+            year = int(dir_file.name[0:4])
+            month = int(dir_file.name[4:6])
+            day = int(dir_file.name[6:8])
+
+            if datetime.datetime(year, month, day) > expired_date:
+                continue
+
+            # logger.debug('expired')
+            images_path = files_path / dir_file
+            for video_file in images_path.iterdir():
+                video_file.unlink()
+
+            dir_file.rmdir()
 
     async def remove_expired_video_records(self):
         logger.debug("start remove expired records")
 
         processors = models.Processor.objects()
         for processor in processors:
+            files_cache_path = self.cache_path / str(processor.id)
+            if files_cache_path.exists() and files_cache_path.is_dir():
+                self.check_expired_dir(
+                    files_cache_path,
+                    self.settings["NOKKHUM_PROCESSOR_RECORDER_CACHE_PATH_EXPIRED_DAYS"],
+                )
 
             storage_period = processor.storage_period
-            if storage_period == 0:
-                continue
-            expired_date = datetime.date.today() - datetime.timedelta(
-                days=storage_period
-            )
-            expired_date = datetime.datetime.combine(
-                expired_date, datetime.time(0, 0, 0)
-            )
 
-            files_path = self.path / str(processor.id)
-            if not files_path.exists() and not files_path.is_dir():
-                continue
-
-            logger.debug(f"start remove file {files_path}")
-            for dir_file in files_path.iterdir():
-                if not dir_file.name.isdigit():
-                    if dir_file.name == "log":
-                        self.check_file_log(dir_file)
-                    continue
-
-                year = int(dir_file.name[0:4])
-                month = int(dir_file.name[4:6])
-                day = int(dir_file.name[6:8])
-
-                if datetime.datetime(year, month, day) > expired_date:
-                    continue
-
-                # logger.debug('expired')
-                images_path = files_path / dir_file
-                for image_file in images_path.iterdir():
-                    image_file.unlink()
-
-                dir_file.rmdir()
+            files_recorder_path = self.recorder_path / str(processor.id)
+            if files_recorder_path.exists() and files_recorder_path.is_dir():
+                self.check_expired_dir(files_recorder_path, storage_period)
 
     async def remove_web_log_file(self):
         logger.debug("start remove web log")
-        log_path = self.path / "web" / "log"
+        log_path = self.recorder_path / "web" / "log"
         if not log_path.exists():
             return
-        for log in self.path.iterdir():
+        for log in self.recorder_path.iterdir():
             date = log.name.replace("uwsgi-", "")
             log_date = datetime.datetime.strptime(date, "%Y-%m-%d")
             if (
@@ -93,7 +106,7 @@ class StorageController:
 
     async def remove_mp4_file(self):
         logger.debug("start remove mp4")
-        for processor_dir in self.path.iterdir():
+        for processor_dir in self.recorder_path.iterdir():
             for date_dir in processor_dir.iterdir():
                 if not (date_dir.name).isdigit():
                     continue
@@ -148,7 +161,7 @@ class StorageController:
 
     async def extract_tar_file(self, data):
         mp4_path = (
-            self.path
+            self.recorder_path
             / data["processor_id"]
             / data["date_dir"]
             / f'{data["filename"]}.mp4'
@@ -159,7 +172,7 @@ class StorageController:
 
         try:
             source_file = (
-                self.path
+                self.recorder_path
                 / data["processor_id"]
                 / data["date_dir"]
                 / f"{data['filename']}.tar.{self.settings['TAR_TYPE']}"
@@ -191,7 +204,7 @@ class StorageController:
     async def convert_video_files(self):
         logger.debug("start convert file mkv")
         data = {}
-        for processor_dir in self.path.iterdir():
+        for processor_dir in self.recorder_path.iterdir():
             for date_dir in processor_dir.iterdir():
                 if not (date_dir.name).isdigit():
                     continue
