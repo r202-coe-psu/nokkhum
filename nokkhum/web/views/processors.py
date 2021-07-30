@@ -1,3 +1,4 @@
+import datetime
 from flask import Blueprint, render_template, request, jsonify
 
 from flask_login import login_required, current_user
@@ -23,13 +24,23 @@ def get_state(project_id):
         processor_state["project_id"] = str(project.id)
         processor_state["state"] = processor.state
         processor_state["type"] = []
+
         if processor.reports and processor.state == "running":
-            # del processor.reports[-1].processors["acquisitor"]
+            # del processor.reports[-1].processors["acquisitor"].
+            # print(processor.reports[-1].reported_data)
+            if (
+                datetime.datetime.now() - processor.reports[-1].reported_data
+            ).seconds >= 30:
+                # continue
+                processor_state["state"] = "stop"
+                pass
+
             processor_state["type"] = [
                 processor_type
                 for processor_type, value in processor.reports[-1].processors.items()
-                if value
+                if value  # เช็คเกิน 30 วิ
             ]
+            # print(processor_state)
         data.append(processor_state)
     return jsonify(data)
 
