@@ -1,4 +1,5 @@
-from flask import Blueprint, render_template, redirect, url_for, request
+from nokkhum.models.cameras import Camera
+from flask import Blueprint, render_template, redirect, url_for, request, jsonify
 
 from flask_login import login_required, current_user
 
@@ -200,3 +201,19 @@ def demote_security_guard(project_id, user_id):
         project.security_guard.remove(security_guard)
         project.save()
     return redirect(url_for("projects.add_contributor_page", project_id=project_id))
+
+
+@module.route("/<project_id>/get_camera_location")
+@login_required
+def get_camera_location_in_project(project_id):
+    project = models.Project.objects.get(id=project_id)
+    cameras = models.Camera.objects(project=project, status="active")
+    result = []
+    for camera in cameras:
+        data = {
+            "name": camera.name,
+            "location": camera.location,
+            "camera_id": str(camera.id),
+        }
+        result.append(data)
+    return jsonify(result)

@@ -107,6 +107,8 @@ def view():
     project = models.Project.objects(id=project_id).first()
     if not project.is_member(current_user._get_current_object()):
         return redirect(url_for("dashboard.index"))
+    if "?" in camera_id:
+        camera_id = camera_id.split("?")[0]
     camera = models.Camera.objects(id=camera_id).first()
     if camera is None:
         return render_template("/projects/project.html")

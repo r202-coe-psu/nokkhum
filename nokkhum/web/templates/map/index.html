@@ -1,107 +1,65 @@
 {% extends '/base/base-map.html' %}
 {% block body %}
-    <div id="mapbrython" class="map"><div id="popup"></div></div>
+<div id="mapbrython" class="map">
+</div>
+<div style="text-align: right;
+;z-index: 2;position: fixed;
+top: 0.5em;right: 140px;">
+	<a href="{{url_for('dashboard.index')}}" style="margin-top:5px;background-color: #e67478;"
+		class="circular ui icon black button">
+		<i class="big home icon"></i></a>
+	<button id="fly" class="circular ui icon black button" style="margin-top:5px;background-color: #79D1AD;">
+		<i class="big crosshairs white icon"></i></button>
+</div>
 
-  <script type="text/javascript">
-    function get_feature_points(points, name, image_path)
-    {
-	var iconFeature = new ol.Feature({
-	    geometry: new ol.geom.Point(ol.proj.fromLonLat(points)),
-		name: name,
-		image_path: image_path
-	});
-	var iconStyle = new ol.style.Style({
-  	    image: new ol.style.Icon({
-		anchor: [0.5, 25],
-    		anchorXUnits: 'fraction',
-    		anchorYUnits: 'pixels',
-		src: '/static/images/marker2.png'
-  	    })
-	});
-    	iconFeature.setStyle(iconStyle);
-	return iconFeature;
-    }
-    function get_content(feature){
-	var content = (`Camera: ${feature.get("name")} </br> <img src="${feature.get("image_path")}" height="150" width="250">`); 
-	return content;
-    }
-    function get_map(name, iconFeature)
-    {
-	// iconFeature = get_feature_points({{lon_lat}});
-	var vectorSource = new ol.source.Vector({
-  	    features: iconFeature
-	});
+<style>
+	.info {
+		padding: 6px 8px;
+		font: 24px/26px Arial, Helvetica, sans-serif;
+		background: white;
+		background: rgba(255, 255, 255, 0.8);
+		box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+		border-radius: 5px;
+	}
 
-	var vectorLayer = new ol.layer.Vector({
-  	    source: vectorSource
-	});
-      	var map = new ol.Map({
-            target: name,
-            layers: [
-        	new ol.layer.Tile(
-		    {source: new ol.source.OSM()
-          	}),
-		vectorLayer],
-            view: new ol.View({
-		    center: ol.proj.fromLonLat({{center}}),
-		zoom: {{ zoom }}
-            })
-      	});
-	var element = document.getElementById('popup');	
-	var popup = new ol.Overlay({
-  	    element: element,
-  	    positioning: 'bottom-center',
-  	    stopEvent: false,
-  	    offset: [0, -20]
-	});
-	map.addOverlay(popup);
+	.tooltip-marker {
+		font-size: medium;
+		border: 2px solid;
+	}
 
-	map.on('click', function(evt) {
-		
-	var feature = map.forEachFeatureAtPixel(evt.pixel,
-	    function(feature) {
-	      return feature;
-	    });
-	 if (feature) {
-	    var coordinates = feature.getGeometry().getCoordinates();
-	    popup.setPosition(coordinates);
-	    $(element).popover({
-	      placement: 'top',
-	      html: true,
-	      content: get_content(feature)
-	    });
-	    $(element).attr("data-content",get_content(feature));	 
-	    $(element).popover('show');
-	  } else {
-	    $(element).popover('destroy');
-	  }
-	});
-	map.on('pointermove', function(e) {
-	if (e.dragging) {
-	    $(element).popover('destroy');
-	    return;
-	  }
-	  var pixel = map.getEventPixel(e.originalEvent);
-	  var hit = map.hasFeatureAtPixel(pixel);
-	  document.getElementById(map.getTarget()).style.cursor = hit ? 'pointer' : '';
+	.leaflet-tooltip-top.tooltip-marker::before,
+	.leaflet-tooltip-bottom.tooltip-marker::before,
+	.leaflet-tooltip-left.tooltip-marker::before,
+	.leaflet-tooltip-right.tooltip-marker::before {
+		border: none !important;
+	}
 
-	});
-	return map;
-    }
+	.info h4 {
+		font: 22px Arial;
+		text-align: end;
+		margin: 0 0 5px;
+		color: #777;
+	}
 
-  </script>
+	.province_popup {
+		width: 180px;
+	}
+
+	.province_popup .leaflet-popup-tip {
+		width: 0px;
+		height: 0px;
+	}
+</style>
+
 <script type="text/python">
-from browser import alert, window
-from javascript import JSON
-get_feature_points = window.get_feature_points
-get_map = window.get_map
-icon_feature = list()
-lon_lat = {{lon_lat |safe}}
-for coord in lon_lat:
-    vector=get_feature_points((coord.get('locations')[0], coord.get('locations')[1]), coord.get('name'), coord.get('image_path'))
-    icon_feature.append(vector)
-
-bmap = get_map('mapbrython', icon_feature)
+	from maps import MapRenderer
+	map = MapRenderer({{center}},{{zoom}}, "{{ url_for('projects.get_camera_location_in_project', project_id=request.args.get('project_id', ''))}}", camera_view_url="{{ url_for('cameras.view', project_id=request.args.get('project_id', '')) }}")
+	map.start()
 
 </script>
+{% endblock %}
+
+{% block additional_js %}
+<script type="text/javascript" src="{{ url_for('static', filename='brython/maps.brython.js') }}"></script>
+
 {% endblock %}
