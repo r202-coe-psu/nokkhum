@@ -120,7 +120,9 @@ class ControllerServer:
     async def monitor_processor(self):
 
         time_to_sleep = 600
+        await asyncio.sleep(120) # wait 120 seconds
         while self.running:
+            logger.debug('start monitor processor')
             try:
                 await self.command_controller.restart_processors()
             except Exception as e:
