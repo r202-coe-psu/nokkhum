@@ -68,6 +68,7 @@ class VideoRecorder(threading.Thread):
             self.processor_id, now.strftime("%Y%m%d-%H%M%S-%f"), self.extension
         )
 
+        self.filename = filename
         if "motion" in self.filename_format:
             self.start_motion = datetime.datetime.now()
         else:
@@ -83,7 +84,6 @@ class VideoRecorder(threading.Thread):
                 f"cannot open video writer encoder: {self.encoder} size: {self.size} fps: {self.fps}"
             )
 
-        self.filename = filename
         logger.debug(f"New video recorder {filename}")
         return writer
 
@@ -138,8 +138,8 @@ class VideoRecorder(threading.Thread):
         if image is None:
             self.running = False
         else:
-            writer = self.get_new_recoder()
             self.image = image
+            writer = self.get_new_recoder()
         begin_date = datetime.datetime.now()
 
         while self.running:
