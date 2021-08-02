@@ -98,7 +98,7 @@ class Processor(me.Document):
             self.user_command.recorder = processor_command
 
     def count_system_start_recorder(self, seconds=10):
-        after_time = datetime.datetime.now() - datetime.timedelta(seconds)
+        after_time = datetime.datetime.now() - datetime.timedelta(seconds=seconds)
         
         count = ProcessorCommand.objects(
                 processor=self,
