@@ -120,7 +120,10 @@ class StorageController:
             date = log.name.split(".")[-1]
             log_date = datetime.datetime.strptime(date, "%Y-%m-%d")
             if (
-                datetime.datetime.now() - datetime.timedelta(days=7)
+                datetime.datetime.now()
+                - datetime.timedelta(
+                    days=self.settings["NOKKHUM_PROCESSOR_RECORDER_LOGS_EXPIRED_DAYS"]
+                )
             ).date() >= log_date.date():
                 log.unlink()
 
@@ -134,7 +137,11 @@ class StorageController:
                 year = int(date_dir.name[0:4])
                 month = int(date_dir.name[4:6])
                 day = int(date_dir.name[6:8])
-                expired_date = datetime.date.today() - datetime.timedelta(days=2)
+                expired_date = datetime.date.today() - datetime.timedelta(
+                    days=self.settings[
+                        "NOKKHUM_PROCESSOR_RECORDER_CACHE_PATH_EXPIRED_DAYS"
+                    ]
+                )
                 expired_date = datetime.datetime.combine(
                     expired_date, datetime.time(0, 0, 0)
                 )

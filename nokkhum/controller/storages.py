@@ -78,12 +78,12 @@ class StorageController:
 
         processors = models.Processor.objects()
         for processor in processors:
-            files_cache_path = self.cache_path / str(processor.id)
-            if files_cache_path.exists() and files_cache_path.is_dir():
-                self.check_expired_dir(
-                    files_cache_path,
-                    self.settings["NOKKHUM_PROCESSOR_RECORDER_CACHE_PATH_EXPIRED_DAYS"],
-                )
+            # files_cache_path = self.cache_path / str(processor.id)
+            # if files_cache_path.exists() and files_cache_path.is_dir():
+            #     self.check_expired_dir(
+            #         files_cache_path,
+            #         self.settings["NOKKHUM_PROCESSOR_RECORDER_CACHE_PATH_EXPIRED_DAYS"],
+            #     )
 
             storage_period = processor.storage_period
 
