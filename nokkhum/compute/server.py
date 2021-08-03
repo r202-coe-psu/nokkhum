@@ -212,9 +212,10 @@ class ComputeNodeServer:
             try:
                 await asyncio.sleep(time_to_check.seconds)
                 await self.storage_controller.remove_empty_video_records_cache()
-                await asyncio.sleep(10)
+                # await asyncio.sleep(10)
             except Exception as e:
                 logger.exception(e)
+            await asyncio.sleep(10)
 
     async def set_up(self, loop):
         self.nc = NATS()

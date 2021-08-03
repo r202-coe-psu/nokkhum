@@ -147,6 +147,9 @@ class StorageController:
                 )
                 if datetime.datetime(year, month, day) > expired_date:
                     continue
+
+                for video_file in date_dir.iterdir():
+                    video_file.unlink()
                 # if date_dir.iterdir():
                 #     logger.debug("have file continue")
                 #     continue
