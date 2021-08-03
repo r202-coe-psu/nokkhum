@@ -53,37 +53,37 @@ class StorageController:
         expired_date = datetime.date.today() - datetime.timedelta(days=storage_period)
         expired_date = datetime.datetime.combine(expired_date, datetime.time(0, 0, 0))
 
-        for dir_file in files_path.iterdir():
-            if not dir_file.name.isdigit():
-                if dir_file.name == "log":
-                    self.check_file_log(dir_file)
+        for date_dir in files_path.iterdir():
+            if not date_dir.name.isdigit():
+                if date_dir.name == "log":
+                    self.check_file_log(date_dir)
                 continue
 
-            year = int(dir_file.name[0:4])
-            month = int(dir_file.name[4:6])
-            day = int(dir_file.name[6:8])
+            year = int(date_dir.name[0:4])
+            month = int(date_dir.name[4:6])
+            day = int(date_dir.name[6:8])
 
             if datetime.datetime(year, month, day) > expired_date:
                 continue
 
             # logger.debug('expired')
-            images_path = files_path / dir_file
-            for video_file in images_path.iterdir():
+            # images_path = files_path / date_dir
+            for video_file in date_dir.iterdir():
                 video_file.unlink()
 
-            dir_file.rmdir()
+            date_dir.rmdir()
 
     async def remove_expired_video_records(self):
         logger.debug("start remove expired records")
 
         processors = models.Processor.objects()
         for processor in processors:
-            files_cache_path = self.cache_path / str(processor.id)
-            if files_cache_path.exists() and files_cache_path.is_dir():
-                self.check_expired_dir(
-                    files_cache_path,
-                    self.settings["NOKKHUM_PROCESSOR_RECORDER_CACHE_PATH_EXPIRED_DAYS"],
-                )
+            # files_cache_path = self.cache_path / str(processor.id)
+            # if files_cache_path.exists() and files_cache_path.is_dir():
+            #     self.check_expired_dir(
+            #         files_cache_path,
+            #         self.settings["NOKKHUM_PROCESSOR_RECORDER_CACHE_PATH_EXPIRED_DAYS"],
+            #     )
 
             storage_period = processor.storage_period
 
