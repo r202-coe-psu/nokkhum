@@ -146,7 +146,7 @@ class ProcessorController:
                 topic, json.dumps(command).encode(), timeout=60
             )
         except Exception as e:
-            logger.exception(e)
+            # logger.exception(e)
             processor_command.message = str(e)
             processor_command.completed = False
             processor_command.save()
@@ -155,6 +155,7 @@ class ProcessorController:
 
         if result:
             result_data = json.loads(result.data.decode())
+            processor_command.completed = True
 
         await self.update_status(processor)
         processor.save()
