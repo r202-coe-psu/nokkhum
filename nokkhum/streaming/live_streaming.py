@@ -8,6 +8,7 @@ from quart import (
     current_app,
     stream_with_context,
 )
+from flask_login import current_user
 
 import logging
 import datetime

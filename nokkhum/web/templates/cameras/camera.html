@@ -28,7 +28,7 @@ Camera: {{camera.name}}
 <div class="ui stackable two column grid" style="margin-top: 1rem;">
   <div class="ten wide column">
     <div id="monitor" class="ui vertical segment">
-      <img src="{{ camera.get_streaming_url() }}" width="100%">
+      <img src="{{ camera.get_streaming_url() }}?user_id={{ current_user.id }}" width="100%">
     </div>
   </div>
   <div class="six wide column">
@@ -81,7 +81,7 @@ Camera: {{camera.name}}
 <script type="text/python">
   from videos import monitors
   video_monitor = monitors.VideoMonitor(
-    streaming_url="{{ camera.get_streaming_url() }}",
+    streaming_url="{{ camera.get_streaming_url() }}?user_id={{ current_user.id }}",
     get_video_url="{{ url_for('api.index_video')}}",
     static_url = "{{ url_for('static-data.static', filename='') }}",
   )
