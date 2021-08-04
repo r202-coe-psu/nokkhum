@@ -74,7 +74,7 @@ class ProcessorStatus:
                 color = "yellow"
                 s = html.SPAN(style={"color": "yellow"})
                 if "video-recorder" in data["type"]:
-                    self.disable_button(document.select(".stop-recorder"), data_id)
+                    self.enable_button(document.select(".stop-recorder"), data_id)
                     self.enable_button(document.select(".start-recorder"), data_id)
             elif data["state"] in ["stop"]:
                 color = "grey"
@@ -89,7 +89,7 @@ class ProcessorStatus:
                 color = "red"
                 s = html.SPAN(style={"color": "red"})
                 # if "video-recorder" in data["type"]:
-                self.disable_button(document.select(".stop-recorder"), data_id)
+                self.enable_button(document.select(".stop-recorder"), data_id)
                 self.enable_button(document.select(".start-recorder"), data_id)
 
             i.class_name = f"ui {color} circle icon {self.icon_size}"
