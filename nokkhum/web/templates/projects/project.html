@@ -46,8 +46,8 @@ Project: {{project.name}}
             <th>Processor State</th>
             {% if project.is_assistant_or_owner(current_user) %}
             <th>Recorder Controller</th>
-            <th>Manage</th>
             {% endif %}
+            <th>Manage</th>
           </tr>
         </thead>
         <tbody>
@@ -80,7 +80,13 @@ Project: {{project.name}}
                 Stop
               </button>
             </td>
+            {% endif %}
             <td>
+              <a class="ui circular green icon button"
+                href="{{ url_for('processor.command_logs',camera_id=camera.id) }}">
+                <i class="clipboard list icon"></i>
+              </a>
+              {% if project.is_assistant_or_owner(current_user) %}
               <a class="ui circular primary icon button"
                 href="{{ url_for('cameras.edit', project_id=project.id, camera_id=camera.id) }}">
                 <i class="settings icon"></i>

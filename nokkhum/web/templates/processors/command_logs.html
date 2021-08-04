@@ -1,0 +1,133 @@
+{% extends '/projects/index.html' %}
+{% import '/base/html-renderer.html' as renderer %}
+{% block title %}Projects: {{project.name}}{% endblock %}
+
+{% block dashboard_title %}
+Project: <a href="{{ url_for('projects.view', project_id=project.id)}}">{{ project.name }}</a> > {{ processor.id }}
+{% endblock %}
+
+{% block content %}
+<style>
+  .ui.button {
+    margin: 0.25rem;
+  }
+</style>
+<div class="row" style="margin-top: 2rem;">
+  <div class="column">
+    <h2 class="ui header">Processor Logs</h2>
+    {% if project.is_assistant_or_owner(current_user) %}
+    <a id="stop-recorder" class="ui button">
+      <i class="stop icon"></i>
+      Stop
+    </a>
+    {% endif %}
+    <div class="ui top attached tabular menu">
+      <a class="item active" data-tab="first">Recorder</a>
+      <a class="item" data-tab="second">Streamer</a>
+    </div>
+    <div class="ui bottom attached tab segment" data-tab="first">
+      {% if processor_record_commands %}
+      <table class="ui table">
+        <thead>
+          <tr>
+            <th>Processor ID</th>
+            <th>Action</th>
+            <th>User</th>
+            <th>Status</th>
+            <th>Commanded Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for command in processor_record_commands %}
+          <tr>
+            <td data-label="processor_id">{{ command.processor.id }}</td>
+            <td data-label="action">{{ command.action }}</td>
+            {% if command.type == "user" and command.owner %}
+            <td data-label="type">{{ command.owner.get_fullname() }}</td>
+            {% else %}
+            <td data-label="type">System</td>
+
+            {% endif %}
+            {% if command.completed %}
+            <td data-label="completed"><i class="check circle green large icon"></i></td>
+            {% else %}
+            <td data-label="completed"><i class="times circle red large icon"></i></td>
+            {% endif %}
+            <td data-label="commanded_date">{{ command.commanded_date }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="ui info message">
+        <div class="header">
+          No Processor logs
+        </div>
+      </div>
+      {% endif %}
+    </div>
+    <div class="ui bottom attached tab segment" data-tab="second">
+      {% if processor_stream_commands %}
+      <table class="ui table">
+        <thead>
+          <tr>
+            <th>Processor ID</th>
+            <th>Action</th>
+            <th>User</th>
+            <th>Status</th>
+            <th>Commanded Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for command in processor_stream_commands %}
+          <tr>
+            <td data-label="processor_id">{{ command.processor.id }}</td>
+            <td data-label="action">{{ command.action }}</td>
+            {% if command.type == "user" and command.owner %}
+            <td data-label="type">{{ command.owner.get_fullname() }}</td>
+            {% else %}
+            <td data-label="type">System</td>
+
+            {% endif %}
+            {% if command.completed %}
+            <td data-label="completed"><i class="check circle green large icon"></i></td>
+            {% else %}
+            <td data-label="completed"><i class="times circle red large icon"></i></td>
+            {% endif %}
+            <td data-label="commanded_date">{{ command.commanded_date }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="ui info message">
+        <div class="header">
+          No Processor logs
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+<script type="text/python">
+  from browser import document, ajax, bind
+  @bind(document["stop-recorder"], "click")
+  def stop_lpr(ev):
+      print("stop")
+      ajax.post(
+          "{{url_for('cameras.stop_recorder', camera_id=camera.id)}}", data={"project_id": "{{project.id}}"}
+      )
+      
+</script>
+{% endblock %}
+
+{% block additional_js %}
+
+<script>
+  $('.menu .item')
+    .tab()
+    ;
+</script>
+
+{% endblock %}

@@ -1,4 +1,5 @@
 import datetime
+from nokkhum.models.processors import Processor
 from flask import Blueprint, render_template, request, jsonify
 
 from flask_login import login_required, current_user
@@ -160,3 +161,28 @@ def get_resource_usage():
                     )
                     results.append(result)
     return jsonify(results)
+
+
+@module.route("/command_logs/cameras/<camera_id>", methods=["GET"])
+@login_required
+def command_logs(camera_id):
+    camera = models.Camera.objects.get(id=camera_id)
+    processor = models.Processor.objects(camera=camera).first()
+    processor_record_commands = (
+        models.ProcessorCommand.objects(processor=processor, action__icontains="record")
+        .order_by("-commanded_date")
+        .limit(10)
+    )
+    processor_stream_commands = (
+        models.ProcessorCommand.objects(processor=processor, action__icontains="stream")
+        .order_by("-commanded_date")
+        .limit(10)
+    )
+    return render_template(
+        "/processors/command_logs.html",
+        project=camera.project,
+        camera=camera,
+        processor_record_commands=processor_record_commands,
+        processor_stream_commands=processor_stream_commands,
+        processor=processor,
+    )
