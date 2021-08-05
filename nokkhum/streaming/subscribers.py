@@ -8,6 +8,7 @@ from nats.aio.client import Client as NATS
 from stan.aio.client import Client as STAN
 import threading
 import concurrent.futures
+from nokkhum import models
 
 
 logger = logging.getLogger(__name__)
@@ -16,13 +17,14 @@ logger = logging.getLogger(__name__)
 class StreamingSubscriber:
     def __init__(self, queues, settings):
         self.settings = settings
+        models.init_mongoengine(settings)
+
         self.camera_queues = queues
         self.cameras_id_queue = asyncio.queues.Queue()
         self.image_queue = asyncio.queues.Queue()
 
         self.running = False
         self.stream_id = {}
-
         self.loop = asyncio.get_running_loop()
         self.pool = concurrent.futures.ThreadPoolExecutor(
             max_workers=settings.get("NOKKHUM_STREAMING_MAX_WORKER")
@@ -138,10 +140,16 @@ class StreamingSubscriber:
         # make processors dict for check data processor if nor in processors dict send topic to controller
         if camera_id not in self.camera_queues:
             await self.subscribe_camera_topic(camera_id)
+        q = asyncio.queues.Queue(maxsize=10)
+        if user_id:
+            user = models.User.objects.get(id=user_id)
+            # logger.debug(user.get_fullname())
+            camera = models.Camera.objects.get(id=camera_id)
+            if not camera.project.is_member(user):
+                return q
         await self.send_start_live(camera_id, user_id)
 
         queues = self.camera_queues.get(camera_id)
-        q = asyncio.queues.Queue(maxsize=10)
         if not queues:
             self.camera_queues[camera_id] = [q]
         else:
