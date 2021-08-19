@@ -39,7 +39,7 @@ class ResourceMonitor:
                 card_state.className = "ui label red"
             card_state <= data["state"].capitalize()
             if data["state"] == "running":
-                cpu_usage <= "{} %".format(data["cpu"])
+                cpu_usage <= f"{data['cpu']:.2f} %"
                 self.render_cpu_bar(cpu_id, data["cpu"])
                 self.render_cpu_bar(memory_id, data["memory_percentage"])
                 card_memory <= data["memory"] + " MB" + " / " + data[
