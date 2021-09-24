@@ -31,8 +31,11 @@ def add():
         return redirect(url_for("dashboard.index"))
     form = forms.cameras.CameraForm()
     form.frame_size.choices = [
+        ("352*288", "352 x 288"),
+        ("480*240", "480 x 240"),
         ("640*360", "640 x 360"),
         ("640*480", "640 x 480"),
+        ("704*576", "704 x 576"),
         ("854*480", "854 x 480"),
         ("1280*720", "1280 x 720"),
         ("1920*1080", "1920 x 1080"),
@@ -156,7 +159,11 @@ def edit(camera_id):
     processor = models.Processor.objects.get(camera=camera, project=project)
     form = forms.cameras.CameraForm(obj=camera)
     form.frame_size.choices = [
+        ("352*288", "352 x 288"),
+        ("480*240", "480 x 240"),
         ("640*360", "640 x 360"),
+        ("640*480", "640 x 480"),
+        ("704*576", "704 x 576"),
         ("854*480", "854 x 480"),
         ("1280*720", "1280 x 720"),
         ("1920*1080", "1920 x 1080"),
