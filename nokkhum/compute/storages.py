@@ -228,7 +228,8 @@ class StorageController:
                         if not new_image_path.parent.exists():
                             new_image_path.parent.mkdir(parents=True)
                         # video.rename(new_image_path)
-                        shutil.move(video, new_image_path)
+                        shutil.copy(video, new_image_path)
+                        video.unlink()
 
                     if video.suffix != ".mkv":
                         continue
