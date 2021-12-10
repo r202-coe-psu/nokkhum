@@ -3,7 +3,7 @@ flask-mongoengine
 flask-login
 # flask-allows
 flask-principal
-authlib==0.15.3
+authlib
 bcrypt
 blinker
 requests

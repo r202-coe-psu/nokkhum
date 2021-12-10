@@ -8,7 +8,8 @@ RUN apt install -y python3 python3-dev python3-pip python3-venv npm libsm-dev li
 
 RUN pip3 install flask uwsgi pillow numpy scipy blinker wheel numpy scipy matplotlib scikit-image scikit-learn  
 
-RUN apt -y install build-essential checkinstall cmake pkg-config yasm git libjpeg-dev libpng-dev libtiff-dev libavcodec-dev libavformat-dev libswscale-dev libavresample-dev libdc1394-22-dev libxine2-dev libv4l-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev gstreamer1.0-rtsp gstreamer1.0-libav gstreamer1.0-tools gstreamer1.0-alsa libtbb-dev libgoogle-glog-dev libgflags-dev libgphoto2-dev libeigen3-dev libhdf5-dev python3-dev python3-pip python3-venv unzip wget x264 x265 libx264-dev libx265-dev libgtk-3-dev ffmpeg
+# libavresample-dev
+RUN apt -y install build-essential checkinstall cmake pkg-config yasm git libjpeg-dev libpng-dev libtiff-dev libavcodec-dev libavformat-dev libswscale-dev libxine2-dev libv4l-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev gstreamer1.0-rtsp gstreamer1.0-libav gstreamer1.0-tools gstreamer1.0-alsa libtbb-dev libgoogle-glog-dev libgflags-dev libgphoto2-dev libeigen3-dev libhdf5-dev python3-dev python3-pip python3-venv unzip wget x264 x265 libx264-dev libx265-dev libgtk-3-dev ffmpeg
 
 
 RUN wget https://github.com/opencv/opencv/archive/master.zip -O /tmp/opencv.zip && \

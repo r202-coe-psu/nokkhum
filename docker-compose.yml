@@ -122,6 +122,10 @@ services:
         networks:
             - default
         restart: always
+        ulimits:
+            nofile:
+                soft: "65536"
+                hard: "65536"
         environment:
             NOKKHUM_SETTINGS: /app/nokkhum-production.cfg
         command: nokkhum-compute

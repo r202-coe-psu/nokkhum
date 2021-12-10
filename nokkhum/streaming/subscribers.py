@@ -163,7 +163,11 @@ class StreamingSubscriber:
         if len(self.camera_queues[camera_id]) == 0:
             # logger.debug("remove topic")
             if camera_id in self.stream_id:
-                await self.stream_id[camera_id].unsubscribe()
+                try:
+                    await self.stream_id[camera_id].unsubscribe()
+                except Exception as e:
+                    logger.exception(e)
+
             del self.camera_queues[camera_id]
             await self.send_stop_live(camera_id, user_id)
 
