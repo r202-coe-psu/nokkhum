@@ -108,7 +108,8 @@ class StorageController:
             if not new_tar_path.parent.exists():
                 new_tar_path.parent.mkdir(parents=True, exist_ok=True)
 
-            shutil.move(tar_path, new_tar_path)
+            shutil.copy(tar_path, new_tar_path)
+            tar_path.unlink()
 
             self.video_process_status.pop(key)
             # video_mp4.unlink()
