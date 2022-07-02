@@ -3,8 +3,10 @@ from flask_login import current_user, login_user
 
 # from authlib.flask.client import OAuth
 from authlib.integrations.flask_client import OAuth
-import loginpass
-from flask_principal import Identity, identity_changed
+
+oauth2_client = OAuth()
+# import loginpass
+# from flask_principal import Identity, identity_changed
 from . import models
 import mongoengine as me
 
@@ -29,9 +31,6 @@ def update_token(name, token):
 
     item.save()
     return item
-
-
-oauth2_client = OAuth()
 
 
 def handle_authorize_google(remote, token, user_info):
@@ -125,9 +124,10 @@ def init_oauth(app):
     oauth2_client.init_app(app, fetch_token=fetch_token, update_token=update_token)
 
     oauth2_client.register("engpsu")
-    backends = [loginpass.Google]
 
-    loginpass_bp = loginpass.create_flask_blueprint(
-        backends, oauth2_client, handle_authorize_google
-    )
-    app.register_blueprint(loginpass_bp)
+    # backends = [loginpass.Google]
+
+    # loginpass_bp = loginpass.create_flask_blueprint(
+    #     backends, oauth2_client, handle_authorize_google
+    # )
+    # app.register_blueprint(loginpass_bp)

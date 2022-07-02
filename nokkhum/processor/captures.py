@@ -25,13 +25,13 @@ class VideoCapture:
 
     def create_capture(self):
         uri = self.identifier
-        logger.debug(f'uri --> {uri}')
+        logger.debug(f"uri --> {uri}")
         if type(uri) is str and "rtsp" in uri:
             gstreamer_uri = (
                 f"rtspsrc location={uri} latency=30 ! decodebin"
                 + " ! videoconvert ! appsink"
             )
-            logger.debug(f'gstreamer uri --> {gstreamer_uri}')
+            logger.debug(f"gstreamer uri --> {gstreamer_uri}")
             capture = cv2.VideoCapture(gstreamer_uri)
             if not capture.isOpened():
                 capture = cv2.VideoCapture(uri)
@@ -79,7 +79,7 @@ class VideoCapture:
 
         result = self.create_capture()
 
-        logger.debug(f'create capture result {result}')
+        logger.debug(f"create capture result {result}")
         if not result:
             raise Exception(f"camera cannot open {self.id}")
 

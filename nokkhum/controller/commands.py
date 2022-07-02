@@ -35,39 +35,34 @@ class CommandController:
             },
             {
                 "$addFields": {
-                    "recorder": {
-                        "$arrayElemAt": ["$recorder", 0]
-                    },
-                    "last_report":{
-                        "$arrayElemAt": ["$reports", -1]
-                    },
+                    "recorder": {"$arrayElemAt": ["$recorder", 0]},
+                    "last_report": {"$arrayElemAt": ["$reports", -1]},
                 },
             },
             {
                 "$match": {
                     "recorder.action": "start-recorder",
                     # "last_report.processors.video-recorder": False,
-                    }
+                }
             },
         ]
 
         processors = models.Processor.objects(
-                # updated_date__lt=accepted_date
-                ).aggregate(
-                        pipeline
-                )
+            # updated_date__lt=accepted_date
+        ).aggregate(pipeline)
 
         for p in processors:
-            
-            last_report = p['last_report']
-            if last_report:
-                reported_date = last_report.get('reported_data')
-                recorder = last_report['processors'].get('video-recorder', False)
-                if reported_date > accepted_date and \
-                    recorder:
-                        continue
 
-            logger.debug(f'recover {p["_id"]} {current_time - reported_date} {recorder}')
+            last_report = p["last_report"]
+            if last_report:
+                reported_date = last_report.get("reported_data")
+                recorder = last_report["processors"].get("video-recorder", False)
+                if reported_date > accepted_date and recorder:
+                    continue
+
+            logger.debug(
+                f'recover {p["_id"]} {current_time - reported_date} {recorder}'
+            )
             processor = models.Processor.objects(id=p["_id"]).first()
             await self.put_restart_processor_command(processor)
 

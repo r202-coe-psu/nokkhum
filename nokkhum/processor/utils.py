@@ -3,6 +3,7 @@ import threading
 import datetime
 
 import logging
+
 logger = logging.getLogger(__name__)
 
 
@@ -28,13 +29,14 @@ class ImageQueue(queue.Queue):
         #             threading.current_thread().name,
         #             self.queue.qsize()))
         if self.full():
-            logger.info('{} queue drop image, queue size: {}'.format(
-                    threading.current_thread().name,
-                    self.qsize()))
+            logger.info(
+                "{} queue drop image, queue size: {}".format(
+                    threading.current_thread().name, self.qsize()
+                )
+            )
             self.get()
 
         super().put(data)
-
 
     def stop(self):
         self.put(None)

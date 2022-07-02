@@ -23,7 +23,7 @@ module = Blueprint(
 
 
 @module.route("/")
-@acl.admin_permission.require(http_exception=403)
+@acl.roles_required("admin")
 def index():
     # my_projects = list()
     project_search = request.args.get("project_search", "")

@@ -4,11 +4,13 @@ from nats.aio.client import Client as NATS
 from stan.aio.client import Client as STAN
 import os
 import logging
+
 logger = logging.getLogger(__name__)
 os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = "rtsp_transport;udp"
 import queue
 import numpy as np
 import pickle
+
 
 class Subscriber:
     def __init__(self):
@@ -17,7 +19,7 @@ class Subscriber:
 
     async def run(self, loop):
         self.nc = NATS()
-        await self.nc.connect('localhost:4222', io_loop=loop)
+        await self.nc.connect("localhost:4222", io_loop=loop)
 
         # Start session with NATS Streaming cluster.
         self.sc = STAN()
@@ -25,28 +27,28 @@ class Subscriber:
         await self.sc.subscribe("nokkhum.streaming.processors", cb=self.handle_msg)
 
     async def handle_msg(self, msg):
-       # print('cb topic')
+        # print('cb topic')
         img = msg.data
         self.q.put(img)
 
     async def handle_q_cap(self):
-        print('q cap')
+        print("q cap")
         while self.is_running:
             if self.q.empty():
-                print('q empty')
+                print("q empty")
                 await asyncio.sleep(1)
                 continue
-            print('have data in q')
+            print("have data in q")
             data = self.q.get()
             try:
                 data = pickle.loads(data)
-                print(data['processor_id'])
-                img = data['frame']
-                cv2.imshow('live_camera', cv2.imdecode(img,1))
-                if cv2.waitKey(1) & 0xFF == ord('q'): break
+                print(data["processor_id"])
+                img = data["frame"]
+                cv2.imshow("live_camera", cv2.imdecode(img, 1))
+                if cv2.waitKey(1) & 0xFF == ord("q"):
+                    break
             except Exception as e:
                 print(e)
-
 
     def set_up(self):
         loop = asyncio.get_event_loop()
@@ -62,7 +64,7 @@ class Subscriber:
             loop.close()
             cv2.destroyAllWindows()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     ns = Subscriber()
     ns.set_up()
-            

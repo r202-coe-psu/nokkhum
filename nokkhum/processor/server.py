@@ -29,11 +29,11 @@ class ProcessorServer:
         self.settings = settings
         self.running = False
         self.processors = {
-                "video-streamer": None,
-                "video-recorder": None,
-                "acquisitor": None,
-                "motion-detector": None
-                }
+            "video-streamer": None,
+            "video-recorder": None,
+            "acquisitor": None,
+            "motion-detector": None,
+        }
 
         self.image_queues = []
         self.capture_output_queues = []
@@ -59,7 +59,7 @@ class ProcessorServer:
 
     def setup(self, options):
 
-        path = pathlib.Path(options.directory) / options.processor_id / 'log'
+        path = pathlib.Path(options.directory) / options.processor_id / "log"
         if not path.exists():
             path.mkdir(parents=True)
 
@@ -70,18 +70,18 @@ class ProcessorServer:
         # )
 
         handler = handlers.TimedRotatingFileHandler(
-                f'{path}/processor.log',
-                'midnight',
-                1,
-                backupCount=10)
-        formatter = logging.Formatter('%(asctime)s %(name)s:%(lineno)d %(levelname)s - %(message)s')
+            f"{path}/processor.log", "midnight", 1, backupCount=10
+        )
+        formatter = logging.Formatter(
+            "%(asctime)s %(name)s:%(lineno)d %(levelname)s - %(message)s"
+        )
         handler.setFormatter(formatter)
 
         root_logger = logging.getLogger()
         root_logger.addHandler(handler)
         root_logger.setLevel(logging.DEBUG)
 
-        logger.debug('setup finish')
+        logger.debug("setup finish")
 
     def get_input(self):
         data = input().strip()
@@ -95,7 +95,7 @@ class ProcessorServer:
         while self.running:
             try:
                 command = self.get_input()
-                logger.debug(f'get command {command}')
+                logger.debug(f"get command {command}")
             except Exception as e:
                 logger.debug(f"error {e}")
                 continue
@@ -122,7 +122,7 @@ class ProcessorServer:
                 elif command["action"] == "stop-recorder":
                     if self.processors["video-recorder"]:
                         self.stop_recorder()
-                elif command.get('action') == 'get-status':
+                elif command.get("action") == "get-status":
                     data = dict()
                     for k, v in self.processors.items():
                         if v and v.running:
@@ -134,33 +134,38 @@ class ProcessorServer:
         logger.debug("End Commander")
 
     def init_acquisitor(self, command):
-        if 'acquisitor' in self.processors and \
-                self.processors['acquisitor'] and \
-                self.processors["acquisitor"].is_alive():
+        if (
+            "acquisitor" in self.processors
+            and self.processors["acquisitor"]
+            and self.processors["acquisitor"].is_alive()
+        ):
             return
 
         # capture output queue default 2 queue
         # capture_output_queues = [recorder_queue, dispatcher_queue]
         # capture_output_queues = [dispatcher_queue]
 
-        fps=command.get("fps", self.settings.get('NOKKHUM_PROCESSOR_ACQUISITOR_DEFAULT_FPS'))
-        size=tuple(command.get("size", self.settings.get('NOKKHUM_PROCESSOR_ACQUISITOR_DEFAULT_SIZE')))
-
+        fps = command.get(
+            "fps", self.settings.get("NOKKHUM_PROCESSOR_ACQUISITOR_DEFAULT_FPS")
+        )
+        size = tuple(
+            command.get(
+                "size", self.settings.get("NOKKHUM_PROCESSOR_ACQUISITOR_DEFAULT_SIZE")
+            )
+        )
 
         capture = None
         try:
             capture = captures.VideoCapture(
                 command["video_uri"],
                 # options.processor_id,
-                command['camera_id'],
+                command["camera_id"],
             )
         except Exception as e:
             logger.exception(e)
             self.running = False
             return
 
-
-        
         acquisitor = acquisitors.ImageAcquisitor(
             capture=capture,
             queues=self.capture_output_queues,
@@ -171,22 +176,22 @@ class ProcessorServer:
         acquisitor.start()
         self.processors["acquisitor"] = acquisitor
 
-
-
     def init_recorder(self, command):
 
-        is_motion = command.get('motion', False)
-        if 'video-recorder' in self.processors and \
-                self.processors["video-recorder"]  and \
-                self.processors["video-recorder"].is_alive():
+        is_motion = command.get("motion", False)
+        if (
+            "video-recorder" in self.processors
+            and self.processors["video-recorder"]
+            and self.processors["video-recorder"].is_alive()
+        ):
             return
         recorder_queue = ImageQueue()
         self.image_queues.append(recorder_queue)
 
-        fps=command.get("fps", 0)
+        fps = command.get("fps", 0)
         if fps == 0 and self.processors["acquisitor"]:
             fps = self.processors["acquisitor"].fps
-        size=tuple(command.get("size", []))
+        size = tuple(command.get("size", []))
         if size == tuple([]):
             size = self.processors["acquisitor"].size
 
@@ -200,9 +205,11 @@ class ProcessorServer:
                 input_queue=motion_queue,
                 output_queues=[recorder_queue],
                 duration=self.settings.get(
-                    'NOKKHUM_PROCESSOR_MOTION_DETECTOR_DURATION'),
+                    "NOKKHUM_PROCESSOR_MOTION_DETECTOR_DURATION"
+                ),
                 wait_motion_time=self.settings.get(
-                    'NOKKHUM_PROCESSOR_MOTION_DETECTOR_WAIT_MOTION_TIME'),
+                    "NOKKHUM_PROCESSOR_MOTION_DETECTOR_WAIT_MOTION_TIME"
+                ),
             )
             motion_detector.start()
             self.processors["motion_detector"] = motion_detector
@@ -216,7 +223,8 @@ class ProcessorServer:
                 extension="mkv",
                 command_builder=self.command_builder,
                 wait_motion_time=self.settings.get(
-                    'NOKKHUM_PROCESSOR_MOTION_DETECTOR_WAIT_MOTION_TIME'),
+                    "NOKKHUM_PROCESSOR_MOTION_DETECTOR_WAIT_MOTION_TIME"
+                ),
             )
 
         else:
@@ -234,8 +242,10 @@ class ProcessorServer:
         self.processors["video-recorder"] = recorder
 
     def stop_recorder(self):
-        if 'video-recorder' in self.processors and \
-                self.processors["video-recorder"] is None:
+        if (
+            "video-recorder" in self.processors
+            and self.processors["video-recorder"] is None
+        ):
             return
 
         processor = self.processors["video-recorder"]
@@ -246,7 +256,7 @@ class ProcessorServer:
             self.capture_output_queues.remove(input_queue)
         self.image_queues.remove(input_queue)
 
-        if processor.name == 'MotionVideoRecorder':
+        if processor.name == "MotionVideoRecorder":
             detector = self.processors["motion-detector"]
             if detector:
                 input_queue = detector.input_queue
@@ -256,17 +266,18 @@ class ProcessorServer:
                 detector.stop()
                 detector.join()
                 self.processors["motion-detector"] = None
-        
+
         processor.stop()
         processor.join()
         self.processors["video-recorder"] = None
         # logger.debug(f'q size {len(self.image_queues)}')
 
-
     def init_dispatcher(self, command):
-        if 'video-streamer' in self.processors and \
-                self.processors["video-streamer"] and \
-                self.processors["video-streamer"].is_alive():
+        if (
+            "video-streamer" in self.processors
+            and self.processors["video-streamer"]
+            and self.processors["video-streamer"].is_alive()
+        ):
             return
 
         dispatcher_queue = ImageQueue()
@@ -282,10 +293,11 @@ class ProcessorServer:
         dispatcher.start()
         self.processors["video-streamer"] = dispatcher
 
-
     def stop_dispatcher(self):
-        if 'video-streamer' in self.processors and \
-                self.processors["video-streamer"] is None:
+        if (
+            "video-streamer" in self.processors
+            and self.processors["video-streamer"] is None
+        ):
             return
 
         processor = self.processors["video-streamer"]
@@ -294,14 +306,12 @@ class ProcessorServer:
         input_queue = processor.input_queue
         self.capture_output_queues.remove(input_queue)
         self.image_queues.remove(input_queue)
-        
+
         processor.stop()
         processor.join()
         self.processors["video-streamer"] = None
 
-
         # logger.debug(f'q size {len(self.image_queues)}')
-
 
     def run(self):
 
@@ -315,7 +325,6 @@ class ProcessorServer:
         # command = self.get_input()
         # while command.get("action") not in ["start", "start-live", "start-record"]:
         #     command = self.get_input()
-
 
         # if command.get("action") == "start-live":
         #     self.processors["live"].set_active()
@@ -334,16 +343,14 @@ class ProcessorServer:
                 time.sleep(1)
                 if self.processors["acquisitor"]:
                     if not self.processors["acquisitor"].running:
-                        logger.debug('Acquisitor run False')
+                        logger.debug("Acquisitor run False")
                         self.running = False
                         continue
 
                     current_date = datetime.datetime.now()
                     diff = current_date - self.processors["acquisitor"].check_point_date
                     if diff.seconds > 10:
-                        logger.debug(
-                            f'Acquisitor diff {diff}'
-                            )
+                        logger.debug(f"Acquisitor diff {diff}")
                         self.running = False
 
             except KeyboardInterrupt as e:

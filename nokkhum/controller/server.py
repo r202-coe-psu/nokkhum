@@ -120,22 +120,22 @@ class ControllerServer:
     async def monitor_processor(self):
 
         time_to_sleep = 600
-        await asyncio.sleep(120) # wait 120 seconds
+        await asyncio.sleep(120)  # wait 120 seconds
         while self.running:
-            logger.debug('start monitor processor')
+            logger.debug("start monitor processor")
             try:
                 await self.command_controller.restart_processors()
             except Exception as e:
                 logger.exception(e)
 
-            logger.debug(f'end monitor processor sleep {time_to_sleep}')
+            logger.debug(f"end monitor processor sleep {time_to_sleep}")
             await asyncio.sleep(time_to_sleep)
 
     # async def handle_
     async def process_compute_node_report(self):
         while self.running:
             data = await self.cn_report_queue.get()
-            # logger.debug(f'process compute node: {data}')
+            logger.debug(f"process compute node: {data}")
 
             try:
                 if data["action"] == "update-resource":
@@ -186,8 +186,13 @@ class ControllerServer:
 
             await asyncio.sleep(0.1)
 
-    async def set_up(self, loop):
-        await self.nc.connect(self.settings["NOKKHUM_MESSAGE_NATS_HOST"], loop=loop)
+    async def set_up(self):
+        logger.debug("start setting up")
+        await self.nc.connect(
+            self.settings["NOKKHUM_MESSAGE_NATS_HOST"],
+            max_reconnect_attempts=-1,
+            reconnect_time_wait=2,
+        )
         logging.basicConfig(
             format="%(asctime)s - %(name)s:%(lineno)d %(levelname)s - %(message)s",
             datefmt="%d-%b-%y %H:%M:%S",
@@ -207,13 +212,15 @@ class ControllerServer:
         sc_id = await self.nc.subscribe(
             storage_command_topic, cb=self.handle_storage_command
         )
+        logger.debug("end setting up")
 
     def run(self):
-
         self.running = True
+
         loop = asyncio.get_event_loop()
         # loop.set_debug(True)
-        loop.run_until_complete(self.set_up(loop))
+        loop.run_until_complete(self.set_up())
+
         cn_report_task = loop.create_task(self.process_compute_node_report())
         processor_command_task = loop.create_task(self.process_processor_command())
         handle_expired_data_task = loop.create_task(self.process_expired_controller())
@@ -228,6 +235,8 @@ class ControllerServer:
 
         try:
             loop.run_forever()
+            # await cn_report_task
+            # await processor_command_task
         except Exception as e:
             print(e)
             self.running = False
@@ -235,8 +244,6 @@ class ControllerServer:
             self.processor_command_queue.close()
             self.storage_command_queue.close()
             self.nc.close()
-        finally:
-            loop.close()
 
     def run_storage_one(self):
 

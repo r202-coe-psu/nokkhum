@@ -23,7 +23,7 @@ module = Blueprint(
 
 
 @module.route("/brands")
-@acl.admin_permission.require(http_exception=403)
+@acl.roles_required("admin")
 def brands_index():
     camera_brands = models.CameraBrand.objects()
     return render_template(
@@ -33,7 +33,7 @@ def brands_index():
 
 
 @module.route("/brands/create", methods=["GET", "POST"])
-@acl.admin_permission.require(http_exception=403)
+@acl.roles_required("admin")
 def create_brand():
     data = request.form
     name = data["name"]
@@ -44,7 +44,7 @@ def create_brand():
 
 
 @module.route("/brands/<brand_id>/edit", methods=["GET", "POST"])
-@acl.admin_permission.require(http_exception=403)
+@acl.roles_required("admin")
 def edit_brand(brand_id):
     camera_brand = models.CameraBrand.objects.get(id=brand_id)
     form = forms.cameras.CameraBrandForm(obj=camera_brand)
@@ -58,14 +58,14 @@ def edit_brand(brand_id):
 
 
 @module.route("/brands/<brand_id>/delete", methods=["GET", "POST"])
-@acl.admin_permission.require(http_exception=403)
+@acl.roles_required("admin")
 def delete_brand(brand_id):
     camera_brand = models.CameraBrand.objects(id=brand_id).delete()
     return redirect(url_for("administration.camera_settings.brands_index"))
 
 
 @module.route("/brands/<brand_id>/models")
-@acl.admin_permission.require(http_exception=403)
+@acl.roles_required("admin")
 def models_index(brand_id):
     brand = models.CameraBrand.objects.get(id=brand_id)
     camera_models = models.CameraModel.objects(brand=brand)
@@ -75,7 +75,7 @@ def models_index(brand_id):
 
 
 @module.route("/brands/<brand_id>/models/create", methods=["GET", "POST"])
-@acl.admin_permission.require(http_exception=403)
+@acl.roles_required("admin")
 def create_models(brand_id):
     brand = models.CameraBrand.objects.get(id=brand_id)
     # camera_models = models.CameraModel.objects(brand=brand)
@@ -101,7 +101,7 @@ def create_models(brand_id):
 @module.route(
     "/brands/<brand_id>/models/<camera_model_id>/update", methods=["GET", "POST"]
 )
-@acl.admin_permission.require(http_exception=403)
+@acl.roles_required("admin")
 def edit_model(brand_id, camera_model_id):
     brand = models.CameraBrand.objects.get(id=brand_id)
     camera_model = models.CameraModel.objects.get(id=camera_model_id)
@@ -127,7 +127,7 @@ def edit_model(brand_id, camera_model_id):
 @module.route(
     "/brands/<brand_id>/models/<camera_model_id>/delete", methods=["GET", "POST"]
 )
-@acl.admin_permission.require(http_exception=403)
+@acl.roles_required("admin")
 def delete_model(brand_id, camera_model_id):
     # brand = models.CameraBrand.objects.get(id=brand_id)
     camera_model = models.CameraModel.objects(id=camera_model_id)

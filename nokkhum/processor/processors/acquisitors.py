@@ -23,7 +23,7 @@ class ImageAcquisitor(threading.Thread):
         self.command_builder = command_builder
 
         self.check_point_date = datetime.datetime.now()
-        
+
         if fps:
             self.fps = fps
         elif capture.get_fps() > 0:
@@ -40,24 +40,24 @@ class ImageAcquisitor(threading.Thread):
     def reconnect_camera(self):
         counter = 0
         self.capture.close()
-        logger.debug('reconnect camera')
+        logger.debug("reconnect camera")
         while not self.capture.status():
             try:
                 self.capture.reconnect()
             except Exception as e:
                 logger.exception(e)
             counter += 1
-            
+
             if counter > 10:
                 self.running = False
 
             if not self.running:
-                logger.debug('Try to open many time')
+                logger.debug("Try to open many time")
                 break
 
             logger.debug(f"waiting camera connect sleep 1s counter {counter}")
             time.sleep(1)
-        logger.debug('reconnect camera success')
+        logger.debug("reconnect camera success")
 
     def resize_image(self, image):
         if self.size is None:
@@ -80,9 +80,8 @@ class ImageAcquisitor(threading.Thread):
             now = datetime.datetime.now()
             diff = now - self.check_point_date
             if diff.seconds > self.check_status_timeout:
-                logger.debug(f'Cannot acquire image abount {diff}')
+                logger.debug(f"Cannot acquire image abount {diff}")
                 self.running = False
-
 
     def run(self):
         logger.debug("Start ImageAcquisitor")
@@ -92,11 +91,10 @@ class ImageAcquisitor(threading.Thread):
         counter = 0
         drop_frame = -1
 
-
         checking_status_thread = threading.Thread(
-                target=self.check_acquisitor_status,
-                daemon=True,
-                )
+            target=self.check_acquisitor_status,
+            daemon=True,
+        )
         checking_status_thread.start()
 
         while self.running:
@@ -134,7 +132,6 @@ class ImageAcquisitor(threading.Thread):
                 start_date = current_date
                 self.check_point_date = current_date
                 counter = 0
-
 
                 for q in self.queues:
                     if q.full():

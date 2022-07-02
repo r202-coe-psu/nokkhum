@@ -1,6 +1,6 @@
-'''
+"""
 @author: boatkrap
-'''
+"""
 
 import threading
 import queue
@@ -8,6 +8,7 @@ import json
 import time
 
 import logging
+
 logger = logging.getLogger(__name__)
 
 
@@ -27,7 +28,6 @@ class ProcessPolling(threading.Thread):
     #         data = self.processor.process.stderr.readline().decode('utf-8')
     #         logger.debug(f'error data: {data}')
 
-
     def run(self):
         # error_reader = threading.Thread(target=self.read_error)
         # error_reader.daemon = True
@@ -36,23 +36,25 @@ class ProcessPolling(threading.Thread):
         while self.running:
             if not self.processor.is_running():
                 logger.debug(
-                    'ProcessPolling processor id: {} terminate'.format(
-                        self.processor.id))
+                    "ProcessPolling processor id: {} terminate".format(
+                        self.processor.id
+                    )
+                )
                 break
 
             # data = self.processor.process.stdout.readline().decode('utf-8')
             # data = data.strip()
             # logger.debug(f'data: {data}')
 
-            data = self.processor.process.stderr.readline().decode('utf-8')
+            data = self.processor.process.stderr.readline().decode("utf-8")
             data = data.strip()
 
-            logger.debug(f'processor {self.processor.id} data: {data}')
-            if len(data) == 0 or data[0] != '{':
+            logger.debug(f"processor {self.processor.id} data: {data}")
+            if len(data) == 0 or data[0] != "{":
                 time.sleep(0.1)
                 continue
 
-            json_data = ''
+            json_data = ""
             try:
                 json_data = json.loads(data)
             except Exception as e:
@@ -65,7 +67,6 @@ class ProcessPolling(threading.Thread):
 
 
 class ProcessorManager:
-
     def __init__(self):
         self.pool = dict()
         self.thread_pool = dict()
@@ -76,7 +77,8 @@ class ProcessorManager:
             self.pool[processor_id] = processor
             self.output[processor_id] = queue.Queue()
             self.thread_pool[processor_id] = ProcessPolling(
-                processor, self.output[processor_id])
+                processor, self.output[processor_id]
+            )
             self.thread_pool[processor_id].start()
 
     def delete(self, processor_id):
@@ -130,19 +132,18 @@ class ProcessorManager:
     def remove_dead_process(self):
         dead_process = {}
 
-        remove_process = [
-            k for k, v in self.pool.items() if not v.is_running()]
+        remove_process = [k for k, v in self.pool.items() if not v.is_running()]
 
         # try to remove dead process
         for key in remove_process:
             processor_process = self.pool[key]
             if not processor_process.is_running():
-                result = ''
+                result = ""
                 try:
                     for line in processor_process.process.stdout:
-                        result += line.decode('utf-8')
+                        result += line.decode("utf-8")
                     for line in processor_process.process.stderr:
-                        result += line.decode('utf-8')
+                        result += line.decode("utf-8")
                 except Exception as e:
                     logger.exception(e)
 
@@ -151,15 +152,15 @@ class ProcessorManager:
                         self.thread_pool[key].running = False
 
                     while self.output[key].qsize() > 0:
-                        result += '{}\n'.format(self.output[key].get())
+                        result += "{}\n".format(self.output[key].get())
 
                 if len(result) == 0:
-                    result = 'Process exist with Unknown Message'
+                    result = "Process exist with Unknown Message"
                 dead_process[key] = result
                 self.delete(key)
 
         if len(dead_process) > 0:
-            logger.debug('remove: %s', dead_process)
+            logger.debug("remove: %s", dead_process)
         return dead_process
 
     def get_pids(self):

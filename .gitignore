@@ -5,6 +5,7 @@ data
 node_modules
 deployment
 package-lock.json
+venv
 *.egg-*
 .vscode
 

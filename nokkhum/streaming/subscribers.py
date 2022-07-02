@@ -101,6 +101,8 @@ class StreamingSubscriber:
 
         await self.nc.connect(
             self.settings["NOKKHUM_MESSAGE_NATS_HOST"],
+            max_reconnect_attempts=-1,
+            reconnect_time_wait=2,
             disconnected_cb=self.disconnected_cb,
         )
 

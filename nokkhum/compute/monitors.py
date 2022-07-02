@@ -1,11 +1,12 @@
-'''
+"""
 Created on Nov 2, 2011
 
 @author: boatkrap
-'''
+"""
 
 import platform
 import json
+
 # import socket
 # import multiprocessing
 # import threading
@@ -16,6 +17,7 @@ import psutil
 from . import machines
 
 import logging
+
 logger = logging.getLogger(__name__)
 
 
@@ -28,7 +30,6 @@ logger = logging.getLogger(__name__)
 
 
 class ComputeNodeMonitor:
-
     def __init__(self, settings, processor_manager, publisher=None):
 
         self.settings = settings
@@ -48,8 +49,8 @@ class ComputeNodeMonitor:
 
     def get_machine_specification(self):
         ms = machines.Machine(
-            self.settings.get('NOKKHUM_PROCESSOR_RECORDER_PATH'),
-            self.settings.get('NOKKHUM_COMPUTE_INTERFACE')
+            self.settings.get("NOKKHUM_PROCESSOR_RECORDER_PATH"),
+            self.settings.get("NOKKHUM_COMPUTE_INTERFACE"),
         )
 
         return ms.get_specification()
@@ -57,36 +58,31 @@ class ComputeNodeMonitor:
     async def update_machine_specification(self):
 
         arguments = self.get_machine_specification()
-        messages = {'method': 'update_machine_specification', 'args': arguments}
-        logging.debug('update information: %s' % messages)
+        messages = {"method": "update_machine_specification", "args": arguments}
+        logging.debug("update information: %s" % messages)
 
         return self.send_message(messages)
 
     async def get_resource(self):
-        cpus = psutil.cpu_percent(interval=.3, percpu=True)
+        cpus = psutil.cpu_percent(interval=0.3, percpu=True)
 
         ms = self.machine_specification
 
         cpu_prop = dict(
-                used=round(sum(cpus) / len(cpus)),
-                used_per_cpu=cpus,
-                )
+            used=round(sum(cpus) / len(cpus)),
+            used_per_cpu=cpus,
+        )
 
         mem = psutil.virtual_memory()
-        mem_prop = dict(
-                total=mem.total,
-                used=mem.used,
-                free=mem.free
-                )
+        mem_prop = dict(total=mem.total, used=mem.used, free=mem.free)
 
-        disk = psutil.disk_usage(
-                self.settings.get('NOKKHUM_PROCESSOR_RECORDER_PATH'))
+        disk = psutil.disk_usage(self.settings.get("NOKKHUM_PROCESSOR_RECORDER_PATH"))
         disk_prop = dict(
-                total=disk.total,
-                used=disk.used,
-                free=disk.free,
-                percent=disk.percent,
-                )
+            total=disk.total,
+            used=disk.used,
+            free=disk.free,
+            percent=disk.percent,
+        )
 
         processor_manager = self.processor_manager
         processor_list = []
@@ -109,18 +105,18 @@ class ComputeNodeMonitor:
                     memory=process.memory_info().rss,
                     processors=processor.get_status(),
                     # messages=compute.processor_manager.read_process_output(processor_id)
-                    )
-                pcpu += process_status['cpu']
-                pmem += process_status['memory']
+                )
+                pcpu += process_status["cpu"]
+                pmem += process_status["memory"]
 
                 processor_list.append(process_status)
             except Exception as e:
                 logger.exception(e)
 
         system_load = dict(
-                cpu=sum(cpus)-pcpu if sum(cpus)-pcpu >= 0 else 0,
-                memory=mem.used-pmem if mem.used-pmem >= 0 else 0
-            )
+            cpu=sum(cpus) - pcpu if sum(cpus) - pcpu >= 0 else 0,
+            memory=mem.used - pmem if mem.used - pmem >= 0 else 0,
+        )
 
         resource = dict(
             name=platform.node(),
@@ -129,10 +125,10 @@ class ComputeNodeMonitor:
             disk=disk_prop,
             processors=processor_list,
             system_load=system_load,
-            ip=ms['ip'],
-            mac=ms['mac'],
-            date=datetime.datetime.now().isoformat()
-            )
+            ip=ms["ip"],
+            mac=ms["mac"],
+            date=datetime.datetime.now().isoformat(),
+        )
 
         # logging.debug('update resource: %s' % messages)
 
@@ -140,7 +136,7 @@ class ComputeNodeMonitor:
 
     async def update_machine_resources(self):
         self.resource = await self.get_resource()
-        messages = {'action': 'update_resources', 'resource': self.resource}
+        messages = {"action": "update_resources", "resource": self.resource}
         return self.send_message(messages)
 
     async def get_processor_run_fail(self):
@@ -152,33 +148,33 @@ class ComputeNodeMonitor:
         # logger.debug('dead>>{}'.format(dead_process))
 
         fail_processors = {
-            'name': platform.node(),
-            'ip': self.machine_specification['ip'],
-            'mac': self.machine_specification['mac'],
-            'dead_process': dead_process,
-            'report_time': datetime.datetime.now().isoformat()
+            "name": platform.node(),
+            "ip": self.machine_specification["ip"],
+            "mac": self.machine_specification["mac"],
+            "dead_process": dead_process,
+            "report_time": datetime.datetime.now().isoformat(),
         }
 
-#        logging.debug('camera_running_fail_report: %s' % messages)
+        #        logging.debug('camera_running_fail_report: %s' % messages)
         return fail_processors
 
     async def processor_running_fail_report(self):
-        logger.debug('start processor running fail')
+        logger.debug("start processor running fail")
         arguments = await self.get_processor_run_fail()
         if arguments is None:
             return
-        messages = {'method': 'processor_run_fail_report', 'args': arguments}
+        messages = {"method": "processor_run_fail_report", "args": arguments}
         return self.send_message(messages)
 
     async def check_resources(self):
         resource = await self.get_resource()
 
-        old_cpu = self.resource['cpu']['used']
-        current_cpu = resource['cpu']['used']
+        old_cpu = self.resource["cpu"]["used"]
+        current_cpu = resource["cpu"]["used"]
 
         if abs(old_cpu - current_cpu) > 20:
             self.resource = resource
-            messages = {'method': 'update_machine_resources', 'args': resource}
+            messages = {"method": "update_machine_resources", "args": resource}
             return self.send_message(messages)
 
         self.processor_running_fail_report()
@@ -283,4 +279,3 @@ class ComputeNodeMonitor:
 #     def get_machine_specification(self):
 #         self._request_sysinfo = True
 #         logger.debug('request_sysinfo: %s\n' % self._request_sysinfo)
-

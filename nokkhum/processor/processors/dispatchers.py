@@ -58,7 +58,7 @@ class ImageDispatcher(threading.Thread):
             self.settings["NOKKHUM_MESSAGE_NATS_HOST"], io_loop=self.loop
         )
 
-        logger.debug('2')
+        logger.debug("2")
         # Start session with NATS Streaming cluster.
         self.sc = STAN()
         await self.sc.connect(
@@ -66,7 +66,6 @@ class ImageDispatcher(threading.Thread):
             f"streaming-pub-{self.camera_id}",
             nats=self.nc,
         )
-
 
     async def tear_down_message(self):
         # await self.camera_topic_register.unsubscribe()
@@ -124,7 +123,7 @@ class ImageDispatcher(threading.Thread):
             # logger.debug(f"in dispatch {image.data}")
             if self.publish_queue.full():
                 await self.publish_queue.get()
-                logger.debug('public queue is full drop image')
+                logger.debug("public queue is full drop image")
                 await asyncio.sleep(0.01)
 
             w, h = image.size()
@@ -139,7 +138,7 @@ class ImageDispatcher(threading.Thread):
                 camera_id=self.camera_id,
                 frame=image_frame,
             )
-            
+
             await self.publish_queue.put(data)
             await asyncio.sleep(0)
             # need to await on publish
@@ -155,7 +154,7 @@ class ImageDispatcher(threading.Thread):
     def run(self):
         self.running = True
         logger.debug("Start Image Dispatcher")
-        
+
         try:
             self.loop.run_until_complete(self.set_up_message())
             self.loop.create_task(self.publish_frame())

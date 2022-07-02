@@ -5,44 +5,35 @@ from flask import (
     redirect,
 )
 from flask_login import LoginManager, current_user, login_url
-from flask_principal import (
-    Principal,
-    Permission,
-    UserNeed,
-    RoleNeed,
-    identity_loaded,
-    session_identity_loader,
-    Identity,
-)
-
+from werkzeug.exceptions import Forbidden
+from functools import wraps
 
 from . import models
 
 
 login_manager = LoginManager()
-principals = Principal()
-
-admin = RoleNeed("admin")
-officer = RoleNeed("officer")
-# volunteer = RoleNeed("volunteer")
-
-# permissions
-admin_permission = Permission(admin)
-officer_permission = Permission(admin, officer)
-# lecturer_permission = Permission(RoleNeed('lecturer'))
 
 
 def init_acl(app):
-    # initial login manager
-
     login_manager.init_app(app)
-    principals.init_app(app)
+
+    @app.errorhandler(403)
+    def page_not_found(e):
+        return unauthorized_callback()
 
 
-@principals.identity_loader
-def load_identity_when_session_expires():
-    if hasattr(current_user, "id"):
-        return Identity(current_user)
+def roles_required(*roles):
+    def wrapper(func):
+        @wraps(func)
+        def wrapped(*args, **kwargs):
+            for role in roles:
+                if role in current_user.roles:
+                    return func(*args, **kwargs)
+            raise Forbidden()
+
+        return wrapped
+
+    return wrapper
 
 
 @login_manager.user_loader
@@ -58,19 +49,3 @@ def unauthorized_callback():
         return response
 
     return redirect(url_for("accounts.login"))
-
-
-@identity_loaded.connect
-def on_identity_loaded(sender, identity):
-    # Set the identity user object
-    identity.user = current_user
-
-    # Add the UserNeed to the identity
-    if hasattr(current_user, "id"):
-        identity.provides.add(UserNeed(current_user.id))
-
-    # Assuming the User model has a list of roles, update the
-    # identity with the roles that the user provides
-    if hasattr(current_user, "roles"):
-        for role in current_user.roles:
-            identity.provides.add(RoleNeed(role))

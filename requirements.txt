@@ -1,24 +1,13 @@
 flask
 flask-mongoengine
 flask-login
-# flask-allows
-flask-principal
 authlib
 bcrypt
 blinker
 requests
-# flask_restplus
-# flask_marshmallow
-# flask_jwt_extended
-loginpass
 email_validator
 
-
-# Flask-uWSGI-WebSocket
-asyncio-nats-client
-
 psutil
-asyncio-nats-client
 
 # for processor
 opencv-python
@@ -31,7 +20,7 @@ brython
 
 # streaming
 quart
-asyncio-nats-streaming
+nats-py
 
 # for compression
 ffmpeg-python

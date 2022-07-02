@@ -22,6 +22,10 @@ class ComputeNodeServer:
     def __init__(self, settings):
         self.settings = settings
 
+        path = pathlib.Path(self.settings["NOKKHUM_PROCESSOR_RECORDER_PATH"])
+        if not path.exists() and not path.is_dir():
+            path.mkdir(parents=True)
+
         path = pathlib.Path(self.settings["NOKKHUM_PROCESSOR_RECORDER_CACHE_PATH"])
         if not path.exists() and not path.is_dir():
             path.mkdir(parents=True)
@@ -217,9 +221,13 @@ class ComputeNodeServer:
                 logger.exception(e)
             await asyncio.sleep(10)
 
-    async def set_up(self, loop):
+    async def set_up(self):
         self.nc = NATS()
-        await self.nc.connect(self.settings["NOKKHUM_MESSAGE_NATS_HOST"], loop=loop)
+        await self.nc.connect(
+            self.settings["NOKKHUM_MESSAGE_NATS_HOST"],
+            max_reconnect_attempts=-1,
+            reconnect_time_wait=2,
+        )
 
         logging.basicConfig(
             format="%(asctime)s - %(name)s:%(lineno)d %(levelname)s - %(message)s",
@@ -259,7 +267,7 @@ class ComputeNodeServer:
         # loop.set_debug(True)
         self.running = True
 
-        loop.run_until_complete(self.set_up(loop))
+        loop.run_until_complete(self.set_up())
         update_output_task = loop.create_task(self.update_processor_output())
         update_resource_task = loop.create_task(self.update_compute_node_resource())
         update_fail_processor_task = loop.create_task(self.update_fail_processor())

@@ -9,6 +9,6 @@ views = [projects, camera_settings]
 
 
 @module.route("/")
-@acl.officer_permission.require(http_exception=403)
+@acl.roles_required("admin")
 def index():
     return "administration"

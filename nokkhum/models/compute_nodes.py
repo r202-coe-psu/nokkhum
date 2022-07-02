@@ -39,23 +39,22 @@ class SystemLoad(me.EmbeddedDocument):
 
 
 class ResourceUsage(me.EmbeddedDocument):
-    cpu = me.EmbeddedDocumentField(
-        'CPUUsage', required=True, default=CPUUsage())
+    cpu = me.EmbeddedDocumentField("CPUUsage", required=True, default=CPUUsage())
     memory = me.EmbeddedDocumentField(
-        'MemoryUsage', required=True, default=MemoryUsage())
-    disk = me.EmbeddedDocumentField(
-        'DiskUsage', required=True, default=DiskUsage())
+        "MemoryUsage", required=True, default=MemoryUsage()
+    )
+    disk = me.EmbeddedDocumentField("DiskUsage", required=True, default=DiskUsage())
     system_load = me.EmbeddedDocumentField(
-        'SystemLoad', required=True, default=SystemLoad())
+        "SystemLoad", required=True, default=SystemLoad()
+    )
 
-    reported_date = me.DateTimeField(
-        required=True, default=datetime.datetime.now)
+    reported_date = me.DateTimeField(required=True, default=datetime.datetime.now)
 
     # report = me.ReferenceField('ComputeNodeReport')
 
 
 class ComputeNode(me.Document):
-    meta = {'collection': 'compute_nodes'}
+    meta = {"collection": "compute_nodes"}
 
     name = me.StringField(max_length=100, required=True)
     ip = me.StringField(max_length=100, required=True, index=True)
@@ -63,17 +62,14 @@ class ComputeNode(me.Document):
 
     machine_specification = me.EmbeddedDocumentField(MachineSpecification)
 
-    resource_records = me.ListField(
-            me.EmbeddedDocumentField(ResourceUsage)
-            )
+    resource_records = me.ListField(me.EmbeddedDocumentField(ResourceUsage))
 
-    created_date = me.DateTimeField(
-        required=True, default=datetime.datetime.now)
-    updated_date = me.DateTimeField(
-        required=True, default=datetime.datetime.now)
+    created_date = me.DateTimeField(required=True, default=datetime.datetime.now)
+    updated_date = me.DateTimeField(required=True, default=datetime.datetime.now)
 
     updated_resource_date = me.DateTimeField(
-        required=True, default=datetime.datetime.now)
+        required=True, default=datetime.datetime.now
+    )
 
     extra = me.DictField()
 
@@ -104,13 +100,13 @@ class ComputeNode(me.Document):
         self.resource_records.append(resource_usage)
 
     def push_responsed_date(self, added_date=None):
-        if 'responsed_date' not in self.extra:
-            self.extra['responsed_date'] = list()
+        if "responsed_date" not in self.extra:
+            self.extra["responsed_date"] = list()
 
-        while(len(self.extra['responsed_date']) > MAX_RECORD):
-            self.extra['responsed_date'].pop(0)
+        while len(self.extra["responsed_date"]) > MAX_RECORD:
+            self.extra["responsed_date"].pop(0)
 
         if added_date is None:
             added_date = datetime.datetime.now()
 
-        self.extra['responsed_date'].append(added_date)
+        self.extra["responsed_date"].append(added_date)
