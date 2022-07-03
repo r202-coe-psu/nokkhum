@@ -76,7 +76,7 @@ class StreamingSubscriber:
 
     async def receive_cb(self, msg):
         # self.message_queue.put(msg.data)
-
+        # await msg.ack()
         result = self.loop.run_in_executor(
             self.pool, self.process_message_data, msg.data
         )
@@ -118,7 +118,7 @@ class StreamingSubscriber:
 
     async def subscribe_camera_topic(self, camera_id):
         if camera_id in self.stream_id:
-            print("found", camera_id, self.stream_id)
+            logger.debug(f"found: {camera_id}")
             return
 
         live_streaming_topic = f"nokkhum.streaming.cameras.{camera_id}"
@@ -128,16 +128,18 @@ class StreamingSubscriber:
                 live_streaming_topic
             )
             logger.debug(f"found stream name: {stream_name}")
+            if stream_name:
+                await self.js.delete_stream(f"streaming-camera-{camera_id}")
         except Exception as e:
             logger.exception(e)
 
             logger.debug(f"not found stream name for: {live_streaming_topic}")
-            await self.js.add_stream(
-                name=f"streaming-camera-{camera_id}",
-                subjects=[live_streaming_topic],
-            )
-
-            return
+        await self.js.add_stream(
+            name=f"streaming-camera-{camera_id}",
+            subjects=[live_streaming_topic],
+            max_age=1_000_000,
+            max_msgs=10,
+        )
 
         # print(check_stream)
         self.stream_id[camera_id] = await self.js.subscribe(
@@ -171,14 +173,16 @@ class StreamingSubscriber:
 
         if len(self.camera_queues[camera_id]) == 0:
             # logger.debug("remove topic")
+            await self.send_stop_live(camera_id, user_id)
             if camera_id in self.stream_id:
                 try:
-                    await self.stream_id[camera_id].unsubscribe()
+                    await self.js.delete_stream(f"streaming-camera-{camera_id}")
                 except Exception as e:
                     logger.exception(e)
 
+                self.stream_id.pop(camera_id)
+
             del self.camera_queues[camera_id]
-            await self.send_stop_live(camera_id, user_id)
 
     async def send_start_live(self, camera_id, user_id):
         # logger.debug("add_camera_topic")
