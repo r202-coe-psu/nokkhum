@@ -6,7 +6,6 @@ import pickle
 import logging
 import json
 from nats.aio.client import Client as NATS
-from stan.aio.client import Client as STAN
 
 
 logger = logging.getLogger(__name__)
@@ -37,15 +36,15 @@ class ImageDispatcher(threading.Thread):
         self.processor_id = processor_id
         self.camera_id = camera_id
         self.settings = settings
-        self.sc = None
         self.nc = None
+        self.js = None
         self.camera_topic = f"nokkhum.streaming.cameras.{camera_id}"
 
         # self.loop = asyncio.get_event_loop()
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)
 
-        self.publish_queue = asyncio.queues.Queue(maxsize=100)
+        self.publish_queue = asyncio.queues.Queue(maxsize=30)
 
     def stop(self):
         self.running = False
@@ -55,30 +54,38 @@ class ImageDispatcher(threading.Thread):
         self.nc._max_payload = 2097152
         logger.debug(f'connect to nats {self.settings["NOKKHUM_MESSAGE_NATS_HOST"]}')
         await self.nc.connect(
-            self.settings["NOKKHUM_MESSAGE_NATS_HOST"], io_loop=self.loop
+            self.settings["NOKKHUM_MESSAGE_NATS_HOST"],
+            max_reconnect_attempts=100,  # need discussion
+            reconnect_time_wait=2,
         )
 
-        logger.debug("2")
-        # Start session with NATS Streaming cluster.
-        self.sc = STAN()
-        await self.sc.connect(
-            self.settings["NOKKHUM_STAN_CLUSTER"],
-            f"streaming-pub-{self.camera_id}",
-            nats=self.nc,
-        )
+        self.js = self.nc.jetstream()
+        stream = None
+        try:
+            stream_name = await self.js.find_stream_name_by_subject(self.camera_topic)
+            logger.debug(f"found stream name: {stream_name}")
+
+        except Exception as e:
+            logger.exception(e)
+
+            logger.debug(f"not found stream name for: {self.camera_topic}")
+            await self.js.add_stream(
+                name=f"streaming-camera-{self.camera_id}",
+                subjects=[self.camera_topic],
+            )
 
     async def tear_down_message(self):
         # await self.camera_topic_register.unsubscribe()
         # await self.camera_topic_remove.unsubscribe()
-        await self.sc.close()
+        # await self.js.close()
+        await self.js.unsubscribe()
+        self.js = None
         await self.nc.close()
-        self.sc = None
         self.nc = None
 
     async def publish_data(self, data):
         serialized_data = pickle.dumps(data)
-        # logger.debug('public data')
-        await self.sc.publish(
+        await self.js.publish(
             self.camera_topic,
             serialized_data,
         )
@@ -156,10 +163,14 @@ class ImageDispatcher(threading.Thread):
         logger.debug("Start Image Dispatcher")
 
         try:
+            logger.debug("start setup")
             self.loop.run_until_complete(self.set_up_message())
-            self.loop.create_task(self.publish_frame())
+            logger.debug("create publish task")
+            publish_frame_task = self.loop.create_task(self.publish_frame())
+            logger.debug("run process frame")
             self.loop.run_until_complete(self.process_frame())
 
+            logger.debug("tear down message")
             self.loop.run_until_complete(self.tear_down_message())
         except Exception as e:
             logger.exception(e)

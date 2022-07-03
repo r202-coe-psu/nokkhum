@@ -29,6 +29,9 @@ class StreamingSubscriber:
         self.pool = concurrent.futures.ThreadPoolExecutor(
             max_workers=settings.get("NOKKHUM_STREAMING_MAX_WORKER")
         )
+        # self.pool = concurrent.futures.ProcessPoolExecutor(
+        #     max_workers=settings.get("NOKKHUM_STREAMING_MAX_WORKER")
+        # )
 
     def process_message_data(self, message):
         data = pickle.loads(message)
@@ -71,12 +74,13 @@ class StreamingSubscriber:
 
         logger.debug("end live")
 
-    async def streaming_cb(self, msg):
+    async def receive_cb(self, msg):
         # self.message_queue.put(msg.data)
 
         result = self.loop.run_in_executor(
             self.pool, self.process_message_data, msg.data
         )
+        await asyncio.sleep(0)
         await self.image_queue.put(result)
 
     async def disconnected_cb(self):
@@ -84,7 +88,7 @@ class StreamingSubscriber:
 
     async def set_up(self):
         logging.basicConfig(
-            format="%(asctime)s - %(name)s:%(levelname)s - %(message)s",
+            format="%(asctime)s - %(name)s:%(lineno)d %(levelname)s - %(message)s",
             datefmt="%d-%b-%y %H:%M:%S",
             level=logging.DEBUG,
         )
@@ -106,36 +110,39 @@ class StreamingSubscriber:
             disconnected_cb=self.disconnected_cb,
         )
 
-        self.sc = STAN()
-
-        await self.sc.connect(
-            self.settings["NOKKHUM_STAN_CLUSTER"],
-            "streaming-sub",
-            nats=self.nc,
-        )
-        # logger.debug("connected")
+        self.js = self.nc.jetstream()
 
         self.running = True
         loop = asyncio.get_event_loop()
         loop.create_task(self.put_image_to_queue())
 
-        # try:
-        # loop.run_forever()
-        # except Exception as e:
-        #     loop.close()
-        # finally:
-        #     self.running = False
-        #     loop.close()
-
-    async def subscribe_camera_topic_error(self, error):
-        logger.debug(f"error sub {error}")
-
     async def subscribe_camera_topic(self, camera_id):
+        if camera_id in self.stream_id:
+            print("found", camera_id, self.stream_id)
+            return
+
         live_streaming_topic = f"nokkhum.streaming.cameras.{camera_id}"
-        self.stream_id[camera_id] = await self.sc.subscribe(
+
+        try:
+            stream_name = await self.js.find_stream_name_by_subject(
+                live_streaming_topic
+            )
+            logger.debug(f"found stream name: {stream_name}")
+        except Exception as e:
+            logger.exception(e)
+
+            logger.debug(f"not found stream name for: {live_streaming_topic}")
+            await self.js.add_stream(
+                name=f"streaming-camera-{camera_id}",
+                subjects=[live_streaming_topic],
+            )
+
+            return
+
+        # print(check_stream)
+        self.stream_id[camera_id] = await self.js.subscribe(
             live_streaming_topic,
-            cb=self.streaming_cb,
-            error_cb=self.subscribe_camera_topic_error,
+            cb=self.receive_cb,
         )
 
     async def add_new_queue(self, camera_id, user_id):
