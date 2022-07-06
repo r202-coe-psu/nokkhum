@@ -5,7 +5,6 @@ import cv2
 import json
 import queue
 from nats.aio.client import Client as NATS
-from stan.aio.client import Client as STAN
 import threading
 import concurrent.futures
 from nokkhum import models

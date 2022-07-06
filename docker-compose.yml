@@ -15,7 +15,7 @@ services:
                 max-file: "3"
 
     nats-server:
-        image: nats-server
+        image: nats
         container_name: nokkhum-nats-server
         volumes:
             - /etc/localtime:/etc/localtime:ro

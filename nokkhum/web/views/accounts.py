@@ -8,7 +8,6 @@ from flask import (
 )
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash
-from flask_principal import Identity, identity_changed, AnonymousIdentity
 
 from nokkhum import models
 from .. import forms
@@ -33,9 +32,6 @@ def logout():
     yesterday = datetime.datetime.now() + datetime.timedelta(days=-1)
     response = make_response(redirect(url_for("site.index")))
     response.set_cookie("remember_token", "", expires=yesterday)
-    identity_changed.send(
-        current_app._get_current_object(), identity=AnonymousIdentity()
-    )
     return response
 
 
@@ -118,8 +114,5 @@ def authorized_engpsu():
         expires=datetime.datetime.fromtimestamp(token.get("expires_in")),
     )
     oauth2token.save()
-    identity_changed.send(
-        current_app._get_current_object(), identity=Identity(user.roles)
-    )
 
     return redirect(url_for("dashboard.index"))
