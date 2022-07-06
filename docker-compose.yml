@@ -14,15 +14,15 @@ services:
                 max-size: "10m"
                 max-file: "3"
 
-    stan-server:
-        image: nats-streaming
-        container_name: nokkhum-stan-server
+    nats-server:
+        image: nats-server
+        container_name: nokkhum-nats-server
         volumes:
             - /etc/localtime:/etc/localtime:ro
         restart: always
         networks:
             - default
-        command: -cid nokkhum-stan-cluster
+        command: -js -m 8222
         logging:
             options:
                 max-size: "10m"
@@ -39,9 +39,9 @@ services:
             - 8080:9000
         links:
             - mongodb
-            - stan-server
+            - nats-server
         depends_on:
-            - stan-server
+            - nats-server
             - mongodb
         networks:
             - default
@@ -65,9 +65,9 @@ services:
             - 8081:8081
         links:
             - mongodb
-            - stan-server
+            - nats-server
         depends_on:
-            - stan-server
+            - nats-server
             - mongodb
         networks:
             - default
@@ -91,9 +91,9 @@ services:
             - /etc/localtime:/etc/localtime:ro
         links:
             - mongodb
-            - stan-server
+            - nats-server
         depends_on:
-            - stan-server
+            - nats-server
             - mongodb
         networks:
             - default
@@ -115,9 +115,9 @@ services:
             - ../deployment/nokkhum/cache:/deployment/nokkhum/cache
             - /etc/localtime:/etc/localtime:ro
         links:
-            - stan-server
+            - nats-server
         depends_on:
-            - stan-server
+            - nats-server
             - controller
         networks:
             - default
