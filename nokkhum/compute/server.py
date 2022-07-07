@@ -24,11 +24,11 @@ class ComputeNodeServer:
 
         path = pathlib.Path(self.settings["NOKKHUM_PROCESSOR_RECORDER_PATH"])
         if not path.exists() and not path.is_dir():
-            path.mkdir(parents=True)
+            path.mkdir(parents=True, exist_ok=True)
 
         path = pathlib.Path(self.settings["NOKKHUM_PROCESSOR_RECORDER_CACHE_PATH"])
         if not path.exists() and not path.is_dir():
-            path.mkdir(parents=True)
+            path.mkdir(parents=True, exist_ok=True)
 
         machine = machines.Machine(
             storage_path=path, interface=self.settings["NOKKHUM_COMPUTE_INTERFACE"]
@@ -180,6 +180,7 @@ class ComputeNodeServer:
                 await self.storage_controller.process_compression_result()
             except Exception as e:
                 logger.exception(e)
+
             await asyncio.sleep(10)
 
     async def process_convert_video_files(self):
@@ -222,17 +223,19 @@ class ComputeNodeServer:
             await asyncio.sleep(10)
 
     async def set_up(self):
+        logging.basicConfig(
+            format="%(asctime)s - %(name)s:%(lineno)d %(levelname)s - %(message)s",
+            datefmt="%d-%b-%y %H:%M:%S",
+            level=logging.DEBUG,
+        )
+
+        await self.storage_controller.clear_cache_dir()
+
         self.nc = NATS()
         await self.nc.connect(
             self.settings["NOKKHUM_MESSAGE_NATS_HOST"],
             max_reconnect_attempts=-1,
             reconnect_time_wait=2,
-        )
-
-        logging.basicConfig(
-            format="%(asctime)s - %(name)s:%(lineno)d %(levelname)s - %(message)s",
-            datefmt="%d-%b-%y %H:%M:%S",
-            level=logging.DEBUG,
         )
 
         rpc_topic = "nokkhum.compute.{}.rpc".format(self.mac_address)

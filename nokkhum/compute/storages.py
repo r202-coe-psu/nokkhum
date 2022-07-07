@@ -41,8 +41,8 @@ class StorageController:
         self.convertion_pool = concurrent.futures.ThreadPoolExecutor(
             max_workers=settings.get("NOKKHUM_COMPUTE_CONVERTION_MAX_WORKER")
         )
-        self.compression_queue = asyncio.queues.Queue(maxsize=100)
-        self.convertion_queue = asyncio.queues.Queue(maxsize=100)
+        self.compression_queue = asyncio.queues.Queue(maxsize=20)
+        self.convertion_queue = asyncio.queues.Queue(maxsize=20)
 
         self.video_process_status = dict()
 
@@ -84,6 +84,11 @@ class StorageController:
             if "." in key:
                 p = pathlib.Path(key)
                 key = p.stem
+
+            if key not in self.video_process_status:
+                logger.debug(f"key -> {key} not found")
+                continue
+
             self.video_process_status[key].status = "transfer file"
             self.video_process_status[key].updated_date = datetime.datetime.now()
             # tar_path.rename(
@@ -251,6 +256,7 @@ class StorageController:
                         self.convertion_pool, self.convert, video
                     )
 
+                    logger.debug(f"wait convertion_queue {video}")
                     while self.convertion_queue.full():
                         await asyncio.sleep(0.001)
 
@@ -330,3 +336,27 @@ class StorageController:
                 await asyncio.sleep(0.001)
 
             await self.compression_queue.put(result)
+
+    async def clear_cache_dir(self):
+        logger.debug("begin clear cache dir")
+
+        for f in self.cache_path.glob("**/*"):
+            if not f.is_file():
+                continue
+
+            if f.name[0] == "_" and f.suffix == ".mkv":
+                logger.debug(f"rename file: {f.name}")
+                f.rename(f.parent / f.name[1:])
+            elif f.name[0] == "_":
+                logger.debug(f"remove file: {f.name}")
+                f.unlink()
+
+        for d in self.cache_path.glob("*/*"):
+            if not d.is_dir():
+                continue
+
+            if len(list(d.iterdir())) == 0:
+                logger.debug(f"remove dir: {d.name}")
+                d.rmdir()
+
+        logger.debug("end clear cache dir")
