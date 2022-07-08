@@ -34,15 +34,28 @@ class StorageController:
         self.recorder_path = pathlib.Path(
             self.settings["NOKKHUM_PROCESSOR_RECORDER_PATH"]
         )
+
         self.loop = asyncio.get_event_loop()
+
+        self.compression_max_workers = settings.get(
+            "NOKKHUM_COMPUTE_COMPRESSION_MAX_WORKER", 10
+        )
+        self.convertion_max_workers = settings.get(
+            "NOKKHUM_COMPUTE_CONVERTION_MAX_WORKER", 10
+        )
         self.compression_pool = concurrent.futures.ThreadPoolExecutor(
-            max_workers=settings.get("NOKKHUM_COMPUTE_COMPRESSION_MAX_WORKER")
+            max_workers=self.compression_max_workers
         )
         self.convertion_pool = concurrent.futures.ThreadPoolExecutor(
-            max_workers=settings.get("NOKKHUM_COMPUTE_CONVERTION_MAX_WORKER")
+            max_workers=self.convertion_max_workers
         )
-        self.compression_queue = asyncio.queues.Queue(maxsize=20)
-        self.convertion_queue = asyncio.queues.Queue(maxsize=20)
+
+        self.compression_queue = asyncio.queues.Queue(
+            maxsize=self.compression_max_workers * 2
+        )
+        self.convertion_queue = asyncio.queues.Queue(
+            maxsize=self.convertion_max_workers * 2
+        )
 
         self.video_process_status = dict()
 
@@ -261,6 +274,7 @@ class StorageController:
                     logger.debug(f"wait convertion_queue {video}")
                     while self.convertion_queue.full():
                         await asyncio.sleep(0.1)
+                    logger.debug(f"put convertion_queue {video}")
 
                     await self.convertion_queue.put(result)
         # except Exception as e:
@@ -296,9 +310,10 @@ class StorageController:
         return result
 
     async def process_convertion_result(self):
+        waiting_convertion_result_number = self.convertion_max_workers * 2
         while (
             not self.convertion_queue.empty()
-            and len(self.waiting_convertion_result) < 10
+            and len(self.waiting_convertion_result) < waiting_convertion_result_number
         ):
             self.waiting_convertion_result.append(await self.convertion_queue.get())
 
