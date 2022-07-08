@@ -46,6 +46,8 @@ class StorageController:
 
         self.video_process_status = dict()
 
+        self.waiting_convertion_result = []
+
     def compress(self, output_filename, video):
 
         key = video.stem
@@ -258,7 +260,7 @@ class StorageController:
 
                     logger.debug(f"wait convertion_queue {video}")
                     while self.convertion_queue.full():
-                        await asyncio.sleep(0.001)
+                        await asyncio.sleep(0.1)
 
                     await self.convertion_queue.put(result)
         # except Exception as e:
@@ -294,48 +296,59 @@ class StorageController:
         return result
 
     async def process_convertion_result(self):
-        if self.convertion_queue.empty():
+        while (
+            not self.convertion_queue.empty()
+            and len(self.waiting_convertion_result) < 10
+        ):
+            self.waiting_convertion_result.append(await self.convertion_queue.get())
+
+        remove_future = []
+        for future_result in self.waiting_convertion_result:
+            if future_result.done():
+                video = future_result.result()
+                await self.prepair_compression(video)
+
+                remove_future.append(future_result)
+
+        for future_result in remove_future:
+            self.waiting_convertion_result.remove(future_result)
+
+        logger.debug(
+            f"convertion success {len(remove_future)}, wait {len(self.waiting_convertion_result)}"
+        )
+
+    async def prepair_compression(self, video):
+        if not video:
+            logger.debug(f"got {video}")
+            self.video_process_status.pop(video.stem)
             return
 
-        while not self.convertion_queue.empty():
-            future_result = await self.convertion_queue.get()
-            while not future_result.done():
-                await asyncio.sleep(0.001)
+        output_filename = (
+            f"{video.args[3].split('.')[0]}.tar.{self.settings['TAR_TYPE']}"
+        )
 
-            video = future_result.result()
-            if not video:
-                logger.debug(f"got {video}")
-                self.video_process_status.pop(video.stem)
-                continue
+        video_file = pathlib.Path(video.args[3])
+        new_path = pathlib.Path(video.args[3].replace("/_", "/"))
 
-            output_filename = (
-                f"{video.args[3].split('.')[0]}.tar.{self.settings['TAR_TYPE']}"
-            )
+        if not video_file.exists():
+            logger.debug(f"compress {video_file} not exists")
+            self.video_process_status.pop(new_path.stem)
+            return
 
-            video_file = pathlib.Path(video.args[3])
-            new_path = pathlib.Path(video.args[3].replace("/_", "/"))
+        video_file.rename(new_path)
+        video.args[2].unlink()
+        video.terminate()
 
-            if not video_file.exists():
-                logger.debug(f"compress {video_file} not exists")
-                self.video_process_status.pop(new_path.stem)
-                continue
+        self.video_process_status[new_path.stem].status = "wait compression"
+        self.video_process_status[new_path.stem].updated_date = datetime.datetime.now()
+        result = self.loop.run_in_executor(
+            self.compression_pool, self.compress, output_filename, new_path
+        )
 
-            video_file.rename(new_path)
-            video.args[2].unlink()
-            video.terminate()
+        while self.compression_queue.full():
+            await asyncio.sleep(0.1)
 
-            self.video_process_status[new_path.stem].status = "wait compression"
-            self.video_process_status[
-                new_path.stem
-            ].updated_date = datetime.datetime.now()
-            result = self.loop.run_in_executor(
-                self.compression_pool, self.compress, output_filename, new_path
-            )
-
-            while self.compression_queue.full():
-                await asyncio.sleep(0.001)
-
-            await self.compression_queue.put(result)
+        await self.compression_queue.put(result)
 
     async def clear_cache_dir(self):
         logger.debug("begin clear cache dir")
