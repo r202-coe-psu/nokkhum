@@ -188,7 +188,6 @@ class ComputeNodeServer:
             logger.debug("start convert video file task")
             try:
                 await self.storage_controller.convert_video_files()
-                # await self.storage_controller.process_convertion_result()
             except Exception as e:
                 logger.exception(e)
             await asyncio.sleep(10)
@@ -200,7 +199,7 @@ class ComputeNodeServer:
                 await self.storage_controller.process_convertion_result()
             except Exception as e:
                 logger.exception(e)
-            await asyncio.sleep(10)
+            await asyncio.sleep(5)
 
     async def process_expired_dir_recorder_cache(self):
         time_check = self.settings["DAIRY_TIME_TO_REMOVE"]

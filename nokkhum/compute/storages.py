@@ -317,6 +317,7 @@ class StorageController:
         ):
             self.waiting_convertion_result.append(await self.convertion_queue.get())
 
+        logger.debug(f"waiting convertion result {len(self.waiting_convertion_result)}")
         remove_future = []
         for future_result in self.waiting_convertion_result:
             if future_result.done():
@@ -325,11 +326,13 @@ class StorageController:
 
                 remove_future.append(future_result)
 
+        logger.debug(f"convertion success {len(remove_future)}")
+
         for future_result in remove_future:
             self.waiting_convertion_result.remove(future_result)
 
         logger.debug(
-            f"convertion success {len(remove_future)}, wait {len(self.waiting_convertion_result)}"
+            f"concluded success {len(remove_future)}, wait {len(self.waiting_convertion_result)}"
         )
 
     async def prepair_compression(self, video):
