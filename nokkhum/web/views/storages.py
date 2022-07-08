@@ -16,7 +16,7 @@ from flask_login import login_required, current_user
 import pathlib
 
 from nokkhum import models
-from nokkhum.web import nats
+from nokkhum.web.client import nats_client
 from .. import forms
 
 # import asyncio

@@ -14,7 +14,7 @@ import datetime
 from flask_login import login_required, current_user
 import json
 from nokkhum import models
-from nokkhum.web import nats
+from nokkhum.web.client import nats_client
 
 from .. import forms
 from .storages import get_dir_by_processor, get_file_by_dir_date, get_video_path
@@ -260,7 +260,7 @@ def start_recorder(camera_id):
         data["motion"] = camera.motion_property.active
         data["sensitivity"] = camera.motion_property.sensitivity
 
-    nats.nats_client.publish("nokkhum.processor.command", data)
+    nats_client.nats_client.publish("nokkhum.processor.command", data)
 
     response = Response()
     response.status_code = 200
@@ -281,7 +281,7 @@ def stop_recorder(camera_id):
         "project_id": project_id,
         "user_id": str(current_user._get_current_object().id),
     }
-    nats.nats_client.publish("nokkhum.processor.command", data)
+    nats_client.nats_client.publish("nokkhum.processor.command", data)
     response = Response()
     response.status_code = 200
     return response

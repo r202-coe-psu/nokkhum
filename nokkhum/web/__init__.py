@@ -9,7 +9,7 @@ from flask import Flask, Blueprint
 from .. import models
 from . import views
 from . import acl
-from . import nats
+from . import client
 from . import oauth2
 
 # from . import api
@@ -29,12 +29,8 @@ def create_app():
     acl.init_acl(app)
     oauth2.init_oauth(app)
     # api.init_api(app)
-    # loop = asyncio.new_event_loop()
-    # asyncio.set_event_loop(loop)
 
-    # app.loop = loop
-    # loop.run_until_complete(setup_nats(app))
-
+    client.nats_client.nats_client.init_app(app)
     views.register_blueprint(app)
 
     static_bp = Blueprint(
@@ -45,7 +41,7 @@ def create_app():
     )
     app.register_blueprint(static_bp)
 
-    nats.init_nats(app)
+    # nats.init_nats(app)
 
     return app
 

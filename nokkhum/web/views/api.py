@@ -19,7 +19,7 @@ from nokkhum import models
 from .. import forms
 from .. import oauth2
 import datetime
-from nokkhum.web import nats
+from nokkhum.web.client import nats_client
 
 
 module = Blueprint("api", __name__, url_prefix="/api/v1")
@@ -52,5 +52,5 @@ def get_video(processor_id, date_dir, filename):
         "action": "extract",
     }
 
-    nats.nats_client.publish("nokkhum.storage.command", data)
+    nats_client.nats_client.publish("nokkhum.storage.command", data)
     abort(404)
