@@ -135,7 +135,7 @@ class ControllerServer:
     async def process_compute_node_report(self):
         while self.running:
             data = await self.cn_report_queue.get()
-            logger.debug(f"process compute node: {data}")
+            # logger.debug(f"process compute node: {data}")
 
             try:
                 if data["action"] == "update-resource":
