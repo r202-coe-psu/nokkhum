@@ -271,10 +271,10 @@ class StorageController:
                         self.convertion_pool, self.convert, video
                     )
 
-                    logger.debug(f"wait convertion_queue {video}")
+                    # logger.debug(f"wait convertion_queue {video}")
                     while self.convertion_queue.full():
                         await asyncio.sleep(0.1)
-                    logger.debug(f"put convertion_queue {video}")
+                    # logger.debug(f"put convertion_queue {video}")
 
                     await self.convertion_queue.put(result)
         # except Exception as e:
@@ -306,7 +306,7 @@ class StorageController:
 
         self.video_process_status[video.stem].status = "convert success"
         self.video_process_status[video.stem].updated_date = datetime.datetime.now()
-        logger.debug(f"end convert >> {video.name}")
+        # logger.debug(f"end convert >> {video.name}")
         return result
 
     async def process_convertion_result(self):
@@ -317,7 +317,7 @@ class StorageController:
         ):
             self.waiting_convertion_result.append(await self.convertion_queue.get())
 
-        logger.debug(f"waiting convertion result {len(self.waiting_convertion_result)}")
+        # logger.debug(f"waiting convertion result {len(self.waiting_convertion_result)}")
         remove_future = []
         for future_result in self.waiting_convertion_result:
             if future_result.done():
@@ -326,7 +326,7 @@ class StorageController:
 
                 remove_future.append(future_result)
 
-        logger.debug(f"convertion success {len(remove_future)}")
+        # logger.debug(f"convertion success {len(remove_future)}")
 
         for future_result in remove_future:
             self.waiting_convertion_result.remove(future_result)

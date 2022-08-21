@@ -88,7 +88,7 @@ class ControllerServer:
             time_set = datetime.datetime.combine(date, process_time)
             time_to_check = time_set - datetime.datetime.now()
 
-            # logger.debug(f'time to sleep {time_to_check.seconds}')
+            logger.debug(f"time to sleep {time_to_check.seconds}")
             try:
                 await asyncio.sleep(time_to_check.seconds)
                 await self.command_controller.remove_expired_processor_commands()
