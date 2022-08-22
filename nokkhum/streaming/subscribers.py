@@ -130,9 +130,9 @@ class StreamingSubscriber:
             if stream_name:
                 await self.js.delete_stream(f"streaming-camera-{camera_id}")
         except Exception as e:
-            logger.exception(e)
-
+            # logger.exception(e)
             logger.debug(f"not found stream name for: {live_streaming_topic}")
+
         await self.js.add_stream(
             name=f"streaming-camera-{camera_id}",
             subjects=[live_streaming_topic],

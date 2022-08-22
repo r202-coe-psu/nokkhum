@@ -198,8 +198,8 @@ class StorageController:
 
     async def convert_video_files(self):
         logger.debug("monitor mkv file")
-        logger.debug(f"waiting {len(self.video_process_status)}")
-        pprint.pprint(self.video_process_status)
+        logger.debug(f"waiting convert {len(self.video_process_status)}")
+        # pprint.pprint(self.video_process_status)
         # try:
         for processor_dir in self.cache_path.iterdir():
             for date_dir in processor_dir.iterdir():
