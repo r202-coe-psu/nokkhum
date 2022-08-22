@@ -112,6 +112,10 @@ class ComputeNodeMonitor:
                 processor_list.append(process_status)
             except Exception as e:
                 logger.exception(e)
+                logger.debug(
+                    f"processor id {processor_id} or attribute {processor.attributes} fail, try to stop"
+                )
+                processor.stop()
 
         system_load = dict(
             cpu=sum(cpus) - pcpu if sum(cpus) - pcpu >= 0 else 0,
