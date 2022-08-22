@@ -33,7 +33,7 @@ class Processor:
     def write(self, data):
         command = "{}\n".format(json.dumps(data))
         self.process.stdin.write(command.encode("utf-8"))
-        # self.process.stdin.flush()
+        self.process.stdin.flush()
 
     def read(self):
         if self.process.poll() is None:
