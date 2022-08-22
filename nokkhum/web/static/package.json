@@ -9,10 +9,10 @@
   "license": "UNLICENSED",
   "dependencies": {
     "bootstrap": "^3.3.6",
-    "brython": "^3.8.10",
-    "fomantic-ui-css": "^2.7.5",
-    "jquery": "^3.4.1",
-    "leaflet": "^1.7.1",
+    "brython": "^3.10.6",
+    "fomantic-ui-css": "^2.8.8",
+    "jquery": "^3.6.0",
+    "leaflet": "^1.8.0",
     "mathjax": "^2.7.5",
     "npm": "^7.3.0",
     "pa": "^0.1.1"
