@@ -158,21 +158,26 @@ class ControllerServer:
             # await self.manager.update(data)
 
     async def process_processor_command(self):
+        waiting_results = []
+        command_max_worker = self.settings["NOKKHUM_CONTROLLER_COMMAND_MAX_WORKER"]
+
         while self.running:
+            while len(waiting_results) >= command_max_worker:
+                remove_waiting_results = []
+                for result in waiting_results:
+                    if result.done():
+                        remove_waiting_results.append(result)
+
+                for remove_result in remove_waiting_results:
+                    if remove_result in waiting_results:
+                        waiting_results.remove(remove_result)
+
+                await asyncio.sleep(0.01)
+
             data = await self.processor_command_queue.get()
             logger.debug(f"processor command: {data}")
-
-            result = False
-            try:
-                result = await self.processor_controller.process_command(data)
-            except Exception as e:
-                logger.exception(e)
-
-            # if not result:
-            # logger.debug(f"process command fail")
-            # if 'start-recorder' == data['action']:
-            #     await asyncio.sleep(20)
-            #     await self.processor_command_queue.put(data)
+            task = asyncio.create_task(self.processor_controller.process_command(data))
+            waiting_results.append(task)
 
     async def process_storage_command(self):
         while self.running:
