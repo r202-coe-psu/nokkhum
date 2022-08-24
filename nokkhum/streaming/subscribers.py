@@ -6,7 +6,10 @@ import json
 import queue
 from nats.aio.client import Client as NATS
 import threading
-import concurrent.futures
+
+from concurrent.futures import ThreadPoolExecutor as PoolExecutor
+
+# from concurrent.futures import ProcessPoolExecutor as PoolExecutor
 from nokkhum import models
 
 
@@ -25,12 +28,9 @@ class StreamingSubscriber:
         self.running = False
         self.stream_id = {}
         self.loop = asyncio.get_running_loop()
-        self.pool = concurrent.futures.ThreadPoolExecutor(
+        self.pool = PoolExecutor(
             max_workers=settings.get("NOKKHUM_STREAMING_MAX_WORKER")
         )
-        # self.pool = concurrent.futures.ProcessPoolExecutor(
-        #     max_workers=settings.get("NOKKHUM_STREAMING_MAX_WORKER")
-        # )
 
     def process_message_data(self, message):
         data = pickle.loads(message)
@@ -42,35 +42,35 @@ class StreamingSubscriber:
 
     async def put_image_to_queue(self):
         while self.running:
-            try:
-                if self.image_queue.empty():
-                    await asyncio.sleep(0.1)
-                    continue
+            if self.image_queue.empty():
+                await asyncio.sleep(0.1)
+                continue
 
+            img = None
+            try:
                 future_result = await self.image_queue.get()
                 while not future_result.done():
                     await asyncio.sleep(0.001)
 
                 camera_id, img = future_result.result()
-
-                queues = self.camera_queues.get(camera_id)
-                if not queues or len(queues) == 0:
-                    continue
-
-                if not img:
-                    await asyncio.sleep(0.001)
-                    continue
-
-                for q in queues:
-                    if q.full():
-                        # logger.debug("drop image")
-                        q.get_nowait()
-                        await asyncio.sleep(0)
-
-                    await q.put(img)
             except Exception as e:
                 logger.exception(e)
 
+            if not img:
+                await asyncio.sleep(0)
+                continue
+
+            queues = self.camera_queues.get(camera_id)
+            if not queues or len(queues) == 0:
+                continue
+
+            for q in queues:
+                if q.full():
+                    # logger.debug("drop image")
+                    q.get_nowait()
+                    await asyncio.sleep(0)
+
+                await q.put(img)
         logger.debug("end live")
 
     async def receive_cb(self, msg):
