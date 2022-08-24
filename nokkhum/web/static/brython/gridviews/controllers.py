@@ -78,12 +78,12 @@ class GridViewController:
         btn <= trash_icon
         display.clear()
         display <= img
-        display <= btn
         loading = html.DIV(Class="ui active dimmer", id=f"loading-{camera_id}")
         loading <= html.DIV("Loading", Class="ui text loader")
-
         display <= loading
+        display <= btn
         img.draggable = True
+
         btn.bind("click", self.clear_display)
         img.bind("dragstart", self.dragstart_img)
         self.register_ws(camera_id)
