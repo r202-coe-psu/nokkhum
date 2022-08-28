@@ -32,8 +32,11 @@ class Processor:
 
     def write(self, data):
         command = "{}\n".format(json.dumps(data))
-        self.process.stdin.write(command.encode("utf-8"))
-        self.process.stdin.flush()
+        try:
+            self.process.stdin.write(command.encode("utf-8"))
+            self.process.stdin.flush()
+        except Exception as e:
+            logger.debug(e)
 
     def read(self):
         if self.process.poll() is None:
