@@ -332,7 +332,7 @@ class StorageController:
             self.waiting_convertion_result.remove(future_result)
 
         logger.debug(
-            f"concluded success {len(remove_future)}, wait {len(self.waiting_convertion_result)}"
+            f"conclusion: success {len(remove_future)}, wait {len(self.waiting_convertion_result)}"
         )
 
     async def prepair_compression(self, video):
