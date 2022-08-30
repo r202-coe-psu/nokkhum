@@ -231,8 +231,13 @@ class ProcessorController:
 
         processor = self.processor_manager.get(processor_id)
         if processor:
-            result = processor.get_status()
-            response["status"] = result
-            response["state"] = "running"
+            try:
+                result = processor.get_status()
+                response["status"] = result
+                response["state"] = "running"
+            except Exception as e:
+                logger.exception(f"error {processor.id} {e}")
+                response["status"] = result
+                response["state"] = "error"
 
         return response

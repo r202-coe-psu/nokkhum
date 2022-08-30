@@ -36,7 +36,8 @@ class Processor:
             self.process.stdin.write(command.encode("utf-8"))
             self.process.stdin.flush()
         except Exception as e:
-            logger.debug(e)
+            logger.exception(e)
+            logger.debug(f"error write {self.id}")
 
     def read(self):
         if self.process.poll() is None:
@@ -46,8 +47,8 @@ class Processor:
                 data = self.process.stdout.readline().decode("utf-8")
                 result = json.loads(data)
             except Exception as e:
-                logger.debug(e)
-                logger.debug(f"got {data}")
+                logger.exception(e)
+                logger.debug(f"error read {self.id} {data}")
 
             return result
 
