@@ -42,12 +42,14 @@ class ProcessPolling(threading.Thread):
                 )
                 break
 
-            # data = self.processor.process.stdout.readline().decode('utf-8')
-            # data = data.strip()
-            # logger.debug(f'data: {data}')
+            data = ""
 
-            data = self.processor.process.stderr.readline().decode("utf-8")
-            data = data.strip()
+            try:
+                data = self.processor.process.stderr.readline().decode("utf-8")
+                data = data.strip()
+            except Exception as e:
+                logger.exception(e)
+                logger.debug(f"error {self.processor.id} in read process pooling")
 
             logger.debug(f"processor {self.processor.id} data: {data}")
             if len(data) == 0 or data[0] != "{":

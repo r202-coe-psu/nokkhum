@@ -48,7 +48,7 @@ class Processor:
                 result = json.loads(data)
             except Exception as e:
                 logger.exception(e)
-                logger.debug(f"error read {self.id} {data}")
+                logger.debug(f"error read {self.id} data {data}")
 
             return result
 
