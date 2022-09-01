@@ -50,6 +50,7 @@ class ProcessorController:
             logger.debug("camera is None")
             return False
 
+        await asyncio.sleep(0)
         processor = None
 
         if data.get("processor_id", None) is not None:
@@ -61,6 +62,7 @@ class ProcessorController:
                 project = models.Project.objects(id=data["project_id"]).first()
                 processor = await self.get_processor(project, camera)
 
+        await asyncio.sleep(0)
         result = await self.actuate_command(processor, camera, data)
         return result
 
