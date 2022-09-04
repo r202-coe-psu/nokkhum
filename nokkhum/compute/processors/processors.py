@@ -37,7 +37,7 @@ class Processor:
             self.process.stdin.flush()
         except Exception as e:
             logger.exception(e)
-            logger.debug(f"error write {self.id}")
+            logger.debug(f"error write {self.id} data {command} try to stop")
 
     def read(self):
         if self.process.poll() is None:
