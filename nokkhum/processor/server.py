@@ -129,6 +129,7 @@ class ProcessorServer:
                             data[k] = True
                         else:
                             data[k] = False
+                    logger.debug(f"status: {data}")
                     print(json.dumps(data))
 
         logger.debug("End Commander")
