@@ -33,7 +33,7 @@ def get_state(project_id):
 
         if processor.reports and processor.state == "running":
             if (
-                datetime.datetime.now() - processor.reports[-1].reported_data
+                datetime.datetime.now() - processor.reports[-1].reported_date
             ).seconds >= 30:
                 processor_state["state"] = "stop"
 
@@ -43,6 +43,11 @@ def get_state(project_id):
                 if value
             ]
             # print(processor_state)
+
+            processor_state["reported_date"] = processor.reports[
+                -1
+            ].reported_date.isoformat()
+
         data.append(processor_state)
     return jsonify(data)
 
