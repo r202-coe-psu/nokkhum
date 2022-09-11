@@ -55,7 +55,7 @@ class CommandController:
 
             last_report = p["last_report"]
             if last_report:
-                reported_date = last_report.get("reported_data")
+                reported_date = last_report.get("reported_date")
                 recorder = last_report["processors"].get("video-recorder", False)
                 if reported_date > accepted_date and recorder:
                     continue
