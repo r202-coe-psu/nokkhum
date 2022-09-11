@@ -23,9 +23,13 @@ def get_state(project_id):
 
         processor_state = {}
         processor_state["camera_id"] = str(processor.camera.id)
+        processor_state["processor_id"] = str(processor.id)
         processor_state["project_id"] = str(project.id)
         processor_state["state"] = processor.state
         processor_state["type"] = []
+
+        if processor.reports and processor.state != "running":
+            print(processor.id, processor.state)
 
         if processor.reports and processor.state == "running":
             if (

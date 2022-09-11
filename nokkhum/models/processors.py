@@ -27,7 +27,7 @@ class ProcessorReport(me.EmbeddedDocument):
     cpu = me.FloatField(required=True, default=0)
     memory = me.IntField(required=True, default=0)
     num_threads = me.IntField(required=True, default=0)
-    reported_data = me.DateTimeField(required=True, default=datetime.datetime.now)
+    reported_date = me.DateTimeField(required=True, default=datetime.datetime.now)
     created_date = me.DateTimeField(required=True, default=datetime.datetime.now)
     compute_node = me.ReferenceField("ComputeNode", dbref=True)
 
