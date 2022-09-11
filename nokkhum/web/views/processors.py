@@ -20,6 +20,7 @@ def get_state(project_id):
     for processor in processors:
         if processor.camera.status == "Inactive":
             continue
+
         processor_state = {}
         processor_state["camera_id"] = str(processor.camera.id)
         processor_state["project_id"] = str(project.id)
@@ -27,19 +28,15 @@ def get_state(project_id):
         processor_state["type"] = []
 
         if processor.reports and processor.state == "running":
-            # del processor.reports[-1].processors["acquisitor"].
-            # print(processor.reports[-1].reported_data)
             if (
                 datetime.datetime.now() - processor.reports[-1].reported_data
             ).seconds >= 30:
-                # continue
                 processor_state["state"] = "stop"
-                pass
 
             processor_state["type"] = [
                 processor_type
                 for processor_type, value in processor.reports[-1].processors.items()
-                if value  # เช็คเกิน 30 วิ
+                if value
             ]
             # print(processor_state)
         data.append(processor_state)
