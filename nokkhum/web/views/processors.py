@@ -29,7 +29,11 @@ def get_state(project_id):
         processor_state["type"] = []
 
         if processor.reports and processor.state != "running":
-            print(processor.id, processor.state)
+            print(
+                processor.id,
+                processor.state,
+                processor.reports[-1] if processor.reports else "No Report",
+            )
 
         if processor.reports and processor.state == "running":
             if (
