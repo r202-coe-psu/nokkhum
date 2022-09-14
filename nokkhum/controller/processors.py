@@ -185,10 +185,13 @@ class ProcessorController:
         result_data = json.loads(result.data.decode())
 
         checked = False
+
         if result_data["success"]:
             if result_data["state"] == "stop":
                 processor.state = "stop"
-                return
+                logger.debug(
+                    f"compute node report processor {processsor.id} stop state"
+                )
 
             for k, v in result_data["status"].items():
                 checked = checked or v
