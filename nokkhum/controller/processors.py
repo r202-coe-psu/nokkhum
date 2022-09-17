@@ -159,6 +159,7 @@ class ProcessorController:
             result_data = json.loads(result.data.decode())
             processor_command.completed = True
 
+        await asyncio.sleep(0.5)
         await self.update_status(processor)
         processor.save()
         # logger.debug(f"end {result_data}")
@@ -200,6 +201,7 @@ class ProcessorController:
 
         if not checked:
             processor.state = "stop"
+            logger.debug("update processor status:", result_data)
         else:
             processor.state = "running"
 
