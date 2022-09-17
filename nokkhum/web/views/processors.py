@@ -32,7 +32,8 @@ def get_state(project_id):
             print(
                 processor.id,
                 processor.state,
-                processor.reports[-1] if processor.reports else "No Report",
+                processor.reports[-1].reported_date,
+                processor.reports[-1].processors,
             )
 
         if processor.reports and processor.state == "running":

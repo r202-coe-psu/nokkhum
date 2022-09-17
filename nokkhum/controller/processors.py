@@ -193,8 +193,10 @@ class ProcessorController:
                     f"compute node report processor {processsor.id} stop state"
                 )
 
-            for k, v in result_data["status"].items():
-                checked = checked or v
+            # for k, v in result_data["status"].items():
+            #     checked = checked or v
+            if result_data["status"]["acquisitor"]:
+                checked = True
 
         if not checked:
             processor.state = "stop"
