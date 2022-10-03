@@ -191,7 +191,7 @@ class ProcessorController:
             if result_data["state"] == "stop":
                 processor.state = "stop"
                 logger.debug(
-                    f"compute node report processor {processsor.id} stop state"
+                    f"compute node report processor {processor.id} stop state {result_data}"
                 )
 
             # for k, v in result_data["status"].items():
