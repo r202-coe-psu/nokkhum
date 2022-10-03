@@ -78,6 +78,11 @@ class Processor(me.Document):
 
         self.reports.append(report)
 
+    def update_processor_state(self, report):
+        checked = any(report.projects.values())
+        if not checked:
+            self.stat = "stop"
+
     def update_user_command(self, processor_command):
         if processor_command.type != "user":
             return

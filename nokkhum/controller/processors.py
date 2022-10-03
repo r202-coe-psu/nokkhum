@@ -159,6 +159,7 @@ class ProcessorController:
             result_data = json.loads(result.data.decode())
             processor_command.completed = True
 
+        await asyncio.sleep(0.5)
         await self.update_status(processor)
         processor.save()
         # logger.debug(f"end {result_data}")
@@ -190,7 +191,7 @@ class ProcessorController:
             if result_data["state"] == "stop":
                 processor.state = "stop"
                 logger.debug(
-                    f"compute node report processor {processsor.id} stop state"
+                    f"compute node report processor {processor.id} stop state {result_data}"
                 )
 
             # for k, v in result_data["status"].items():
@@ -200,6 +201,7 @@ class ProcessorController:
 
         if not checked:
             processor.state = "stop"
+            logger.debug("update processor status:", result_data)
         else:
             processor.state = "running"
 
