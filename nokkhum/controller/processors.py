@@ -196,13 +196,13 @@ class ProcessorController:
 
             # for k, v in result_data["status"].items():
             #     checked = checked or v
-            if result_data["status"]["acquisitor"]:
+            if (
+                "acquisitor" in result_data["status"]
+                and result_data["status"]["acquisitor"]
+            ):
                 checked = True
 
-        if not checked:
-            processor.state = "stop"
-            logger.debug("update processor status:", result_data)
-        else:
+        if checked:
             processor.state = "running"
 
     async def update_fail_processor(self, data, compute_node_id):
