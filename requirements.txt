@@ -20,7 +20,7 @@ brython
 
 # streaming
 quart
-nats-py
+nats-py==2.1.7
 
 # for compression
 ffmpeg-python

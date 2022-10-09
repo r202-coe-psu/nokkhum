@@ -31,13 +31,22 @@ class Processor:
         self.process = None
 
     def write(self, data):
+        return_code = self.process.poll()
+        if return_code:
+            logger.debug(
+                f"Error write in process {self.id} return code {return_code} data {data} try to stop"
+            )
+            return
+
         command = "{}\n".format(json.dumps(data))
         try:
             self.process.stdin.write(command.encode("utf-8"))
             self.process.stdin.flush()
         except Exception as e:
             logger.exception(e)
-            logger.debug(f"error write {self.id} data {command} try to stop")
+            logger.debug(
+                f"Error write in stdin {self.id} command {command} try to stop"
+            )
 
     def read(self):
         if self.process.poll() is None:
@@ -48,10 +57,11 @@ class Processor:
                 result = json.loads(data)
             except Exception as e:
                 logger.exception(e)
-                logger.debug(f"error read {self.id} data {data}")
+                logger.debug(f"error read {self.id} data {result}")
 
             return result
 
+        logger.debug(f"error read {self.id} data process has return code")
         return None
 
     def start(self, attributes):

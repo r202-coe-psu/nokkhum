@@ -196,8 +196,16 @@ class ProcessorController:
 
             # for k, v in result_data["status"].items():
             #     checked = checked or v
-            if result_data["status"]["acquisitor"]:
+            if (
+                "acquisitor" in result_data["status"]
+                and result_data["status"]["acquisitor"]
+            ):
                 checked = True
+            else:
+                checked = False
+                logger.debug(
+                    f"compute node report processor {processor.id} acquisitor not found {result_data}"
+                )
 
         if not checked:
             processor.state = "stop"
