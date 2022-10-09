@@ -201,16 +201,8 @@ class ProcessorController:
                 and result_data["status"]["acquisitor"]
             ):
                 checked = True
-            else:
-                checked = False
-                logger.debug(
-                    f"compute node report processor {processor.id} acquisitor not found {result_data}"
-                )
 
-        if not checked:
-            processor.state = "stop"
-            logger.debug("update processor status:", result_data)
-        else:
+        if checked:
             processor.state = "running"
 
     async def update_fail_processor(self, data, compute_node_id):
