@@ -61,7 +61,7 @@ class CommandController:
                     continue
 
             logger.debug(
-                f'recover {p["_id"]} {current_time - reported_date} {recorder}'
+                f'recover {p["_id"]} c {current_time} - r {reported_date} -> {recorder}'
             )
             processor = models.Processor.objects(id=p["_id"]).first()
             await self.put_restart_processor_command(processor)

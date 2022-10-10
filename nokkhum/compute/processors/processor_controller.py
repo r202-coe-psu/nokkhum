@@ -237,13 +237,13 @@ class ProcessorController:
                 response["status"] = result
                 response["state"] = "running"
 
-                if all(item is False for item in result.values()):
+                if not any(result.values()):
                     processor.stop()
                     logger.debug(f"stop prcessor {processor.id} by get_status")
                     response["state"] = "error"
 
             except Exception as e:
-                logger.exception(f"error {processor.id} {e}")
+                logger.exception(f"get_status error {processor.id} {e}")
                 response["status"] = result
                 response["state"] = "error"
 
