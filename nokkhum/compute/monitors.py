@@ -117,6 +117,8 @@ class ComputeNodeMonitor:
                 )
                 processor.stop()
 
+            await asyncio.sleep(0)
+
         system_load = dict(
             cpu=sum(cpus) - pcpu if sum(cpus) - pcpu >= 0 else 0,
             memory=mem.used - pmem if mem.used - pmem >= 0 else 0,

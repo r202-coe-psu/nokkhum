@@ -32,6 +32,7 @@ class ProcessorController:
         if compute_node and compute_node.is_online():
             return compute_node
 
+        await time.sleep(10)
         deadline_date = datetime.datetime.now() - datetime.timedelta(seconds=60)
 
         # need a scheduling
@@ -39,7 +40,7 @@ class ProcessorController:
             updated_date__gt=deadline_date
         ).first()
 
-        logger.debug(f"compute node {compute_node}")
+        logger.debug(f"compute node {compute_node.id}")
 
         return compute_node
 
