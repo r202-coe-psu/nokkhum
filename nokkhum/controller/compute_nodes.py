@@ -90,7 +90,7 @@ class ComputeNodeResource:
             processor.save()
 
         logger.debug(
-            "update compute node {} processor {}".format(
+            "update compute node {} report date {reported_date} processor {}".format(
                 compute_node.name, [p["processor_id"] for p in processor_reports]
             )
         )

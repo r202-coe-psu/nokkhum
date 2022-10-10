@@ -23,7 +23,6 @@ class CommandController:
     async def restart_processors(self):
         logger.debug("check and restart processor")
         current_time = datetime.datetime.now()
-        accepted_date = current_time - datetime.timedelta(seconds=120)
         pipeline = [
             {
                 "$lookup": {
@@ -53,6 +52,7 @@ class CommandController:
 
         for p in processors:
 
+            accepted_date = current_time - datetime.timedelta(seconds=300)
             last_report = p["last_report"]
             if last_report:
                 reported_date = last_report.get("reported_date")
@@ -61,10 +61,11 @@ class CommandController:
                     continue
 
             logger.debug(
-                f'recover {p["_id"]} {current_time - reported_date} {recorder}'
+                f'recover {p["_id"]} c {current_time} - r {reported_date} -> {recorder}'
             )
             processor = models.Processor.objects(id=p["_id"]).first()
             await self.put_restart_processor_command(processor)
+            await asyncio.sleep(0.01)
 
     async def put_restart_processor_command(self, processor):
         processor.state = "stop"

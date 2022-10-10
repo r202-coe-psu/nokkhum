@@ -20,19 +20,7 @@ class ProcessPolling(threading.Thread):
         self.running = True
         self.daemon = True
 
-    # def read_error(self):
-    #     while self.running:
-    #         if not self.processor.is_running():
-    #             break
-
-    #         data = self.processor.process.stderr.readline().decode('utf-8')
-    #         logger.debug(f'error data: {data}')
-
     def run(self):
-        # error_reader = threading.Thread(target=self.read_error)
-        # error_reader.daemon = True
-        # error_reader.start()
-
         while self.running:
             if not self.processor.is_running():
                 logger.debug(
@@ -64,8 +52,6 @@ class ProcessPolling(threading.Thread):
                 continue
 
             self.output_queue.put(json_data)
-
-        # error_reader.join()
 
 
 class ProcessorManager:

@@ -117,6 +117,8 @@ class ComputeNodeMonitor:
                 )
                 processor.stop()
 
+            await asyncio.sleep(0)
+
         system_load = dict(
             cpu=sum(cpus) - pcpu if sum(cpus) - pcpu >= 0 else 0,
             memory=mem.used - pmem if mem.used - pmem >= 0 else 0,
@@ -182,104 +184,3 @@ class ComputeNodeMonitor:
             return self.send_message(messages)
 
         self.processor_running_fail_report()
-
-
-# class UpdateStatus(threading.Thread):
-
-#     def __init__(self, publisher=None):
-#         threading.Thread.__init__(self)
-#         self.name = self.__class__.__name__
-#         self._running = False
-#         self.daemon = True
-#         self._request_sysinfo = False
-#         self.__s3thread = None
-
-#         self.publisher = publisher
-#         self.uinfo = UpdateInfomation(self.publisher)
-
-#     def set_publisher(self, publisher):
-#         self.publisher = publisher
-#         self.uinfo.set_publisher(self.publisher)
-
-#     def run(self):
-#         time_to_sleep = 2
-#         time_to_sent = 10
-
-#         counter = 0
-#         counter_sent = time_to_sent // time_to_sleep
-
-#         update_status = False
-
-#         self._running = True
-
-#         logger.debug('start update')
-
-#         while(self._running):
-#             while not update_status:
-#                 update_status = self.uinfo.update_machine_specification()
-#                 if not update_status:
-#                     logger.debug('wait message server %d second' %
-#                                  time_to_sleep)
-#                     time.sleep(time_to_sleep)
-
-#             while(self._running):
-#                 # logger.debug('request_sysinfo %s'%self._request_sysinfo)
-#                 if self._request_sysinfo:
-#                     self._request_sysinfo = False
-#                     update_status = False
-#                     # logger.debug('request_sysinfo -> break')
-#                     break
-
-#                 start_time = datetime.datetime.now()
-#                 if counter == counter_sent:
-#                     counter = 0
-#                     try:
-#                         self.uinfo.processor_running_fail_report()
-#                     except Exception as e:
-#                         logger.exception(e)
-
-#                     try:
-#                         self.uinfo.update_machine_resources()
-#                     except Exception as e:
-#                         logger.exception(e)
-
-#                     # sync to s3 storage
-#                     if config.Configurator.settings.get('nokkhum.storage.enable'):
-#                         if config.Configurator.settings.get('nokkhum.storage.api') == 's3':
-#                             self.push_s3 = True
-#                         else:
-#                             self.push_s3 = False
-#                     else:
-#                         self.uinfo.update_machine_specification()
-#                         self.push_s3 = False
-
-#                     if self.push_s3:
-#                         if self.__s3thread is not None and not self.__s3thread.is_alive():
-#                             self.__s3thread.join()
-#                             self.__s3thread = None
-
-#                         if self.__s3thread is None:
-#                             self.__s3thread = s3.S3Thread()
-#                             self.__s3thread.start()
-#                 else:
-#                     try:
-#                         self.uinfo.check_resources()
-#                     except Exception as e:
-#                         logger.exception(e)
-
-#                 end_time = datetime.datetime.now()
-
-#                 delta = end_time - start_time
-#                 sleep_time = time_to_sleep - delta.total_seconds()
-#                 counter += 1
-#                 if sleep_time > 0:
-#                     time.sleep(sleep_time)
-
-#         logger.debug(self.name + ' terminate')
-
-#     def stop(self):
-#         self._running = False
-
-#     def get_machine_specification(self):
-#         self._request_sysinfo = True
-#         logger.debug('request_sysinfo: %s\n' % self._request_sysinfo)

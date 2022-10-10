@@ -44,7 +44,7 @@ class Processor:
             self.process.stdin.flush()
         except Exception as e:
             logger.exception(e)
-            logger.debug(
+            logger.error(
                 f"Error write in stdin {self.id} command {command} try to stop"
             )
 
@@ -52,12 +52,13 @@ class Processor:
         if self.process.poll() is None:
 
             result = {}
+            data = ""
             try:
                 data = self.process.stdout.readline().decode("utf-8")
                 result = json.loads(data)
             except Exception as e:
                 logger.exception(e)
-                logger.debug(f"error read {self.id} data {result}")
+                logger.error(f"error read {self.id} data {data}")
 
             return result
 
@@ -135,6 +136,7 @@ class Processor:
             status = {
                 "acquisitor": False,
                 "video-streamer": False,
+                "video-recorder": False,
                 "video-recorder": False,
             }
 
