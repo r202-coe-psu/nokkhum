@@ -14,6 +14,7 @@ import datetime
 import time
 import psutil
 import asyncio
+import copy
 
 from . import machines
 
