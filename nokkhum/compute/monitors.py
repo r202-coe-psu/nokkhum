@@ -14,7 +14,6 @@ import datetime
 import time
 import psutil
 import asyncio
-import copy
 
 from . import machines
 
@@ -93,7 +92,7 @@ class ComputeNodeMonitor:
         pmem = 0
 
         # for pid, processor_id in processor_manager.get_pids():
-        processor_pool = copy.deepcopy(processor_manager.pool)
+        processor_pool = copy.copy(processor_manager.pool)
         for processor_id, processor in processor_pool.items():
             if not processor.is_running():
                 continue
