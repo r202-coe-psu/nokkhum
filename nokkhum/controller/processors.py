@@ -40,8 +40,6 @@ class ProcessorController:
             updated_date__gt=deadline_date
         ).first()
 
-        logger.debug(f"compute node {compute_node.id}")
-
         return compute_node
 
     async def process_command(self, data):
@@ -106,7 +104,6 @@ class ProcessorController:
 
         if data["action"] in ["start-recorder", "start-streamer"]:
             compute_node = await self.get_available_compute_node(compute_node)
-            processor.compute_node = compute_node
 
         if not compute_node or not compute_node.is_online():
             if not compute_node:
@@ -119,6 +116,7 @@ class ProcessorController:
             return False
 
         # need to decision
+        processor.compute_node = compute_node
         processor_command.save()
         processor.save()
 
