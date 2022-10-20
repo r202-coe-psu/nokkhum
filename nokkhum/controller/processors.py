@@ -71,9 +71,8 @@ class ProcessorController:
 
         # need to decision
         if "start" in data["action"]:
-            if processor.state == "stop":
-                processor.state = "start"
-                processor.save()
+            processor.state = "start"
+            processor.save()
 
         logger.debug(f"actuate command: {data}")
         if data.get("system"):
@@ -161,7 +160,8 @@ class ProcessorController:
         await asyncio.sleep(0.5)
         await self.update_status(processor)
         processor.save()
-        # logger.debug(f"end {result_data}")
+
+        logger.debug(f"end actuate command {result}")
         processor_command.completed_date = datetime.datetime.now()
         processor_command.save()
 

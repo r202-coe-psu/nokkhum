@@ -126,7 +126,7 @@ class ControllerServer:
 
             processors = models.Processor.objects(state="running")
             for processor in processors:
-                self.processor_controller.update_status(processor)
+                await self.processor_controller.update_status(processor)
 
             try:
                 await self.command_controller.restart_processors()
