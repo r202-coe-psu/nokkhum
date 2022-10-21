@@ -149,12 +149,12 @@ class ComputeNodeMonitor:
         return self.send_message(messages)
 
     async def get_processor_run_fail(self):
-        # logger.debug('try to remove dead process')
+        logger.debug("try to remove dead process")
         processor_manager = self.processor_manager
         dead_process = processor_manager.remove_dead_process()
         if len(dead_process) == 0:
             return None
-        # logger.debug('dead>>{}'.format(dead_process))
+        logger.debug(f"dead >> {dead_process}")
 
         fail_processors = {
             "name": platform.node(),
@@ -164,7 +164,7 @@ class ComputeNodeMonitor:
             "report_time": datetime.datetime.now().isoformat(),
         }
 
-        #        logging.debug('camera_running_fail_report: %s' % messages)
+        logging.debug("camera_running_fail_report: %s" % messages)
         return fail_processors
 
     async def processor_running_fail_report(self):

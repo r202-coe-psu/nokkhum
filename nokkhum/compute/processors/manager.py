@@ -41,7 +41,6 @@ class ProcessPolling(threading.Thread):
 
             logger.debug(f"processor {self.processor.id} data: {data}")
             if len(data) == 0 or data[0] != "{":
-                time.sleep(0.1)
                 continue
 
             json_data = ""
@@ -49,6 +48,7 @@ class ProcessPolling(threading.Thread):
                 json_data = json.loads(data)
             except Exception as e:
                 logger.exception(e)
+                logger.error(f"got {data}")
                 continue
 
             self.output_queue.put(json_data)
