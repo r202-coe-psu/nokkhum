@@ -33,6 +33,7 @@ services:
         image: nokkhum-image
         container_name: nokkhum-web
         volumes:
+            - ../deployment/nokkhum/data:/deployment/nokkhum/data
             - ../deployment:/deployment
             - /etc/localtime:/etc/localtime:ro
         ports:
@@ -88,6 +89,8 @@ services:
         container_name: nokkhum-controller
         volumes:
             - ../deployment:/deployment
+            - ../deployment/nokkhum/cache:/deployment/nokkhum/cache
+            - ../deployment/nokkhum/data:/deployment/nokkhum/data
             - /etc/localtime:/etc/localtime:ro
         links:
             - mongodb
@@ -113,6 +116,7 @@ services:
         volumes:
             - ../deployment:/deployment
             - ../deployment/nokkhum/cache:/deployment/nokkhum/cache
+            - ../deployment/nokkhum/data:/deployment/nokkhum/data
             - /etc/localtime:/etc/localtime:ro
         links:
             - nats-server

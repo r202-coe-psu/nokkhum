@@ -80,7 +80,6 @@ def login_oauth(name):
         response = client.line.authorize_redirect(redirect_uri)
 
     elif name == "psu":
-        print(">>>>", redirect_uri)
         response = client.psu.authorize_redirect(redirect_uri)
     elif name == "engpsu":
         response = client.engpsu.authorize_redirect(redirect_uri)
@@ -125,8 +124,6 @@ def login_engpsu():
 def authorized_engpsu():
     client = oauth2.oauth2_client
     try:
-        print(request.args)
-        print(client.engpsu)
         token = client.engpsu.authorize_access_token(verify=False)
     except Exception as e:
         print("autorize access error =>", e)
