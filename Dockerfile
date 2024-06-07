@@ -54,7 +54,7 @@ RUN cd /app/nokkhum/web/static/brython; \
     for i in $(ls -d */); \
     do \
     cd $i; \
-    python3 -m brython --make_package ${i%%/}; \
+    $PYTHON -m brython --make_package ${i%%/}; \
     mv *.brython.js ..; \
     cd ..; \
     done
