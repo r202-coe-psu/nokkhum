@@ -164,7 +164,7 @@ class ComputeNodeMonitor:
             "report_time": datetime.datetime.now().isoformat(),
         }
 
-        logging.debug("camera_running_fail_report: %s" % messages)
+        logging.debug(f"camera_running_fail_report: { fail_processors }")
         return fail_processors
 
     async def processor_running_fail_report(self):
