@@ -27,7 +27,7 @@ NOKKHUM_WS_URL = "ws://localhost:8081"
 # NOKKHUM_WS_URL = 'ws://localhost:8082'
 
 # system login
-NOKKHUM_LOGGIN_SYSTEMS = ["ENGPSU"]
+NOKKHUM_LOGGIN_SYSTEMS = ["PSU"]
 
 # 0.00-24.00 format
 

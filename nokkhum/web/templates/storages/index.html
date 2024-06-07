@@ -22,7 +22,32 @@ Projects
 
 <div class="row">
   <div class="column">
-    <h3 class="ui header">Your Project</h3>
+    <h3 class="ui header">Share Project</h3>
+    <table class="ui celled table">
+      <thead>
+        <tr>
+          <th>Camera</th>
+          <th>Date</th>
+          <th>Start</th>
+          <th>End</th>
+          <th>Tools</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for share_storage in share_storages %}
+        <tr>
+          <td data-label="Camera">{{ share_storage.processor.camera.name }}</td>
+          <td data-label="Name">{{ share_storage.date_dir }}</td>
+          <td data-label="Start">{{ share_storage.start_date }}</td>
+          <td data-label="End">{{ share_storage.expire_date }}</td>
+          <td data-label="Tools">
+            <a href="{{ url_for('storages.list_records_by_date', processor_id=share_storage.processor.id, date_dir=share_storage.date_dir) }}"><i class="eye icon"></i></a>
+
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
 
   </div>
 </div>

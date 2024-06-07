@@ -12,15 +12,27 @@
         </div>
       </h1>
       {% if not current_user.is_authenticated %}
-      <div class="ui large vertical buttons">
-        {% if 'ENGPSU' in config['NOKKHUM_LOGGIN_SYSTEMS'] %}
+        <div class="ui large vertical buttons">
+         {% if 'PSU' in config['NOKKHUM_LOGGIN_SYSTEMS'] %}
         <div class="row" style="padding-top: 10px;">
           <div class="column header" style="text-align: left;">
             <h3>For PSU Engineering Faculty Member</h3>
           </div>
         </div>
         <div class="row" style="padding-top: 1rem;">
-          <a class="ui labeled icon button inverted huge" href="{{ url_for('accounts.login_engpsu') }}">
+          <a class="ui labeled icon button inverted huge" href="{{ url_for('accounts.login_oauth', name='psu') }}">
+            <i class="user icon"></i>
+            PSU Passport
+          </a>
+        </div>
+        {% elif 'ENGPSU' in config['NOKKHUM_LOGGIN_SYSTEMS'] %}
+        <div class="row" style="padding-top: 10px;">
+          <div class="column header" style="text-align: left;">
+            <h3>For PSU Engineering Faculty Member</h3>
+          </div>
+        </div>
+        <div class="row" style="padding-top: 1rem;">
+          <a class="ui labeled icon button inverted huge" href="{{ url_for('accounts.login_oauth', name='eng') }}">
             <i class="user icon"></i>
             PSU Passport by Eng
           </a>

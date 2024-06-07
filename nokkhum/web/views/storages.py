@@ -74,7 +74,13 @@ def get_video_path(processor_id, date_dir, filename):
 @module.route("/")
 @login_required
 def index():
-    return render_template("/storages/index.html")
+    share_storages = models.StorageShare.objects(
+        psu_passport_username=current_user._get_current_object().username,
+        start_date__lte=datetime.date.today(),
+        expire_date__gte=datetime.date.today(),
+    )
+
+    return render_template("/storages/index.html", share_storages=share_storages)
 
 
 @module.route("/processors/<processor_id>")
@@ -156,10 +162,10 @@ def share_storage(processor_id, date_dir):
         )
 
     storage_share.start_date = datetime.datetime.strptime(
-        form.start_date.data, "%d/%m/%Y"
+        form.start_date.data, "%Y-%m-%d"
     ).date()
     storage_share.expire_date = datetime.datetime.strptime(
-        form.expire_date.data, "%d/%m/%Y"
+        form.expire_date.data, "%Y-%m-%d"
     ).date()
     storage_share.save()
     return redirect(

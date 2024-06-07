@@ -1,0 +1,29 @@
+[tool.poetry]
+name = "nokkhum"
+version = "0.1.0"
+description = ""
+authors = ["Thanathip Limna <boatkrap@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+flask = "^3.0.3"
+flask-login = "^0.6.3"
+flask-me = "^1.0.2"
+nats-py = "^2.7.2"
+quart = "^0.19.6"
+brython = "3.11.3"
+ffmpeg-python = "^0.2.0"
+psutil = "^5.9.8"
+email-validator = "^2.1.1"
+requests = "^2.32.3"
+flask-wtf = "^1.2.1"
+authlib = "^1.3.1"
+
+
+[tool.poetry.group.dev.dependencies]
+black = "^24.4.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

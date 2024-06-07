@@ -12,18 +12,31 @@
         <div class="content">
           <div class="header" style="color: white;  font-size: 5rem;">{{ config.get('APP_TITLE') | upper }}</div>
           <div class="sub header" style="color: white;  font-size: 3rem; padding-top: 0.75rem">Surveillance System
+              {{ config['NOKKHUM_LOGGIN_SYSTEMS'] }}
           </div>
         </div>
       </h1>
       <div class="ui large vertical buttons">
-        {% if 'ENGPSU' in config['NOKKHUM_LOGGIN_SYSTEMS'] %}
+        {% if 'PSU' in config['NOKKHUM_LOGGIN_SYSTEMS'] %}
+        <div class="row" style="padding-top: 10px;">
+          <div class="column header" style="text-align: left;">
+            <h3>PSU Engineering Faculty Member</h3>
+          </div>
+        </div>
+        <div class="row" style="padding-top: 1rem;">
+          <a class="ui labeled icon button inverted huge" href="{{ url_for('accounts.login_oauth', name='psu') }}">
+            <i class="user icon"></i>
+            PSU Passport
+          </a>
+        </div>
+        {% elif 'ENGPSU' in config['NOKKHUM_LOGGIN_SYSTEMS'] %}
         <div class="row" style="padding-top: 10px;">
           <div class="column header" style="text-align: left;">
             <h3>For PSU Engineering Faculty Member</h3>
           </div>
         </div>
         <div class="row" style="padding-top: 1rem;">
-          <a class="ui labeled icon button inverted huge" href="{{ url_for('accounts.login_engpsu') }}">
+          <a class="ui labeled icon button inverted huge" href="{{ url_for('accounts.login_oauth', name='engpsu') }}">
             <i class="user icon"></i>
             PSU Passport by Eng
           </a>

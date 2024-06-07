@@ -5,6 +5,7 @@
 </div>
 
 <a class="item" href="{{ url_for('dashboard.index') }}"><i class="icon dashboard"></i>Dashboard</a>
+<a class="item" href="{{ url_for('storages.index') }}"><i class="icon folder"></i>Storage</a>
 <a class="item" href="{{ url_for('gridviews.index') }}"><i class="icon th"></i>Grid View</a>
 <a class="item" href="{{ url_for('projects.index') }}"><i class="icon folder"></i>My Projects</a>
 {% if "admin" in current_user.roles%}

@@ -3,6 +3,8 @@ from flask import (
     render_template,
     url_for,
     redirect,
+    request,
+    session,
     current_app,
     make_response,
 )
@@ -60,6 +62,57 @@ def edit_profile():
     return redirect(url_for("accounts.index"))
 
 
+@module.route("/login/<name>")
+def login_oauth(name):
+    client = oauth2.oauth2_client
+
+    scheme = request.environ.get("HTTP_X_FORWARDED_PROTO", "http")
+    redirect_uri = url_for(
+        "accounts.authorized_oauth", name=name, _external=True, _scheme=scheme
+    )
+
+    response = None
+    if name == "google":
+        response = client.google.authorize_redirect(redirect_uri)
+    elif name == "facebook":
+        response = client.facebook.authorize_redirect(redirect_uri)
+    elif name == "line":
+        response = client.line.authorize_redirect(redirect_uri)
+
+    elif name == "psu":
+        print(">>>>", redirect_uri)
+        response = client.psu.authorize_redirect(redirect_uri)
+    elif name == "engpsu":
+        response = client.engpsu.authorize_redirect(redirect_uri)
+    return response
+
+
+@module.route("/auth/<name>")
+def authorized_oauth(name):
+    client = oauth2.oauth2_client
+    remote = None
+    try:
+        if name == "google":
+            remote = client.google
+        elif name == "facebook":
+            remote = client.facebook
+        elif name == "line":
+            remote = client.line
+        elif name == "psu":
+            remote = client.psu
+        elif name == "engpsu":
+            remote = client.engpsu
+
+        token = remote.authorize_access_token()
+
+    except Exception as e:
+        print("authorize access error =>", e)
+        return redirect(url_for("accounts.login"))
+
+    session["oauth_provider"] = name
+    return oauth2.handle_authorized_oauth2(remote, token)
+
+
 @module.route("/login-engpsu")
 def login_engpsu():
     client = oauth2.oauth2_client
@@ -68,13 +121,15 @@ def login_engpsu():
     return response
 
 
-@module.route("/authorized-engpsu")
+@module.route("/auth/engpsu")
 def authorized_engpsu():
     client = oauth2.oauth2_client
     try:
-        token = client.engpsu.authorize_access_token()
+        print(request.args)
+        print(client.engpsu)
+        token = client.engpsu.authorize_access_token(verify=False)
     except Exception as e:
-        print(e)
+        print("autorize access error =>", e)
         return redirect(url_for("accounts.login"))
 
     userinfo_response = client.engpsu.get("userinfo")

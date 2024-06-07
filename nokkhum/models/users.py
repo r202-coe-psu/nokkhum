@@ -10,6 +10,10 @@ class User(me.Document, UserMixin):
     email = me.StringField()
     first_name = me.StringField(required=True)
     last_name = me.StringField(required=True)
+
+    first_name_th = me.StringField()
+    last_name_th = me.StringField()
+
     # picture_url = me.StringField()
     status = me.StringField(required=True, default="disactive")
     organization = me.StringField(required=True, default="")
