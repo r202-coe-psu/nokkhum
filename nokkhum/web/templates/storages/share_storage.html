@@ -100,13 +100,7 @@
 {% block additional_js %}
 <script type="text/javascript">
   datetime_formatter = {
-    datetime: function (datetime, settings) {
-      if (!datetime) return '';
-      var day = datetime.getDate();
-      var month = datetime.getMonth() + 1;
-      var year = datetime.getFullYear();
-      return ("0" + day).slice(-2) + '/' + ("0" + month).slice(-2) + '/' + year;
-    }
+    datetime:"YYYY-MM-DD"
   };
 
 
