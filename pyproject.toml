@@ -35,4 +35,4 @@ nokkhum-web = "nokkhum.cmd.web:main"
 nokkhum-streaming = "nokkhum.cmd.streaming:main"
 nokkhum-controller = "nokkhum.cmd.controller:main"
 nokkhum-compute = "nokkhum.cmd.compute:main"
-
+nokkhum-processor = "nokkhum.cmd.processor:main"
