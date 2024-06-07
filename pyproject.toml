@@ -21,9 +21,18 @@ flask-wtf = "^1.2.1"
 authlib = "^1.3.1"
 
 
+opencv-python = "^4.10.0.82"
 [tool.poetry.group.dev.dependencies]
 black = "^24.4.2"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+
+[tool.poetry.scripts]
+nokkhum-web = "nokkhum.cmd.web:main"
+nokkhum-streaming = "nokkhum.cmd.streaming:main"
+nokkhum-controller = "nokkhum.cmd.controller:main"
+nokkhum-compute = "nokkhum.cmd.compute:main"
+

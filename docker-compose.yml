@@ -48,7 +48,7 @@ services:
         restart: always
         environment:
             NOKKHUM_SETTINGS: /app/nokkhum-production.cfg
-        command: uwsgi --lazy-apps --ini /app/scripts/nokkhum-uwsgi-web.ini
+        command: /venv/bin/uwsgi --lazy-apps --ini /app/scripts/nokkhum-uwsgi-web.ini
         logging:
             options:
                 max-size: "10m"

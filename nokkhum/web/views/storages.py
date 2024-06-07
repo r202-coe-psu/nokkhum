@@ -74,10 +74,11 @@ def get_video_path(processor_id, date_dir, filename):
 @module.route("/")
 @login_required
 def index():
+    now = datetime.date.today()
     share_storages = models.StorageShare.objects(
         psu_passport_username=current_user._get_current_object().username,
-        start_date__lte=datetime.date.today(),
-        expire_date__gte=datetime.date.today(),
+        start_date__lte=now,
+        expire_date__gte=now,
     )
 
     return render_template("/storages/index.html", share_storages=share_storages)
