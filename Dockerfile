@@ -13,25 +13,43 @@ RUN apt install -y python3 python3-dev python3-pip python3-venv \
 	npm libsm-dev libxrender-dev libxext-dev libffi-dev \
 	build-essential checkinstall cmake pkg-config yasm git libjpeg-dev libpng-dev libtiff-dev libavcodec-dev libavformat-dev libswscale-dev libxine2-dev libv4l-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev gstreamer1.0-rtsp gstreamer1.0-libav gstreamer1.0-tools gstreamer1.0-alsa libtbb-dev libgoogle-glog-dev libgflags-dev libgphoto2-dev libeigen3-dev libhdf5-dev python3-dev python3-pip python3-venv unzip wget x264 x265 libx264-dev libx265-dev libgtk-3-dev ffmpeg
 
-RUN pip3 install flask uwsgi pillow numpy scipy blinker wheel numpy scipy matplotlib scikit-image scikit-learn  
 
-RUN wget https://github.com/opencv/opencv/archive/master.zip -O /tmp/opencv.zip && \
-    wget https://github.com/opencv/opencv_contrib/archive/master.zip -O /tmp/opencv_contrib.zip && \
-    unzip /tmp/opencv.zip -d /tmp && \
-    unzip /tmp/opencv_contrib.zip -d /tmp && \
-    mkdir -p /tmp/opencv-master/build && \
-    cd /tmp/opencv-master/build && \
-    cmake -D CMAKE_BUILD_TYPE=RELEASE -D OPENCV_EXTRA_MODULES_PATH=/tmp/opencv_contrib-master/modules .. && \
-    make -j$(nproc) && \
-    make install && \
-    rm -rf /tmp/opencv* && \
-    cd
+# RUN wget https://github.com/opencv/opencv/archive/master.zip -O /tmp/opencv.zip && \
+#     wget https://github.com/opencv/opencv_contrib/archive/master.zip -O /tmp/opencv_contrib.zip && \
+#     unzip /tmp/opencv.zip -d /tmp && \
+#     unzip /tmp/opencv_contrib.zip -d /tmp && \
+#     mkdir -p /tmp/opencv-master/build && \
+#     cd /tmp/opencv-master/build && \
+#     cmake -D CMAKE_BUILD_TYPE=RELEASE -D OPENCV_EXTRA_MODULES_PATH=/tmp/opencv_contrib-master/modules .. && \
+#     make -j$(nproc) && \
+#     make install && \
+#     rm -rf /tmp/opencv* && \
+#     cd
+
+
+
+RUN python3 -m venv /venv
+ENV PYTHON=/venv/bin/python3
+
+RUN $PYTHON -m pip install wheel uwsgi poetry gunicorn
+
+# RUN pip3 install flask uwsgi pillow numpy scipy blinker wheel numpy scipy matplotlib scikit-image scikit-learn  
+
+WORKDIR /app
+COPY nokkhum/cmd /app/nokkhum/cmd
+COPY poetry.lock pyproject.toml README.md /app/
+RUN . /venv/bin/activate \
+	&& poetry config virtualenvs.create false \
+	&& poetry install --no-interaction --only main
+
+COPY nokkhum/web/static/package.json nokkhum/web/static/package-lock.json nokkhum/web/static/
+RUN npm install --prefix nokkhum/web/static
+
 
 COPY . /app
-WORKDIR /app
 
-RUN python3 setup.py develop
-RUN npm install --prefix nokkhum/web/static
+
+
 RUN cd /app/nokkhum/web/static/brython; \
     for i in $(ls -d */); \
     do \
