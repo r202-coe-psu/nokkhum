@@ -76,7 +76,7 @@ services:
             QUART_ENV: production
         restart: always
         # command: uwsgi --lazy-apps --ini /app/scripts/nokkhum-uwsgi-streaming.ini
-        command: nokkhum-streaming -d -H 0.0.0.0 -P 8081
+        command: /venv/bin/nokkhum-streaming -d -H 0.0.0.0 -P 8081
         logging:
             options:
                 max-size: "10m"
@@ -100,7 +100,7 @@ services:
         restart: always
         environment:
             NOKKHUM_SETTINGS: /app/nokkhum-production.cfg
-        command: nokkhum-controller
+        command: /venv/bin/nokkhum-controller
         logging:
             options:
                 max-size: "10m"
@@ -128,7 +128,7 @@ services:
                 hard: "65536"
         environment:
             NOKKHUM_SETTINGS: /app/nokkhum-production.cfg
-        command: nokkhum-compute
+        command: /venv/bin/nokkhum-compute
         logging:
             options:
                 max-size: "10m"
